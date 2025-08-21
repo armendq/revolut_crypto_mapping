@@ -6,7 +6,7 @@ on:
     - cron: "*/15 * * * *"
 
 permissions:
-  contents: write   # <-- needed to git commit/push artifacts
+  contents: write
 
 jobs:
   build:
@@ -20,12 +20,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Mapping (keep as you have)
       - name: Build Revolut mapping
         run: python scripts/mapping.py
 
@@ -41,35 +40,31 @@ jobs:
             echo "No mapping changes."
           fi
 
-      # ---- Analysis
       - name: Run A+ Setup Scan (open-source data)
         run: |
           set -e
           python scripts/analysis.py
         env:
           EQUITY_USD: "41338.00"
-          CASH_USD:   "32000.00"
-          FLOOR_USD:  "36500"
+          CASH_USD: "32000.00"
+          FLOOR_USD: "36500"
           FLOOR_BUFFER: "1000"
           DAILY_PNL_PCT: "0.0"
-          # Optional portfolio hint (non-ETH/DOT)
-          # PORTFOLIO_JSON: '[{"symbol":"ARB","name":"Arbitrum","value_usd":14732.79},{"symbol":"IMX","name":"Immutable","value_usd":5661.66},{"symbol":"GRT","name":"The Graph","value_usd":5149.51}]'
 
-      # <<< NEW: print the outcome clearly >>>
       - name: Show decision
         run: |
           echo "----- DECISION -----"
           if [ -f data/signals.json ]; then
             python - <<'PY'
-import json,sys
-j=json.load(open('data/signals.json'))
-t=j.get('type')
-if t=='C':
+import json
+j=json.load(open("data/signals.json"))
+t=j.get("type")
+if t=="C":
     print("Hold and wait.")
-elif t=='A':
+elif t=="A":
     print("Raise cash now.")
 else:
-    for line in j.get('text_lines', []):
+    for line in j.get("text_lines", []):
         print(line)
 PY
           else
