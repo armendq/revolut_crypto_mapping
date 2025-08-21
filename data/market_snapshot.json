@@ -1,0 +1,13 @@
+{
+  "time": "2025-08-21T23:56:33.832127+00:00",
+  "equity": 41000.0,
+  "cash": 32000.0,
+  "breach": false,
+  "breach_reason": "",
+  "regime": {
+    "ok": false,
+    "reason": "no-binance-klines"
+  },
+  "universe_count": 0,
+  "candidates": []
+}
