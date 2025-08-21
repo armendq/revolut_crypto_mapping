@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# OS
+.DS_Store
+
+# Data outputs
+data/revolut_mapping.csv
+data/revolut_mapping.json

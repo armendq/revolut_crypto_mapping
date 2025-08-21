@@ -1,0 +1,56 @@
+
+## D) `data/revolut_list.txt`  *(exactly your list; paste as-is)*
+
+```text
+A
+1INCH, AAVE, ACA (Acala Token), ADA (Cardano), AERGO, AGLD (Adventure Gold), AIOZ, AKT (Akash Network), ALGO (Algorand), ALICE (MyNeighborAlice), ALPHA (Alpha Venture DAO), AMP, ANKR, APE (ApeCoin), API3, APT (Aptos), AR (Arweave), ARB (Arbitrum), ARKM (Arkham), ARPA, ASTR (Astar), ATOM (Cosmos), AUDIO (Audius), AVAX (Avalanche), AXS (Axie Infinity)
+B
+BAL (Balancer), BAND (Band Protocol), BAT (Basic Attention Token), BCH (Bitcoin Cash), BICO (Biconomy), BLUR, BLZ (Bluzelle), BNC (Bifrost), BNT (Bancor), BONK, BOND (BarnBridge), BTC (Bitcoin), BTG (Bitcoin Gold), BTRST (Braintrust), BTT (BitTorrent)
+C
+CELO, CELR (Celer Network), CFX (Conflux), CHZ (Chiliz), CHR (Chromia), CLV (Clover Finance), COMP (Compound), COTI, CQT (Covalent), CRO (Cronos), CRV (Curve DAO Token), CTSI (Cartesi), CVC (Civic), CVX (Convex Finance)
+D
+DAI (Dai), DAR (Mines of Dalarnia), DASH, DENT, DGB (DigiByte), DIMO, DNT (district0x), DOGE (Dogecoin), DOT (Polkadot), DREP, DYDX (dYdX)
+E
+EGLD (MultiversX), ENA (Ethena), ENJ (Enjin Coin), ENS (Ethereum Name Service), EOS (EOS), ETC (Ethereum Classic), ETH (Ethereum), ETHW (EthereumPoW), EUL (Euler)
+F
+FET (Fetch.ai), FIDA (Bonfida), FIL (Filecoin), FLOKI, FLOW, FLR (Flare), FORTH (Ampleforth Governance Token), FTM (Fantom), FXS (Frax Share)
+G
+GALA, GFI (Goldfinch), GHST (Aavegotchi), GLM (Golem), GLMR (Moonbeam), GMT (STEPN), GMX, GNO (Gnosis), GNS (Gains Network), GODS (Gods Unchained), GRT (The Graph)
+H
+HBAR (Hedera), HFT (Hashflow), HIGH (Highstreet), HOPR, HOT (Holo)
+I
+ICP (Internet Computer), IDEX, ILV (Illuvium), IMX (Immutable), INJ (Injective), IOTX (IoTeX)
+J
+JASMY (JasmyCoin), JTO (Jito), JUP (Jupiter)
+K
+KAVA, KDA (Kadena), KNC (Kyber Network), KSM (Kusama)
+L
+LDO (Lido DAO), LINK (Chainlink), LPT (Livepeer), LQTY (Liquity), LRC (Loopring), LSK (Lisk), LTC (Litecoin)
+M
+MAGIC, MANA (Decentraland), MASK (Mask Network), MATIC (Polygon), MC (Merit Circle), MDT (Measurable Data Token), MINA, MKR (Maker), MLN (Enzyme), MPL (Maple), MTRG (Meter Governance)
+N
+NEAR (NEAR Protocol), NEXO, NKN
+O
+OCEAN (Ocean Protocol), OGN (Origin Protocol), OMG (OMG Network), ONDO, ONG (Ontology Gas), ONT (Ontology), OP (Optimism), ORCA, OXT (Orchid)
+P
+PAXG (PAX Gold), PENDLE, PEPE, PERP (Perpetual Protocol), PIXEL, PLA (PlayDapp), POKT (Pocket Network), POLS (Polkastarter), POLYX (Polymesh), POND (Marlin), POWR (Powerledger), PUNDIX
+Q
+QI (BENQI), QNT (Quant), QTUM
+R
+RAD (Radicle), RARE (SuperRare), RARI (Rarible), RAY (Raydium), REN (Ren), REQ (Request), RLC (iExec RLC), RLY (Rally), RNDR (Render Token), RON (Ronin), ROSE (Oasis Network), RPL (Rocket Pool), RSR (Reserve Rights)
+S
+SAND (The Sandbox), SC (Siacoin), SGB (Songbird), SHIB (Shiba Inu), SKL (SKALE Network), SLP (Smooth Love Potion), SNT (Status), SNX (Synthetix), SOL (Solana), SPELL (Spell Token), STG (Stargate Finance), STORJ, STRK (Starknet), STX (Stacks), SUI, SUSHI (SushiSwap), SYN (Synapse), SYNTH
+T
+T (Threshold), TEL (Telcoin), TIA (Celestia), TON (Toncoin), TRB (Tellor), TRU (TrueFi), TRX (Tron)
+U
+UMA (UMA), UNI (Uniswap), USDC (USD Coin), USDT (Tether)
+V
+VET (VeChain), VOXEL (Voxies), VTHO (VeThor Token)
+W
+WAVES, WAXP (WAX), WBTC (Wrapped Bitcoin), WCFG (Wrapped Centrifuge), WLD (Worldcoin), WOO (WOO Network)
+X
+XLM (Stellar), XMR (Monero), XRP (Ripple), XTZ (Tezos), XVS (Venus)
+Y
+YFI (yearn.finance), YGG (Yield Guild Games)
+Z
+ZEC (Zcash), ZETA, ZIL (Zilliqa), ZRX (0x)
