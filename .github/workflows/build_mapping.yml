@@ -30,35 +30,35 @@ jobs:
         run: |
           python scripts/map_revolut_coins.py
 
-   - name: Generate mapping files
-      run: |
-        python -V
-        python scripts/mapping.py
-        echo "--- repo root ---"
-        ls -lah
-        echo "--- data dir ---"
-        ls -lah data || true
-
-    - name: Commit changes
-      env:
-        GIT_AUTHOR_NAME: github-actions[bot]
-        GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-        GIT_COMMITTER_NAME: github-actions[bot]
-        GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-      run: |
-        set -e
-        git config user.name  "$GIT_AUTHOR_NAME"
-        git config user.email "$GIT_AUTHOR_EMAIL"
-
-        if [ -f data/revolut_mapping.csv ] && [ -f data/revolut_mapping.json ]; then
-          git add -A data
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: update Revolut mapping [skip ci]"
-            git push
+      - name: Generate mapping files
+        run: |
+          python -V
+          python scripts/mapping.py
+          echo "--- repo root ---"
+          ls -lah
+          echo "--- data dir ---"
+          ls -lah data || true
+  
+      - name: Commit changes
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -e
+          git config user.name  "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
+  
+          if [ -f data/revolut_mapping.csv ] && [ -f data/revolut_mapping.json ]; then
+            git add -A data
+            if ! git diff --cached --quiet; then
+              git commit -m "chore: update Revolut mapping [skip ci]"
+              git push
+            else
+              echo "No changes to commit."
+            fi
           else
-            echo "No changes to commit."
+            echo "❌ mapping files missing; generator did not run or wrote elsewhere."
+            exit 1
           fi
-        else
-          echo "❌ mapping files missing; generator did not run or wrote elsewhere."
-          exit 1
-        fi
