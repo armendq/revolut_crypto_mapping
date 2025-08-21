@@ -1,0 +1,77 @@
+name: build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # (Your mapping step - keep if you already have it)
+      - name: Build Revolut mapping
+        run: |
+          python scripts/mapping.py
+        env:
+          GITHUB_ACTIONS: "true"
+
+      - name: Commit mapping artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/revolut_mapping.csv data/revolut_mapping.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update Revolut mapping [skip ci]"
+            git push
+          else
+            echo "No mapping changes."
+          fi
+
+      # ---------- NEW: Analysis run ----------
+      - name: Run A+ Setup Scan (open-source data)
+        run: |
+          python scripts/analysis.py
+        env:
+          # You can tune these safely:
+          EQUITY_USD: "41338.00"     # <-- set to your latest equity
+          CASH_USD:   "32000.00"     # <-- set free cash
+          FLOOR_USD:  "36500"
+          FLOOR_BUFFER: "1000"
+          DAILY_PNL_PCT: "0.0"
+          # Optional: put current non-ETH/DOT holdings so rotation step can pick a weakest
+          # PORTFOLIO_JSON: '[{"symbol":"ARB","name":"Arbitrum","value_usd":14732.79},{"symbol":"IMX","name":"Immutable","value_usd":5661.66},{"symbol":"GRT","name":"The Graph","value_usd":5149.51}]'
+
+      - name: Save analysis artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-output
+          path: |
+            data/market_snapshot.json
+            data/signals.json
+
+      - name: Commit analysis outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market_snapshot.json data/signals.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: analysis outputs"
+            git push
+          else
+            echo "No analysis changes."
+          fi
