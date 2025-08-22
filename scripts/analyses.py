@@ -1,3 +1,19 @@
+from pathlib import Path
+import json
+
+CFG_PATH = Path("data/portfolio.json")
+PORT = {
+    "equity_usd": None,
+    "cash_usd": 0,
+    "floor_usd": 36500,
+    "floor_buffer_usd": 1000,
+    "halt_new_entries_equity_usd": 37500,
+    "exclude_from_rotation": ["ETH","DOT"],
+    "holdings": []
+}
+if CFG_PATH.exists():
+    PORT.update(json.loads(CFG_PATH.read_text()))
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
