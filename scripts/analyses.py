@@ -1,11 +1,9 @@
 
 # scripts/analyses.py
 
-# --- path fix so we can import marketdata whether run as module or script ---
-import os, sys
-THIS_DIR = os.path.dirname(__file__)
-if THIS_DIR not in sys.path:
-    sys.path.insert(0, THIS_DIR)
+# ---import json
+import pandas as pd
+from pathlib import Path  # <-- ADD THIS
 
 from scripts.marketdata import get_btc_5m_klines, ema, vwap
 
