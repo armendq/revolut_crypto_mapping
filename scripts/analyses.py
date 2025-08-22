@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from scripts.marketdata import get_btc_5m_klines, ema, vwap
+from .marketdata import get_btc_5m_klines, ema, vwap
 
 ARTIFACTS = Path("artifacts")
 ARTIFACTS.mkdir(exist_ok=True, parents=True)
