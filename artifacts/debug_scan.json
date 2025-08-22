@@ -1,12 +1,3913 @@
 [
   {
-    "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?start=2025-08-22T18%3A55%3A20.614063%2B00%3A00&end=2025-08-22T20%3A55%3A50.614063%2B00%3A00&granularity=60",
-    "ok": true,
-    "ms": 214
+    "stage": "run",
+    "event": "start",
+    "ts": "2025-08-22T20:58:30.953732+00:00"
   },
   {
-    "url": "https://api.exchange.coinbase.com/products",
-    "ok": true,
-    "ms": 85
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=1INCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=1INCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=1INCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AAVEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AAVEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AAVEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ACAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ACAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ACAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ADAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ADAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ADAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AERGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AERGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AERGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AIOZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AIOZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AIOZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALGOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALICEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALICEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALICEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALPHAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALPHAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ALPHAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ANKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ANKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ANKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=API3USDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=API3USDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=API3USDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=APTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARKMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARKMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARKMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARPAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARPAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ARPAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ASTRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ASTRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ASTRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ATOMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ATOMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ATOMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AUDIOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AUDIOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AUDIOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AVAXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AVAXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AVAXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=AXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BALUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BALUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BALUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BATUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BATUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BATUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BCHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BICOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BICOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BICOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLURUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLURUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLURUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BLZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTRSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTRSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTRSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CELRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CFXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CFXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CFXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CHRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CLVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CLVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CLVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COMPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COTIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COTIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=COTIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CQTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CQTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CQTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CROUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CROUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CROUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CRVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CRVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CRVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CTSIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CTSIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CTSIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=CVXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DAIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DAIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DAIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DASHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DASHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DASHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DENTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DENTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DENTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DIMOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DIMOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DIMOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DOGEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DOGEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DOGEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DREPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DREPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DREPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DYDXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DYDXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=DYDXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EGLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ENSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EOSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EOSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EOSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETHWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETHWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETHWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EULUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EULUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=EULUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FIDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FIDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FIDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOKIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOKIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOKIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLOWUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FLRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FORTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FORTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FORTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FTMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FTMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FTMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=FXSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GALAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GALAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GALAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GHSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GHSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GHSTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GLMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GNSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GODSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GODSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GODSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GRTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GRTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=GRTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HBARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HBARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HBARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HFTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HFTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HFTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HIGHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HIGHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HIGHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOPRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOPRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOPRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=HOTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ICPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ICPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ICPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IDEXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IDEXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IDEXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ILVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ILVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ILVUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IMXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=INJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=INJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=INJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IOTXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IOTXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=IOTXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JASMYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JASMYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JASMYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JTOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JTOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JTOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JUPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JUPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=JUPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KAVAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KAVAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KAVAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KDAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KNCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KSMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KSMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=KSMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LINKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LINKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LINKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LPTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LPTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LPTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LQTYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LQTYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LQTYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LRCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LRCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LRCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LSKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LSKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LSKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=LTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MAGICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MAGICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MAGICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MANAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MANAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MANAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MASKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MASKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MASKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MATICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MATICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MATICUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MINAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MINAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MINAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MKRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MLNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MLNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MLNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MTRGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MTRGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=MTRGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEARUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEXOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEXOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NEXOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NKNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NKNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=NKNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OCEANUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OCEANUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OCEANUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OGNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OGNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OGNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OMGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OMGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OMGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONDOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ONTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ORCAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ORCAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ORCAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OXTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OXTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=OXTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PENDLEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PENDLEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PENDLEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PEPEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PEPEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PEPEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PERPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PERPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PERPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PIXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PIXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PIXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PLAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PLAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PLAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POKTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLYXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLYXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POLYXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PONDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POWRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POWRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=POWRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PUNDIXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PUNDIXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=PUNDIXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QTUMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QTUMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=QTUMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RADUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RADUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RADUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAREUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAREUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAREUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RARIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RARIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RARIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RAYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RENUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RENUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RENUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=REQUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=REQUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=REQUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RLYUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RNDRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RNDRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RNDRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ROSEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ROSEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ROSEUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RPLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RSRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RSRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=RSRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SANDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SGBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SHIBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SHIBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SHIBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SKLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SKLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SKLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SLPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SLPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SLPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SNXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SOLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SPELLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SPELLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SPELLUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STORJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STORJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STORJUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STRKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STRKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STRKUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=STXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUSHIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUSHIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SUSHIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=SYNTHUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TIAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TIAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TIAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TONUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRBUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRUUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRUUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRUUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=TRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UMAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UMAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UMAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UNIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UNIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=UNIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=USDTUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VETUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VOXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VOXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VOXELUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VTHOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VTHOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=VTHOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAVESUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAVESUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAVESUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAXPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAXPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WAXPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WBTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WBTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WBTCUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WCFGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WCFGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WCFGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WLDUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WOOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WOOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=WOOUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XLMUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XMRUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XRPUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XTZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XTZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XTZUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XVSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XVSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=XVSUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YFIUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YGGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YGGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=YGGUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZECUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZECUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZECUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZETAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZETAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZETAUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZILUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
+  },
+  {
+    "stage": "http",
+    "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ZRXUSDT",
+    "ok": false,
+    "err": "HTTP Error 451: "
   }
 ]
