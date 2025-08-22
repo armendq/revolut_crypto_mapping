@@ -105,18 +105,24 @@ def check_regime() -> dict:
     """
     bars: Optional[pd.DataFrame] = get_btc_5m_klines()
 
-    # explicit empty check (no truth-testing a DataFrame)
     if bars is None or bars.empty:
         return {"ok": False, "reason": "no-binance-klines"}
 
     close = bars["close"]
-    vwap_val = vwap(bars)
+
+    # Ensure we get scalars, not Series
+    vwap_val = float(vwap(bars).iloc[-1]) if hasattr(vwap(bars), "iloc") else float(vwap(bars))
     ema_val = float(ema(close, span=9).iloc[-1])
 
-    if float(close.iloc[-1]) > vwap_val and float(close.iloc[-1]) > ema_val:
+    last_close = float(close.iloc[-1])
+
+    if last_close > vwap_val and last_close > ema_val:
         return {"ok": True}
     else:
-        return {"ok": False, "reason": "btc-below-vwap-ema"}
+        return {
+            "ok": False,
+            "reason": f"btc-below-vwap-ema (last={last_close}, vwap={vwap_val}, ema={ema_val})"
+        }
 
 
 def spread_pct(bid: float, ask: float) -> float:
