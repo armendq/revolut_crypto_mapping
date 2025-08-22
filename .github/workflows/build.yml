@@ -1,92 +1,64 @@
-name: run
+name: Run mapping & analyses
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "*/30 * * * *"   # every 30 minutes
 
-permissions:
-  contents: write            # allow workflow to push to repo
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # Checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests python-dateutil
+          pip install -r requirements.txt || true
+          pip install pandas requests python-dateutil ta
 
+      # Generate mapping and run analyses
       - name: Generate mapping & run analyses
-        env:
-          EQUITY: "41000"      # override from UI if you want
-          CASH: "32000"
         run: |
           set -e
           python scripts/mapping.py
-          echo "✅ Generated data/revolut_mapping.csv and data/revolut_mapping.json"
-
-          # ensure package-style import of scripts/*
+          echo "✅ Generated mapping"
           export PYTHONPATH="$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/scripts"
           python -m scripts.analyses
 
-      - name: Publish run summary
-        run: |
-          echo "### Market snapshot" >> $GITHUB_STEP_SUMMARY
-          if [ -f artifacts/market_snapshot.json ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
-            cat artifacts/market_snapshot.json >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ -f data/signals.json ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Signal" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
-            cat data/signals.json >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          fi
-
+      # Upload artifacts
       - name: Upload market snapshot
         uses: actions/upload-artifact@v4
         with:
-          name: market-snapshot-and-signals
-          path: |
-            artifacts/market_snapshot.json
-            data/signals.json
-            data/revolut_mapping.json
-            data/revolut_mapping.csv
-          if-no-files-found: warn
+          name: market-snapshot
+          path: artifacts/
 
+      # Commit back results (data + artifacts)
       - name: Commit changes
-        if: always()
         run: |
           set -e
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # authenticate pushes with workflow token
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-
-          # stage generated files
           git add -A data artifacts
 
-          # commit only when staged changes exist
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore: update data & snapshot [skip ci]"
             git push
           fi
-```0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
