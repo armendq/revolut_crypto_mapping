@@ -1,23 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Analyses runner:
-- Loads Revolut mapping (data/revolut_mapping.json)
-- Pulls lightweight data from public Binance endpoints
-- Checks regime (BTC 5m close > VWAP & > 9-EMA)
-- Scans for Aggressive Breakout + Micro Pullback on 1m bars
-- Writes:
-    data/market_snapshot.json
-    data/signals.json
-The files are always refreshed (new ISO time) so the workflow can commit.
-"""
-
 from __future__ import annotations
 
 import json
-import math
 import os
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,7 +14,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 import urllib.request
 
-# -------------------- constants / paths --------------------
+# -------------------- paths & constants --------------------
 
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -42,15 +30,14 @@ BUFFER_MIN = 1_000.0
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
-def _json_get(url: str, timeout: int = 15) -> Optional[dict | list]:
+def _json_get(url: str, timeout: int = 15):
     req = urllib.request.Request(url, headers={"User-Agent": "rev-scan/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode())
 
 def write_snapshot(payload: dict) -> None:
-    # Always inject fresh timestamp so a commit is produced even if nothing else changed
     payload = dict(payload)
-    payload["time"] = _now_iso()
+    payload["time"] = _now_iso()  # ensure a change each run
     SNAP_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 def write_signal(text: str, type_code: str) -> None:
@@ -59,32 +46,21 @@ def write_signal(text: str, type_code: str) -> None:
         encoding="utf-8",
     )
 
-# -------------------- minimal TA helpers --------------------
+# -------------------- TA helpers --------------------
 
 def ema_series(series: pd.Series, span: int) -> pd.Series:
-    # pandas ewm already returns a Series; we only need the last value most of the time
     return series.ewm(span=span, adjust=False).mean()
 
 def vwap_df(df: pd.DataFrame) -> float:
-    """
-    df columns: open, high, low, close, volume
-    Returns the *last* rolling VWAP (single float) for the whole frame.
-    """
-    # Typical price
     tp = (df["high"] + df["low"] + df["close"]) / 3.0
     pv = tp * df["volume"]
     cum_pv = pv.cumsum()
     cum_vol = df["volume"].cumsum().replace(0, 1e-12)
-    vwap_series = cum_pv / cum_vol
-    return float(vwap_series.iloc[-1])
+    return float((cum_pv / cum_vol).iloc[-1])
 
-# -------------------- Binance lightweight adapters --------------------
+# -------------------- Binance light adapters --------------------
 
 def binance_klines(symbol: str, interval: str, limit: int = 200) -> pd.DataFrame:
-    """
-    Returns pandas DataFrame with columns [open, high, low, close, volume] (floats).
-    If anything fails, returns empty DataFrame.
-    """
     urls = [
         f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}",
         f"https://api1.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}",
@@ -100,7 +76,6 @@ def binance_klines(symbol: str, interval: str, limit: int = 200) -> pd.DataFrame
                 "open_time","open","high","low","close","volume",
                 "close_time","qav","trades","tbbav","tbqav","ignore"
             ])
-            # Convert necessary cols to float
             for c in ["open","high","low","close","volume"]:
                 df[c] = df[c].astype(float)
             return df[["open","high","low","close","volume"]].copy()
@@ -109,9 +84,6 @@ def binance_klines(symbol: str, interval: str, limit: int = 200) -> pd.DataFrame
     return pd.DataFrame(columns=["open","high","low","close","volume"])
 
 def binance_24h_and_book(symbol: str) -> dict:
-    """
-    Returns dict {'ok', 'price', 'volume_usd', 'bid', 'ask'} for SYMBOL/USDT pairs.
-    """
     try:
         t = _json_get(f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}")
         if not t:
@@ -128,19 +100,13 @@ def binance_24h_and_book(symbol: str) -> dict:
 # -------------------- regime --------------------
 
 def check_regime_btc_5m() -> dict:
-    """
-    Longs only if BTCUSDT 5m close > 5m VWAP AND > 9-EMA.
-    Returns {'ok': bool, 'reason': str}
-    """
     df = binance_klines("BTCUSDT", "5m", limit=200)
     if df.empty:
         return {"ok": False, "reason": "no-binance-klines"}
-
     close = df["close"]
-    vw = vwap_df(df)                        # float
+    vw = vwap_df(df)
     ema9_last = float(ema_series(close, 9).iloc[-1])
     last_close = float(close.iloc[-1])
-
     ok = (last_close > vw) and (last_close > ema9_last)
     return {"ok": ok, "reason": "" if ok else "btc-below-vwap-ema"}
 
@@ -154,16 +120,14 @@ def one_minute_bars(symbol: str, limit: int = 120) -> List[KBar]:
     df = binance_klines(symbol, "1m", limit=limit)
     if df.empty:
         return []
-    return [KBar(o=float(r.open), h=float(r.high), l=float(r.low), c=float(r.close), v=float(r.volume))
+    return [KBar(float(r.open), float(r.high), float(r.low), float(r.close), float(r.volume))
             for r in df.itertuples(index=False)]
 
-def median(values: List[float]) -> float:
-    if not values:
+def median(vals: List[float]) -> float:
+    if not vals:
         return 0.0
-    s = sorted(values)
-    n = len(s)
-    mid = n // 2
-    return float((s[mid] if n % 2 else (s[mid - 1] + s[mid]) / 2.0))
+    s = sorted(vals); n = len(s); m = n // 2
+    return float(s[m] if n % 2 else (s[m - 1] + s[m]) / 2.0)
 
 def true_range(h: float, l: float, pc: float) -> float:
     return max(h - l, abs(h - pc), abs(l - pc))
@@ -178,7 +142,6 @@ def atr_1m(bars: List[KBar], period: int = 14) -> float:
     return sum(trs) / len(trs)
 
 def aggressive_breakout(bars: List[KBar]) -> Optional[dict]:
-    # Rule 3
     if len(bars) < 20:
         return None
     last, prev = bars[-1], bars[-2]
@@ -195,7 +158,6 @@ def aggressive_breakout(bars: List[KBar]) -> Optional[dict]:
     return {"pct": pct, "rvol": rvol, "hh15": hh15, "last": last}
 
 def micro_pullback_ok(bars: List[KBar]) -> Optional[dict]:
-    # Rule 4 (approximation without ticks)
     if len(bars) < 2:
         return None
     last = bars[-1]
@@ -207,29 +169,109 @@ def micro_pullback_ok(bars: List[KBar]) -> Optional[dict]:
         return {"entry": last.c, "pullback_low": last.l}
     return None
 
-# -------------------- universe / mapping --------------------
+# -------------------- universe / mapping (ROBUST) --------------------
+
+_TICKER_RE = re.compile(r"[A-Z0-9]{2,12}")
+
+def _normalize_entry(x) -> Optional[dict]:
+    """
+    Accepts dict *or* string and returns {'ticker': 'XYZ', 'binance': Optional[str]}
+    """
+    if isinstance(x, dict):
+        t = (x.get("ticker") or x.get("symbol") or x.get("code") or "").strip().upper()
+        b = (x.get("binance") or "").strip().upper() or None
+        if not t:
+            # Try to derive from name if present
+            name = str(x.get("name") or "")
+            m = _TICKER_RE.findall(name.upper())
+            if m:
+                t = m[-1]
+        return {"ticker": t, "binance": b} if t else None
+
+    if isinstance(x, str):
+        s = x.strip().upper()
+        # common patterns like "ARB (Arbitrum)", "Arbitrum, ARB", "ARB"
+        # pick the last ALLCAPS token if present
+        tokens = re.split(r"[^A-Z0-9]+", s)
+        cand = [tok for tok in tokens if tok]
+        ticker = cand[-1] if cand else ""
+        # If we accidentally captured a long word, fall back to regex scan
+        if not ticker or len(ticker) > 12:
+            m = _TICKER_RE.findall(s)
+            ticker = m[-1] if m else ""
+        return {"ticker": ticker, "binance": None} if ticker else None
+
+    return None
+
+def load_revolut_mapping() -> List[dict]:
+    """
+    Tries, in order:
+      1) data/revolut_mapping.json (list of dicts or strings)
+      2) data/revolut_mapping.csv (column 'ticker' optionally 'binance')
+      3) data/revolut_list.txt (one per line, any format)
+    Returns list of {'ticker': TKR, 'binance': Optional[str]} unique by ticker.
+    """
+    out: List[dict] = []
+
+    # 1) JSON
+    json_path = DATA_DIR / "revolut_mapping.json"
+    if json_path.exists():
+        try:
+            raw = json.loads(json_path.read_text(encoding="utf-8"))
+            if isinstance(raw, list):
+                for item in raw:
+                    norm = _normalize_entry(item)
+                    if norm:
+                        out.append(norm)
+        except Exception:
+            pass
+
+    # 2) CSV
+    if not out:
+        csv_path = DATA_DIR / "revolut_mapping.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                for _, r in df.iterrows():
+                    t = str(r.get("ticker") or "").strip().upper()
+                    b = str(r.get("binance") or "").strip().upper() or None
+                    if t:
+                        out.append({"ticker": t, "binance": b})
+            except Exception:
+                pass
+
+    # 3) Plain list
+    if not out:
+        lst_path = DATA_DIR / "revolut_list.txt"
+        if lst_path.exists():
+            for line in lst_path.read_text(encoding="utf-8").splitlines():
+                norm = _normalize_entry(line)
+                if norm:
+                    out.append(norm)
+
+    # De-duplicate by ticker
+    uniq: Dict[str, dict] = {}
+    for e in out:
+        t = e["ticker"]
+        if t and t not in uniq:
+            uniq[t] = e
+    # Return sorted by ticker for stability
+    return [uniq[k] for k in sorted(uniq.keys())]
+
+def symbol_on_binance(entry: dict) -> Optional[str]:
+    if entry.get("binance"):
+        return entry["binance"]
+    t = entry.get("ticker", "").upper()
+    return f"{t}USDT" if t else None
 
 def spread_pct(bid: float, ask: float) -> float:
     mid = (bid + ask) / 2.0
     return 0.0 if mid <= 0 else (ask - bid) / mid
 
-def load_revolut_mapping() -> List[dict]:
-    with open(DATA_DIR / "revolut_mapping.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def symbol_on_binance(entry: dict) -> Optional[str]:
-    # prefer explicit if mapping carries it, else ticker + USDT
-    if entry.get("binance"):
-        return entry["binance"]
-    t = (entry.get("ticker") or "").upper()
-    if not t:
-        return None
-    return f"{t}USDT"
-
 # -------------------- sizing --------------------
 
 def position_size(entry: float, stop: float, equity: float, cash: float, strong: bool) -> float:
-    risk_dollars = equity * 0.012  # 1.2% per trade
+    risk_dollars = equity * 0.012
     dist = max(entry - stop, 1e-7)
     qty = risk_dollars / dist
     usd = qty * entry
@@ -237,10 +279,10 @@ def position_size(entry: float, stop: float, equity: float, cash: float, strong:
     usd = min(usd, equity * cap, cash)
     return max(0.0, float(usd))
 
-# -------------------- main --------------------
+# -------------------- MAIN --------------------
 
 def main() -> None:
-    # Robust ENV parsing (avoid '' issue)
+    # ENV with safe defaults even if empty
     try:
         equity = float(os.getenv("EQUITY") or "41000")
     except ValueError:
@@ -260,12 +302,15 @@ def main() -> None:
         "candidates": []
     }
 
-    # Preservation / floor
+    # Preservation first
     buffer_ok = (equity - FLOOR) >= BUFFER_MIN
     if (not buffer_ok) or equity <= 37_500.0:
         snapshot["breach"] = True
         snapshot["breach_reason"] = "buffer<1000_over_floor" if not buffer_ok else "equity<=37500"
-        write_signal("Raise cash now: exit weakest non-ETH, non-DOT positions on support breaks; halt new entries.", "A")
+        write_signal(
+            "Raise cash now: exit weakest non-ETH, non-DOT positions on support breaks; halt new entries.",
+            "A"
+        )
         write_snapshot(snapshot)
         print("Raise cash now: exit weakest non-ETH, non-DOT positions on support breaks; halt new entries.")
         return
@@ -275,12 +320,13 @@ def main() -> None:
     snapshot["regime"] = regime
     strong_regime = bool(regime.get("ok", False))
 
-    # (2) Universe (exclude ETH & DOT)
+    # (2) Universe
     mapping = load_revolut_mapping()
     universe: List[dict] = []
     for m in mapping:
+        # m is guaranteed dict here
         tkr = (m.get("ticker") or "").upper()
-        if tkr in ("ETH", "DOT"):
+        if not tkr or tkr in ("ETH", "DOT"):
             continue
         sym = symbol_on_binance(m)
         if not sym:
@@ -294,8 +340,19 @@ def main() -> None:
 
     snapshot["universe_count"] = len(universe)
 
-    # (3 & 4) Scan signals
-    scored: List[dict] = []
+    # (3 & 4) Signals
+    @dataclass
+    class Candidate:
+        ticker: str
+        symbol: str
+        entry: float
+        pullback_low: float
+        atr1m: float
+        rvol: float
+        pct: float
+        score: float
+
+    cands: List[Candidate] = []
     for u in universe:
         bars = one_minute_bars(u["symbol"], limit=120)
         if not bars:
@@ -310,37 +367,35 @@ def main() -> None:
         if atr <= 0:
             continue
         score = br["rvol"] * (1 + br["pct"])
-        scored.append({
-            "ticker": u["ticker"], "symbol": u["symbol"], "entry": mp["entry"],
-            "pullback_low": mp["pullback_low"], "atr1m": atr,
-            "rvol": br["rvol"], "pct": br["pct"], "score": score
-        })
+        cands.append(Candidate(
+            ticker=u["ticker"], symbol=u["symbol"], entry=mp["entry"],
+            pullback_low=mp["pullback_low"], atr1m=atr, rvol=br["rvol"],
+            pct=br["pct"], score=score
+        ))
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
+    cands.sort(key=lambda x: x.score, reverse=True)
 
-    # No candidate → C
-    if not scored:
+    if not cands:
         snapshot["candidates"] = []
         write_signal("Hold and wait.", "C")
         write_snapshot(snapshot)
         print("Hold and wait.")
         return
 
-    # Best one → B
-    top = scored[0]
-    entry = float(top["entry"])
-    stop = float(top["pullback_low"])
-    atr = float(top["atr1m"])
+    top = cands[0]
+    entry = float(top.entry)
+    stop = float(top.pullback_low)
+    atr = float(top.atr1m)
     t1 = entry + 0.8 * atr
     t2 = entry + 1.5 * atr
 
     buy_usd = position_size(entry, stop, equity, cash, strong_regime)
-    snapshot["candidates"] = [top]
+    snapshot["candidates"] = [top.__dict__]
     write_snapshot(snapshot)
 
     sell_plan = "Sell weakest non-ETH, non-DOT on support break if cash needed."
     lines = [
-        f"• {top['ticker']} + {top['ticker']}",
+        f"• {top.ticker} + {top.ticker}",
         f"• Entry price: {entry:.6f}",
         f"• Target: T1 {t1:.6f}, T2 {t2:.6f}, trail after +1.0R",
         f"• Stop-loss / exit plan: Invalidate below micro-pullback low {stop:.6f} or stall > 5 min",
