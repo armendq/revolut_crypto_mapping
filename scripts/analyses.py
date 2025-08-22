@@ -3,12 +3,14 @@
 import os
 import json
 import time
+import statistics
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List
 
 import pandas as pd
 
+# local helpers (PYTHONPATH is set to repo root in the workflow)
 from scripts.marketdata import get_btc_5m_klines, ema, vwap
 
 ARTIFACTS = Path("artifacts")
@@ -18,13 +20,16 @@ SNAP_PATH = ARTIFACTS / "market_snapshot.json"
 # ---------- helpers for HTTP ----------
 import urllib.request
 
+
 def _j(url: str, headers: Optional[Dict[str, str]] = None, timeout: int = 15):
     req = urllib.request.Request(url, headers=headers or {"User-Agent": "rev-scan/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode())
 
-def _now_iso():
+
+def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
 
 # ---------- exchange adapters (lightweight) ----------
 
@@ -39,10 +44,12 @@ def binance_24h_and_book(symbol_usdt: str):
         vol_base = float(t["volume"])
         vol_usd = vol_base * last
         ob = _j(f"https://api.binance.com/api/v3/depth?symbol={symbol_usdt}&limit=5")
-        bid = float(ob["bids"][0][0]); ask = float(ob["asks"][0][0])
+        bid = float(ob["bids"][0][0])
+        ask = float(ob["asks"][0][0])
         return {"ok": True, "price": last, "volume_usd": vol_usd, "bid": bid, "ask": ask}
     except Exception:
         return {"ok": False}
+
 
 def binance_klines_1m(symbol_usdt: str, limit: int = 120):
     """
@@ -66,27 +73,37 @@ def binance_klines_1m(symbol_usdt: str, limit: int = 120):
             continue
     return []
 
+
 # ---------- TA utils ----------
 
 def median(seq: List[float]) -> float:
     return statistics.median(seq) if seq else 0.0
 
+
 def true_range(h, l, pc):
-    return max(h-l, abs(h-pc), abs(l-pc))
+    return max(h - l, abs(h - pc), abs(l - pc))
+
 
 def atr_from_klines(bars: List[Dict], period: int = 14) -> float:
     if len(bars) < period + 1:
         return 0.0
     trs = []
-    for i in range(1, period+1):
-        h = bars[-i]['h']; l = bars[-i]['l']; pc = bars[-i-1]['c']
+    for i in range(1, period + 1):
+        h = bars[-i]['h']
+        l = bars[-i]['l']
+        pc = bars[-i - 1]['c']
         trs.append(true_range(h, l, pc))
     return sum(trs) / len(trs)
+
 
 # ---------- rule checks ----------
 
 def check_regime() -> dict:
-    bars = get_btc_5m_klines()
+    """
+    Rule 1: BTC 5m close > 5m VWAP AND > 9-EMA.
+    Uses DataFrame returned by get_btc_5m_klines().
+    """
+    bars: Optional[pd.DataFrame] = get_btc_5m_klines()
 
     # explicit empty check (no truth-testing a DataFrame)
     if bars is None or bars.empty:
@@ -94,23 +111,18 @@ def check_regime() -> dict:
 
     close = bars["close"]
     vwap_val = vwap(bars)
-    ema_val = ema(close, span=9).iloc[-1]
+    ema_val = float(ema(close, span=9).iloc[-1])
 
-    if close.iloc[-1] > vwap_val and close.iloc[-1] > ema_val:
+    if float(close.iloc[-1]) > vwap_val and float(close.iloc[-1]) > ema_val:
         return {"ok": True}
     else:
-        return {"ok": False, "reason": "btc-below-vwap-ema"} 'no-candles-all-sources'}
-    closes = [b['c'] for b in bars]
-    ema9 = ema(closes, period=9)
-    vw = vwap(bars)
-    last = closes[-1]
-    ok = (last > vw) and (last > ema9)
-    return {'ok': ok, 'reason': '' if ok else 'close<=vwap/ema',
-            'last_close': last, 'vwap': vw, 'ema9': ema9, 'source': bars[-1].get('src','')}
+        return {"ok": False, "reason": "btc-below-vwap-ema"}
+
 
 def spread_pct(bid: float, ask: float) -> float:
     mid = (bid + ask) / 2.0
     return 0.0 if mid == 0 else (ask - bid) / mid
+
 
 def aggressive_breakout(bars_1m: List[Dict]) -> Optional[Dict]:
     """
@@ -119,7 +131,8 @@ def aggressive_breakout(bars_1m: List[Dict]) -> Optional[Dict]:
     """
     if len(bars_1m) < 20:
         return None
-    last = bars_1m[-1]; prev = bars_1m[-2]
+    last = bars_1m[-1]
+    prev = bars_1m[-2]
     pct = (last['c'] / prev['c']) - 1.0
     if not (0.018 <= pct <= 0.04):
         return None
@@ -132,13 +145,11 @@ def aggressive_breakout(bars_1m: List[Dict]) -> Optional[Dict]:
         return None
     return {'pct': pct, 'rvol': rvol, 'hh15': hh15, 'last': last}
 
+
 def micro_pullback_ok(bars_1m: List[Dict]) -> Optional[Dict]:
     """
     Rule 4: After breakout, a 15–45 sec pullback ≤ 0.6% from high and hold.
-    Without tick feed, approximate by requiring:
-      - last 1m bar's (high - close) / high <= 0.006  (no deep fade)
-      - last 1m low is within 0.6% of high (micro dip only)
-    We use last bar as the 'entry context'; stop = that bar’s low.
+    Without tick feed, approximate via last 1m bar.
     """
     if len(bars_1m) < 2:
         return None
@@ -151,11 +162,13 @@ def micro_pullback_ok(bars_1m: List[Dict]) -> Optional[Dict]:
         return {'entry': last['c'], 'pullback_low': last['l']}
     return None
 
+
 # ---------- universe & mapping ----------
 
 def load_revolut_mapping() -> List[Dict]:
     with open("data/revolut_mapping.json", "r", encoding="utf-8") as f:
         return json.load(f)
+
 
 def best_binance_symbol(entry: Dict) -> Optional[str]:
     # prefer explicit binance symbol; else try <TICKER>USDT common form
@@ -164,8 +177,8 @@ def best_binance_symbol(entry: Dict) -> Optional[str]:
     t = entry.get("ticker", "").upper()
     if not t:
         return None
-    # special cases could be handled here if needed
     return f"{t}USDT"
+
 
 # ---------- position sizing ----------
 
@@ -175,7 +188,7 @@ def position_size(entry: float, stop: float, equity: float, cash: float,
     Returns USD buy amount respecting risk (1.2%), allocation cap (60/30%), cash, and nonzero distance.
     """
     risk_dollars = equity * 0.012
-    dist = max(entry - stop, 0.0000001)
+    dist = max(entry - stop, 1e-7)
     qty = risk_dollars / dist
     usd = qty * entry
 
@@ -184,12 +197,13 @@ def position_size(entry: float, stop: float, equity: float, cash: float,
     usd = min(usd, max_alloc, cash)
     return max(0.0, usd)
 
+
 # ---------- MAIN ----------
 
 def main():
     equity = float(os.getenv("EQUITY", "41000"))
-    cash   = float(os.getenv("CASH", "32000"))
-    floor  = 36500.0
+    cash = float(os.getenv("CASH", "32000"))
+    floor = 36500.0
     buffer_ok = (equity - floor) >= 1000.0
 
     snapshot = {
@@ -206,11 +220,9 @@ def main():
     # Floor / preservation checks first
     if not buffer_ok or equity <= 37500.0:
         snapshot["breach"] = True
-        if not buffer_ok:
-            snapshot["breach_reason"] = "buffer<1000_over_floor"
-        elif equity <= 37500.0:
-            snapshot["breach_reason"] = "equity<=37500"
-        ARTIFACTS.mkdir(exist_ok=True, parents=True)
+        snapshot["breach_reason"] = (
+            "buffer<1000_over_floor" if not buffer_ok else "equity<=37500"
+        )
         SNAP_PATH.write_text(json.dumps(snapshot, indent=2))
         # Output A
         print("Raise cash now: exit weakest non-ETH, non-DOT positions on support breaks; halt new entries.")
@@ -219,22 +231,21 @@ def main():
     # 1) Regime
     regime = check_regime()
     snapshot["regime"] = regime
-
     strong_regime = bool(regime.get("ok", False))
 
-    # 2) Universe: Revolut coins passing volume/spread, excluding ETH & DOT from rotation
+    # 2) Universe (volume/spread filter; exclude ETH & DOT)
     mapping = load_revolut_mapping()
     universe = []
     for m in mapping:
-        tkr = m.get("ticker","").upper()
-        if tkr in ("ETH","DOT"):
-            continue  # excluded from rotation
+        tkr = m.get("ticker", "").upper()
+        if tkr in ("ETH", "DOT"):
+            continue
         sym = best_binance_symbol(m)
         if not sym:
             continue
 
         md = binance_24h_and_book(sym)
-        if not md["ok"]:
+        if not md.get("ok"):
             continue
         spr = spread_pct(md["bid"], md["ask"])
         if md["volume_usd"] >= 8_000_000 and spr <= 0.005:
@@ -262,14 +273,12 @@ def main():
         mp = micro_pullback_ok(bars)
         if not mp:
             continue
-        # ATR(1m)
         atr1m = atr_from_klines(bars, period=14)
         if atr1m <= 0:
             continue
 
-        # Score: prioritize higher rvol and pct (simple linear score)
-        score = br["rvol"] * (1 + br["pct"])
-        candidate = {
+        score = br["rvol"] * (1 + br["pct"])  # simple priority score
+        scored.append({
             "ticker": u["ticker"],
             "symbol": u["binance"],
             "entry": mp["entry"],
@@ -278,23 +287,20 @@ def main():
             "rvol": br["rvol"],
             "pct": br["pct"],
             "score": score
-        }
-        scored.append(candidate)
+        })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
 
-    # If regime weak, only top 1 is considered anyway (handled by sizing rule)
     if not scored:
-        # Output C
         snapshot["candidates"] = []
         SNAP_PATH.write_text(json.dumps(snapshot, indent=2))
         print("Hold and wait.")
         return
 
-    top = scored[0]  # take only the single best candidate
+    top = scored[0]  # only the single best candidate
     entry = top["entry"]
-    stop  = top["pullback_low"]
-    atr   = top["atr1m"]
+    stop = top["pullback_low"]
+    atr = top["atr1m"]
 
     # Targets
     t1 = entry + 0.8 * atr
@@ -305,15 +311,7 @@ def main():
     snapshot["candidates"] = [top]
     SNAP_PATH.write_text(json.dumps(snapshot, indent=2))
 
-    # Output B in the exact required bullet format
-    # • Coin name + ticker
-    # • Entry price
-    # • Target
-    # • Stop-loss / exit plan
-    # • What to sell from portfolio (excluding ETH, DOT)
-    # • Exact USD buy amount so total equity ≥ $36,500
-
-    # We don't have your live portfolio composition here; follow rotation rule:
+    # Output B (exact bullet format)
     sell_plan = "Sell weakest non-ETH, non-DOT on support break if cash needed."
 
     lines = [
@@ -325,6 +323,7 @@ def main():
         f"• Exact USD buy amount so total equity ≥ $36,500: ${buy_usd:,.2f}"
     ]
     print("\n".join(lines))
+
 
 if __name__ == "__main__":
     main()
