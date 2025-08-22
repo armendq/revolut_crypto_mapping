@@ -1,5 +1,5 @@
 # scripts/analyses.py
-# (c) you — safe, verbose, and dependency-light
+# safe, verbose scan with debug logging
 
 import json
 import os
@@ -10,8 +10,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 import urllib.request
 
-# ------------------------ CONSTANTS / PATHS ------------------------
-
+# ---------- PATHS / CONSTANTS ----------
 ARTIFACTS = Path("artifacts")
 DATA_DIR = Path("data")
 ARTIFACTS.mkdir(exist_ok=True, parents=True)
@@ -23,8 +22,7 @@ SIGNALS_PATH = DATA_DIR / "signals.json"
 EQUITY = float(os.getenv("EQUITY", "41000"))
 CASH = float(os.getenv("CASH", "32000"))
 
-# ------------------------ UTILS ------------------------
-
+# ---------- UTILS ----------
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -44,14 +42,12 @@ def _get_json_list(url: str, timeout: int = 20) -> Optional[list]:
     except Exception:
         return None
 
-# ------------------------ MARKET DATA ------------------------
-
+# ---------- MARKET DATA ----------
 def binance_24h_and_book(symbol_usdt: str) -> Dict:
     """
     Return:
       {'ok': bool, 'price': float, 'volume_usd': float, 'bid': float, 'ask': float}
     """
-    # 24h
     t = _get_json(f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol_usdt}")
     if not t:
         return {"ok": False, "reason": "no-24h"}
@@ -63,8 +59,8 @@ def binance_24h_and_book(symbol_usdt: str) -> Dict:
     except Exception:
         return {"ok": False, "reason": "bad-24h"}
 
-    # orderbook (shallow)
-    ob = _get_json(f"https://api.binance.com/api/v3/depth?symbol={symbol_usdt}&limit=5}")
+    # FIXED: removed stray '}' at the end of the URL
+    ob = _get_json(f"https://api.binance.com/api/v3/depth?symbol={symbol_usdt}&limit=5")
     if not ob or not ob.get("bids") or not ob.get("asks"):
         return {"ok": False, "reason": "no-book"}
 
@@ -128,8 +124,7 @@ def vwap(df: pd.DataFrame) -> float:
     vol = df["volume"].sum()
     return float((pv.sum() / vol)) if vol > 0 else 0.0
 
-# ------------------------ SIGNAL LOGIC ------------------------
-
+# ---------- SIGNAL LOGIC ----------
 def spread_pct(bid: float, ask: float) -> float:
     mid = (bid + ask) / 2.0
     return 0.0 if mid <= 0 else (ask - bid) / mid
@@ -144,7 +139,6 @@ def aggressive_breakout(bars_1m: List[Dict]) -> Optional[Dict]:
         return None
     if not (0.018 <= pct <= 0.04):
         return None
-    # RVOL vs median of prior 15 bars
     prior = bars_1m[-16:-1]
     med = sorted([b["v"] for b in prior])[len(prior)//2] if prior else 0.0
     rvol = (last["v"] / med) if med > 0 else 0.0
@@ -177,8 +171,7 @@ def best_binance_symbol(entry: Dict) -> Optional[str]:
     t = (entry.get("ticker") or "").upper()
     return f"{t}USDT" if t else None
 
-# ------------------------ DEBUG COLLECTOR ------------------------
-
+# ---------- DEBUG COLLECTOR ----------
 DEBUG_LOG: List[Dict] = []
 
 def _log(ticker: str, stage: str, reason: str, extra: Optional[Dict] = None):
@@ -187,10 +180,9 @@ def _log(ticker: str, stage: str, reason: str, extra: Optional[Dict] = None):
         item.update(extra)
     DEBUG_LOG.append(item)
 
-# ------------------------ MAIN ------------------------
-
+# ---------- MAIN ----------
 def main():
-    # ----- regime -----
+    # regime
     btc = get_btc_5m_klines()
     if btc.empty:
         regime = {"ok": False, "reason": "no-btc-5m"}
@@ -198,12 +190,10 @@ def main():
         last = float(btc["close"].iloc[-1])
         v = float(vwap(btc))
         e9 = float(ema(btc["close"], span=9).iloc[-1])
-        # strict: both above
         ok = (last > v) and (last > e9)
         regime = {"ok": bool(ok), "reason": "btc-below-vwap-or-ema" if not ok else "ok",
                   "last": last, "vwap": v, "ema9": e9}
 
-    # base snapshot
     snapshot = {
         "time": _now_iso(),
         "equity": EQUITY,
@@ -215,7 +205,7 @@ def main():
         "candidates": []
     }
 
-    # quick floor guard (kept from your prior logic)
+    # floor guard
     if EQUITY <= 37500.0:
         snapshot["breach"] = True
         snapshot["breach_reason"] = "equity<=37500"
@@ -225,12 +215,11 @@ def main():
         print("Raise cash now.")
         return
 
-    # ----- universe -----
+    # universe
     mapping = load_revolut_mapping()
     universe: List[Dict] = []
     for m in mapping:
         if isinstance(m, str):
-            # safety if mapping somehow contains strings
             continue
         tkr = (m.get("ticker") or "").upper()
         if not tkr or tkr in ("ETH", "DOT"):
@@ -245,7 +234,7 @@ def main():
 
         md = binance_24h_and_book(sym)
         if not md.get("ok"):
-            _log(tkr, "liquidity", md.get("reason","no-24h/book"))
+            _log(tkr, "liquidity", md.get("reason", "no-24h/book"))
             continue
 
         spr = spread_pct(md["bid"], md["ask"])
@@ -269,8 +258,6 @@ def main():
     snapshot["universe_count"] = len(universe)
 
     candidates: List[Dict] = []
-
-    # If regime is not strong, we still scan and log, but we won't size a trade.
     for u in universe:
         bars = binance_klines_1m(u["binance"], limit=120)
         if not bars:
@@ -287,7 +274,6 @@ def main():
             _log(u["ticker"], "signals", "no-micro-pullback")
             continue
 
-        # if all good → candidate
         candidates.append({
             "ticker": u["ticker"],
             "symbol": u["binance"],
@@ -301,16 +287,14 @@ def main():
 
     snapshot["candidates"] = candidates
 
-    # ----- outputs -----
+    # outputs
     SNAP_PATH.write_text(json.dumps(snapshot, indent=2))
     DEBUG_PATH.write_text(json.dumps(DEBUG_LOG, indent=2))
 
     if not candidates:
-        # No trade → type C
         SIGNALS_PATH.write_text(json.dumps({"type": "C", "text": "Hold and wait."}, indent=2))
         print("Hold and wait. (No qualified candidates.)")
     else:
-        # We only *signal* a buy if regime is strong; otherwise informative
         if not regime.get("ok", False):
             SIGNALS_PATH.write_text(json.dumps(
                 {"type": "C", "text": "Candidates found but regime weak. Hold."}, indent=2))
