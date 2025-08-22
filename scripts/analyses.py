@@ -1,5 +1,19 @@
 # scripts/analyses.py
+
+# --- put near your imports ---
 import os
+
+def _fenv(name: str, default: float) -> float:
+    v = os.getenv(name, "")
+    try:
+        return float(v) if v and str(v).strip() else float(default)
+    except Exception:
+        return float(default)
+
+# --- inside main() ---
+equity = _fenv("EQUITY", 41000.0)
+cash   = _fenv("CASH",   32000.0)
+
 import json
 import statistics
 import urllib.request
