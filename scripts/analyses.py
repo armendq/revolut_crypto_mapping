@@ -37,9 +37,9 @@ EQUITY_FLOOR = 36500.0
 
 # Binance mirrors (some regions block default host on GH runners)
 BINANCE_BASES = [
-    "https://api.binance.com",
-    "https://api4.binance.com",
-    "https://api-gcp.binance.com",
+    #"https://api.binance.com",
+    #"https://api4.binance.com",
+    #"https://api-gcp.binance.com",
     "https://data-api.binance.vision",
 ]
 COINBASE_BASE = "https://api.exchange.coinbase.com"
