@@ -35,9 +35,9 @@ EQUITY_FLOOR = 36500.0
 
 # ----- Binance mirror bases to mitigate regional blocking (HTTP 451) -----
 BINANCE_BASES = [
-    "https://api.binance.com",
-    "https://api4.binance.com",
-    "https://api-gcp.binance.com",
+    #"https://api.binance.com",
+    #"https://api4.binance.com",
+    #"https://api-gcp.binance.com",
     "https://data-api.binance.vision",
 ]
 blocked_451 = False  # set True if we only see 451s (or all Binance bases fail)
