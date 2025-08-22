@@ -1,0 +1,16 @@
+{
+  "time": "2025-08-22T14:58:43.896756+00:00",
+  "equity": 41000.0,
+  "cash": 32000.0,
+  "breach": false,
+  "breach_reason": "",
+  "regime": {
+    "ok": true,
+    "reason": "",
+    "last_close": 116045.41,
+    "vwap": 113604.02959372972,
+    "ema9": 115350.67203125317
+  },
+  "universe_count": 0,
+  "candidates": []
+}
