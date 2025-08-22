@@ -1,3 +1,4 @@
+from scripts.marketdata import get_btc_5m_klines, ema, vwap
 from pathlib import Path
 import json
 
