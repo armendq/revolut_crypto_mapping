@@ -1,14 +1,13 @@
 
 # scripts/analyses.py
 
-try:
-    # when run as package
-    from .marketdata import get_btc_5m_klines, ema, vwap
-except ImportError:
-    # fallback if relative fails
-    import os, sys
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from scripts.marketdata import get_btc_5m_klines, ema, vwap
+# --- path fix so we can import marketdata whether run as module or script ---
+import os, sys
+THIS_DIR = os.path.dirname(__file__)
+if THIS_DIR not in sys.path:
+    sys.path.insert(0, THIS_DIR)
+
+from marketdata import get_btc_5m_klines, ema, vwap
 
 ARTIFACTS = Path("artifacts")
 ARTIFACTS.mkdir(exist_ok=True, parents=True)
