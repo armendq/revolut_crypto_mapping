@@ -35,7 +35,7 @@ jobs:
           set -e
           python scripts/mapping.py
           echo "✅ Generated data/revolut_mapping.csv and data/revolut_mapping.json"
-          export PYTHONPATH="$GITHUB_WORKSPACE"
+          export PYTHONPATH="$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/scripts"
           python -m scripts.analyses
 
       # Shows the latest JSON snapshot directly in the Actions summary tab
