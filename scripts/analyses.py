@@ -7,7 +7,7 @@ THIS_DIR = os.path.dirname(__file__)
 if THIS_DIR not in sys.path:
     sys.path.insert(0, THIS_DIR)
 
-from marketdata import get_btc_5m_klines, ema, vwap
+from scripts.marketdata import get_btc_5m_klines, ema, vwap
 
 ARTIFACTS = Path("artifacts")
 ARTIFACTS.mkdir(exist_ok=True, parents=True)
