@@ -65,10 +65,18 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changed files" >> $GITHUB_STEP_SUMMARY
           git status --porcelain >> $GITHUB_STEP_SUMMARY || true
-
+     
+      - name: Upload market snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: market_snapshot
+          path: artifacts/market_snapshot.json
+          if-no-files-found: warn
+    
       - name: Commit changes
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name "github-action
+          s[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
