@@ -85,10 +85,21 @@ def atr_from_klines(bars: List[Dict], period: int = 14) -> float:
 
 # ---------- rule checks ----------
 
-def check_regime() -> Dict:
-    bars = get_btc_5m_klines(limit=120)
+def check_regime() -> dict:
+    bars = get_btc_5m_klines()
+
+    # explicit empty check (no truth-testing a DataFrame)
     if bars is None or bars.empty:
-    return {"ok": False, "reason": "no-binance-klines"} 'no-candles-all-sources'}
+        return {"ok": False, "reason": "no-binance-klines"}
+
+    close = bars["close"]
+    vwap_val = vwap(bars)
+    ema_val = ema(close, span=9).iloc[-1]
+
+    if close.iloc[-1] > vwap_val and close.iloc[-1] > ema_val:
+        return {"ok": True}
+    else:
+        return {"ok": False, "reason": "btc-below-vwap-ema"} 'no-candles-all-sources'}
     closes = [b['c'] for b in bars]
     ema9 = ema(closes, period=9)
     vw = vwap(bars)
