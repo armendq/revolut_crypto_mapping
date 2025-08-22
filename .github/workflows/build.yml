@@ -6,13 +6,12 @@ on:
     - cron: '*/30 * * * *'   # every 30 minutes
 
 permissions:
-  contents: write            # needed so the workflow can push commits
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Optional: define in repo Settings → Variables; analyses.py has fallbacks if unset
       EQUITY: ${{ vars.EQUITY }}
       CASH: ${{ vars.CASH }}
 
@@ -59,4 +58,3 @@ jobs:
             git commit -m "chore: update data & snapshot [skip ci]"
             git push
           fi
-```0
