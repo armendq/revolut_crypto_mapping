@@ -1,0 +1,74 @@
+# scripts/marketdata.py
+import json, urllib.request
+from datetime import datetime
+
+def _http_json(url, headers=None, timeout=12):
+    req = urllib.request.Request(url, headers=headers or {"User-Agent": "rev-scan/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode())
+
+def get_btc_5m_klines(limit=120):
+    """
+    Returns list of dicts: [{'ts': epoch_ms, 'o':..., 'h':..., 'l':..., 'c':..., 'v':...}, ...]
+    Tries Binance → Binance mirrors → Coinbase → Kraken → Bitstamp.
+    """
+    # 1) Binance + mirrors
+    bn_urls = [
+        f"https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
+        f"https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
+        f"https://api2.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
+        f"https://api3.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
+    ]
+    for u in bn_urls:
+        try:
+            arr = _http_json(u)
+            return [
+                {'ts': x[0], 'o': float(x[1]), 'h': float(x[2]), 'l': float(x[3]),
+                 'c': float(x[4]), 'v': float(x[5]), 'src': 'binance'}
+                for x in arr
+            ]
+        except Exception:
+            continue
+
+    # 2) Coinbase (BTC-USD, 5m = 300s); returns [time, low, high, open, close, volume]
+    try:
+        cb = _http_json("https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300")
+        cb = sorted(cb, key=lambda x: x[0])[-limit:]
+        return [{'ts': x[0]*1000, 'o': float(x[3]), 'h': float(x[2]), 'l': float(x[1]),
+                 'c': float(x[4]), 'v': float(x[5]), 'src': 'coinbase'} for x in cb]
+    except Exception:
+        pass
+
+    # 3) Kraken (XBTUSD)
+    try:
+        kr = _http_json("https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=5")
+        key = next(iter(kr['result'].keys() - {'last'}))
+        rows = kr['result'][key][-limit:]
+        return [{'ts': int(r[0])*1000, 'o': float(r[1]), 'h': float(r[2]), 'l': float(r[3]),
+                 'c': float(r[4]), 'v': float(r[6]), 'src': 'kraken'} for r in rows]
+    except Exception:
+        pass
+
+    # 4) Bitstamp (BTCUSD)
+    try:
+        bs = _http_json(f"https://www.bitstamp.net/api/v2/ohlc/btcusd/?step=300&limit={limit}")
+        rows = sorted(bs['data']['ohlc'], key=lambda r: int(r['timestamp']))[-limit:]
+        return [{'ts': int(r['timestamp'])*1000, 'o': float(r['open']), 'h': float(r['high']),
+                 'l': float(r['low']), 'c': float(r['close']), 'v': float(r['volume']),
+                 'src': 'bitstamp'} for r in rows]
+    except Exception:
+        pass
+
+    return []
+
+def ema(values, period=9):
+    k = 2/(period+1)
+    e = values[0]
+    for v in values[1:]:
+        e = v*k + e*(1-k)
+    return e
+
+def vwap(bars):
+    num = sum(b['c']*b['v'] for b in bars)
+    den = sum(b['v'] for b in bars) or 1.0
+    return num/den
