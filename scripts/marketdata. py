@@ -1,74 +1,204 @@
 # scripts/marketdata.py
-import json, urllib.request
-from datetime import datetime
+# Lightweight market data helpers for analyses.py
+#
+# Exposes:
+#   - get_btc_5m_klines(limit=200) -> pd.DataFrame[time, open, high, low, close, volume]
+#   - ema(series: pd.Series, span: int) -> pd.Series
+#   - vwap(df: pd.DataFrame, price_col='close', vol_col='volume', window=None) -> pd.Series
+#
+# APIs used (in order with graceful fallback):
+#   1) Binance    GET /api/v3/klines?symbol=BTCUSDT&interval=5m&limit=...
+#   2) Coinbase   GET /products/BTC-USD/candles?granularity=300
+#   3) Kraken     GET /0/public/OHLC?pair=XBTUSD&interval=5
+#   4) Bitstamp   GET /api/v2/ohlc/btcusd/?step=300&limit=...
 
-def _http_json(url, headers=None, timeout=12):
-    req = urllib.request.Request(url, headers=headers or {"User-Agent": "rev-scan/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode())
+from __future__ import annotations
 
-def get_btc_5m_klines(limit=120):
+import time
+import math
+import json
+from typing import Optional, List
+from datetime import datetime, timezone
+
+import pandas as pd
+import requests
+
+
+# ---------- utilities ----------
+
+def _session() -> requests.Session:
+    s = requests.Session()
+    s.headers.update(
+        {
+            "User-Agent": "rev-crypto-mapper/1.0 (+github actions)",
+            "Accept": "application/json",
+        }
+    )
+    s.timeout = 15
+    return s
+
+
+def _ensure_df(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    # Standardize dtypes & order
+    for c in ["open", "high", "low", "close", "volume"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df = df.dropna(subset=["time", "open", "high", "low", "close", "volume"])
+    df = df.sort_values("time").reset_index(drop=True)
+    return df
+
+
+def ema(series: pd.Series, span: int) -> pd.Series:
+    """Plain EMA identical to TradingView's default (no adjust)."""
+    return series.ewm(span=span, adjust=False).mean()
+
+
+def vwap(
+    df: pd.DataFrame,
+    price_col: str = "close",
+    vol_col: str = "volume",
+    window: Optional[int] = None,
+) -> pd.Series:
     """
-    Returns list of dicts: [{'ts': epoch_ms, 'o':..., 'h':..., 'l':..., 'c':..., 'v':...}, ...]
-    Tries Binance → Binance mirrors → Coinbase → Kraken → Bitstamp.
+    VWAP over the whole session (default) or a rolling window (in rows).
     """
-    # 1) Binance + mirrors
-    bn_urls = [
-        f"https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
-        f"https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
-        f"https://api2.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
-        f"https://api3.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit={limit}",
+    price = pd.to_numeric(df[price_col], errors="coerce")
+    vol = pd.to_numeric(df[vol_col], errors="coerce")
+    pv = price * vol
+    if window is None:
+        return pv.cumsum() / vol.cumsum()
+    # rolling, min_periods to avoid NaNs at start
+    roll_pv = pv.rolling(window=window, min_periods=1).sum()
+    roll_v = vol.rolling(window=window, min_periods=1).sum()
+    return roll_pv / roll_v
+
+
+# ---------- API adapters ----------
+
+def _binance_btc_5m(limit: int, s: requests.Session) -> Optional[pd.DataFrame]:
+    url = "https://api.binance.com/api/v3/klines"
+    params = {"symbol": "BTCUSDT", "interval": "5m", "limit": int(limit)}
+    r = s.get(url, params=params)
+    if r.status_code != 200:
+        return None
+    raw: List[List] = r.json()
+    if not raw:
+        return None
+    # Binance kline payload indices
+    cols = [
+        "open_time", "open", "high", "low", "close", "volume",
+        "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore",
     ]
-    for u in bn_urls:
-        try:
-            arr = _http_json(u)
-            return [
-                {'ts': x[0], 'o': float(x[1]), 'h': float(x[2]), 'l': float(x[3]),
-                 'c': float(x[4]), 'v': float(x[5]), 'src': 'binance'}
-                for x in arr
-            ]
-        except Exception:
-            continue
+    df = pd.DataFrame(raw, columns=cols)
+    df["time"] = pd.to_datetime(df["close_time"], unit="ms", utc=True)
+    out = df[["time", "open", "high", "low", "close", "volume"]]
+    return _ensure_df(out)
 
-    # 2) Coinbase (BTC-USD, 5m = 300s); returns [time, low, high, open, close, volume]
+
+def _coinbase_btc_5m(limit: int, s: requests.Session) -> Optional[pd.DataFrame]:
+    # Coinbase returns in reverse chronological order
+    url = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+    params = {"granularity": 300}  # 5 minutes
+    r = s.get(url, params=params)
+    if r.status_code != 200:
+        return None
+    raw = r.json()
+    if not isinstance(raw, list) or not raw:
+        return None
+    # Each row: [ time, low, high, open, close, volume ]
+    df = pd.DataFrame(raw, columns=["ts", "low", "high", "open", "close", "volume"])
+    df["time"] = pd.to_datetime(df["ts"], unit="s", utc=True)
+    out = df[["time", "open", "high", "low", "close", "volume"]].sort_values("time")
+    # respect limit from the tail
+    if len(out) > limit:
+        out = out.iloc[-limit:]
+    return _ensure_df(out)
+
+
+def _kraken_btc_5m(limit: int, s: requests.Session) -> Optional[pd.DataFrame]:
+    url = "https://api.kraken.com/0/public/OHLC"
+    params = {"pair": "XBTUSD", "interval": 5}
+    r = s.get(url, params=params)
+    if r.status_code != 200:
+        return None
+    j = r.json()
+    if "result" not in j:
+        return None
+    # Kraken nests by pair key (XBTUSD or XXBTZUSD depending on venue)
+    result = next(iter(j["result"].values()))
+    if not isinstance(result, list) or not result:
+        return None
+    # Row: [time, open, high, low, close, vwap, volume, count]
+    df = pd.DataFrame(result, columns=["ts", "open", "high", "low", "close", "vwap", "volume", "count"])
+    df["time"] = pd.to_datetime(df["ts"], unit="s", utc=True)
+    out = df[["time", "open", "high", "low", "close", "volume"]]
+    if len(out) > limit:
+        out = out.iloc[-limit:]
+    return _ensure_df(out)
+
+
+def _bitstamp_btc_5m(limit: int, s: requests.Session) -> Optional[pd.DataFrame]:
+    url = "https://www.bitstamp.net/api/v2/ohlc/btcusd/"
+    params = {"step": 300, "limit": max(100, int(limit))}
+    r = s.get(url, params=params)
+    if r.status_code != 200:
+        return None
+    j = r.json()
+    data = j.get("data", {}).get("ohlc", [])
+    if not data:
+        return None
+    df = pd.DataFrame(data)
+    # Bitstamp strings
+    for c in ["open", "high", "low", "close", "volume"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df["time"] = pd.to_datetime(pd.to_numeric(df["timestamp"], errors="coerce"), unit="s", utc=True)
+    out = df[["time", "open", "high", "low", "close", "volume"]].sort_values("time")
+    if len(out) > limit:
+        out = out.iloc[-limit:]
+    return _ensure_df(out)
+
+
+# ---------- public facade ----------
+
+def get_btc_5m_klines(limit: int = 200) -> pd.DataFrame:
+    """
+    Return a 5-minute BTC/USD (or USDT) OHLCV DataFrame with columns:
+    time (UTC), open, high, low, close, volume
+    Uses robust exchange fallbacks.
+    """
+    s = _session()
+
+    # Try Binance
     try:
-        cb = _http_json("https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=300")
-        cb = sorted(cb, key=lambda x: x[0])[-limit:]
-        return [{'ts': x[0]*1000, 'o': float(x[3]), 'h': float(x[2]), 'l': float(x[1]),
-                 'c': float(x[4]), 'v': float(x[5]), 'src': 'coinbase'} for x in cb]
+        df = _binance_btc_5m(limit, s)
+        if df is not None and not df.empty:
+            return df
     except Exception:
         pass
 
-    # 3) Kraken (XBTUSD)
+    # Try Coinbase
     try:
-        kr = _http_json("https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=5")
-        key = next(iter(kr['result'].keys() - {'last'}))
-        rows = kr['result'][key][-limit:]
-        return [{'ts': int(r[0])*1000, 'o': float(r[1]), 'h': float(r[2]), 'l': float(r[3]),
-                 'c': float(r[4]), 'v': float(r[6]), 'src': 'kraken'} for r in rows]
+        df = _coinbase_btc_5m(limit, s)
+        if df is not None and not df.empty:
+            return df
     except Exception:
         pass
 
-    # 4) Bitstamp (BTCUSD)
+    # Try Kraken
     try:
-        bs = _http_json(f"https://www.bitstamp.net/api/v2/ohlc/btcusd/?step=300&limit={limit}")
-        rows = sorted(bs['data']['ohlc'], key=lambda r: int(r['timestamp']))[-limit:]
-        return [{'ts': int(r['timestamp'])*1000, 'o': float(r['open']), 'h': float(r['high']),
-                 'l': float(r['low']), 'c': float(r['close']), 'v': float(r['volume']),
-                 'src': 'bitstamp'} for r in rows]
+        df = _kraken_btc_5m(limit, s)
+        if df is not None and not df.empty:
+            return df
     except Exception:
         pass
 
-    return []
+    # Try Bitstamp
+    try:
+        df = _bitstamp_btc_5m(limit, s)
+        if df is not None and not df.empty:
+            return df
+    except Exception:
+        pass
 
-def ema(values, period=9):
-    k = 2/(period+1)
-    e = values[0]
-    for v in values[1:]:
-        e = v*k + e*(1-k)
-    return e
-
-def vwap(bars):
-    num = sum(b['c']*b['v'] for b in bars)
-    den = sum(b['v'] for b in bars) or 1.0
-    return num/den
+    # If everything failed, return an empty, well-formed frame
+    return pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
