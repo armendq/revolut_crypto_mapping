@@ -88,18 +88,56 @@ def spread_pct(bid: float, ask: float) -> float:
     return 0.0 if mid == 0 else (ask - bid) / mid
 
 # ---------------- Rules ----------------
-def check_regime() -> Dict[str, Any]:
+def check_regime() -> dict:
     bars = get_btc_5m_klines()
-    if bars is None or (isinstance(bars, pd.DataFrame) and bars.empty):
+
+    # explicit empty check + normalize to DataFrame
+    if bars is None:
+        return {"ok": False, "reason": "no-binance-klines"}
+    if not isinstance(bars, pd.DataFrame):
+        try:
+            bars = pd.DataFrame(bars)
+        except Exception:
+            return {"ok": False, "reason": "no-binance-klines"}
+
+    if bars.empty:
         return {"ok": False, "reason": "no-binance-klines"}
 
-    close = bars["close"].astype(float)
-    vwap_val = float(vwap(bars))
-    ema_val = float(ema(close, span=9).iloc[-1])
-    last = float(close.iloc[-1])
+    # normalize column names if they come as crypto-style (o,h,l,c,v)
+    if "close" not in bars.columns and "c" in bars.columns:
+        bars = bars.rename(columns={"o": "open", "h": "high", "l": "low", "c": "close", "v": "volume"})
 
-    return {"ok": last > vwap_val and last > ema_val,
-            "last": last, "vwap": vwap_val, "ema9": ema_val}
+    close = bars["close"].astype(float)
+
+    # ---- VWAP: accept many shapes, always reduce to a single float (last) ----
+    vw = vwap(bars)
+    if isinstance(vw, pd.Series):
+        vwap_val = float(vw.iloc[-1])
+    elif isinstance(vw, (list, tuple)) and len(vw) > 0:
+        vwap_val = float(vw[-1])
+    elif isinstance(vw, (int, float)):
+        vwap_val = float(vw)
+    elif "vwap" in bars.columns:
+        vwap_val = float(bars["vwap"].astype(float).iloc[-1])
+    else:
+        # fallback: compute rolling cumulative VWAP and take last
+        vol = bars["volume"].astype(float) if "volume" in bars.columns else pd.Series([1.0]*len(bars))
+        vwap_series = (close * vol).cumsum() / vol.cumsum().replace(0, pd.NA)
+        vwap_val = float(vwap_series.iloc[-1])
+
+    # 9-EMA (last value as float)
+    ema9 = float(ema(close, span=9).iloc[-1])
+
+    last_close = float(close.iloc[-1])
+    ok = (last_close > vwap_val) and (last_close > ema9)
+
+    return {
+        "ok": ok,
+        "reason": "" if ok else "btc-below-vwap-ema",
+        "last_close": last_close,
+        "vwap": vwap_val,
+        "ema9": ema9,
+    }
 
 def aggressive_breakout(bars_1m: List[Dict[str, float]]) -> Optional[Dict[str, float]]:
     if len(bars_1m) < 20:
