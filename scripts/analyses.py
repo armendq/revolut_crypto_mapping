@@ -1,11 +1,16 @@
 
 # scripts/analyses.py
-import os, json, math, statistics, time
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Dict, List, Optional
+# scripts/analyses.py
 
-from .marketdata import get_btc_5m_klines, ema, vwap
+# Robust import that works both locally and in GitHub Actions
+try:
+    # when run as a module: python -m scripts.analyses
+    from .marketdata import get_btc_5m_klines, ema, vwap
+except Exception:
+    # fallback for direct execution: python scripts/analyses.py
+    import os, sys
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    from scripts.marketdata import get_btc_5m_klines, ema, vwap
 
 ARTIFACTS = Path("artifacts")
 ARTIFACTS.mkdir(exist_ok=True, parents=True)
