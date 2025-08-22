@@ -1,15 +1,12 @@
 {
-  "time": "2025-08-22T20:22:24.317920+00:00",
+  "time": "2025-08-22T20:23:06.170342+00:00",
   "equity": 41000.0,
   "cash": 32000.0,
   "breach": false,
   "breach_reason": "",
   "regime": {
-    "ok": true,
-    "reason": "ok",
-    "last": 116911.49,
-    "vwap": 114804.27996323988,
-    "ema9": 116807.38310330611
+    "ok": false,
+    "reason": "no-btc-5m"
   },
   "universe_count": 0,
   "candidates": []
