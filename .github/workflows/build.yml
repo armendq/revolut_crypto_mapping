@@ -3,62 +3,60 @@ name: Run mapping & analyses
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes
+    - cron: "*/30 * * * *"  # every 30 minutes
+
+permissions:
+  contents: write  # allow the workflow to push commits
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      EQUITY: ${{ vars.EQUITY || '41000' }}
+      CASH: ${{ vars.CASH || '32000' }}
 
     steps:
-      # Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
-          pip install pandas requests python-dateutil ta
+          pip install -r requirements.txt
 
-      # Generate mapping and run analyses
       - name: Generate mapping & run analyses
         run: |
           set -e
           python scripts/mapping.py
-          echo "✅ Generated mapping"
           export PYTHONPATH="$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/scripts"
           python -m scripts.analyses
 
-      # Upload artifacts
-      - name: Upload market snapshot
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: market-snapshot
-          path: artifacts/
+          name: market-output
+          path: |
+            artifacts/**
+            data/market_snapshot.json
+            data/signals.json
 
-      # Commit back results (data + artifacts)
       - name: Commit changes
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add -A data artifacts
-
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore: update data & snapshot [skip ci]"
             git push
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```0
