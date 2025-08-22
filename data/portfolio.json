@@ -1,1 +1,14 @@
-
+{
+  "equity_usd": 37581.95,
+  "cash_usd": 0,
+  "floor_usd": 36500,
+  "floor_buffer_usd": 1000,
+  "halt_new_entries_equity_usd": 37500,
+  "exclude_from_rotation": ["ETH","DOT"],
+  "holdings": [
+    {"ticker":"ARB","quantity":31950},
+    {"ticker":"ETH","quantity":2.24},
+    {"ticker":"IMX","quantity":13949},
+    {"ticker":"DOT","quantity":1249.76}
+  ]
+}
