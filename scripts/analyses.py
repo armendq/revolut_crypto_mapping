@@ -1,13 +1,11 @@
 
 # scripts/analyses.py
-# scripts/analyses.py
 
-# Robust import that works both locally and in GitHub Actions
 try:
-    # when run as a module: python -m scripts.analyses
+    # when run as package
     from .marketdata import get_btc_5m_klines, ema, vwap
-except Exception:
-    # fallback for direct execution: python scripts/analyses.py
+except ImportError:
+    # fallback if relative fails
     import os, sys
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     from scripts.marketdata import get_btc_5m_klines, ema, vwap
