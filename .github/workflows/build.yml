@@ -11,9 +11,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      EQUITY: ${{ vars.EQUITY || '41000' }}
-      CASH: ${{ vars.CASH || '32000' }}
 
     steps:
       - name: Checkout
@@ -49,37 +46,15 @@ jobs:
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
 
-          cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json || true
-          cp data/signals.json              public_runs/latest/signals.json || true
-          cp artifacts/run_stats.json       public_runs/latest/run_stats.json || true
-          cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json || true
+          [ -f artifacts/market_snapshot.json ] && cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json || true
+          [ -f data/signals.json ]              && cp data/signals.json              public_runs/latest/signals.json || true
+          [ -f artifacts/run_stats.json ]       && cp artifacts/run_stats.json       public_runs/latest/run_stats.json || true
+          [ -f artifacts/debug_scan.json ]      && cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json || true
 
-          cp -r public_runs/latest/* "public_runs/$ts/"
+          cp -r public_runs/latest/* "public_runs/$ts/" || true
 
       - name: Build summary.json
-        run: |
-          python - <<'PY'
-import json, os, time
-def load(p):
-    try:
-        with open(p) as f: return json.load(f)
-    except Exception:
-        return {}
-snap  = load("artifacts/market_snapshot.json")
-sigs  = load("data/signals.json")
-stats = load("artifacts/run_stats.json")
-out = {
-  "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
-  "regime": snap.get("regime"),
-  "equity": snap.get("equity"),
-  "cash": snap.get("cash"),
-  "candidates": snap.get("candidates", []),
-  "signals": sigs,
-  "run_stats": stats,
-}
-os.makedirs("public_runs/latest", exist_ok=True)
-with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
-PY
+        run: python scripts/build_summary.py
 
       - name: Commit changes to main
         env:
@@ -93,12 +68,10 @@ PY
           else
             git commit -m "ci: update analyses outputs [skip ci]"
             git push
+          fi
 
       - name: Print raw URLs
         run: |
-          echo "RAW URLs available:"
           echo "summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
           echo "signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json"
-          echo "snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json"
-          echo "run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json"
-          echo "debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json"
+          echo "snapshot:     https://raw.githubusercontent.com/armend
