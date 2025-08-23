@@ -46,10 +46,10 @@ jobs:
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
 
-          [ -f artifacts/market_snapshot.json ] && cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json || true
-          [ -f data/signals.json ]              && cp data/signals.json              public_runs/latest/signals.json || true
-          [ -f artifacts/run_stats.json ]       && cp artifacts/run_stats.json       public_runs/latest/run_stats.json || true
-          [ -f artifacts/debug_scan.json ]      && cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json || true
+          if [ -f artifacts/market_snapshot.json ]; then cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json; fi
+          if [ -f data/signals.json ]; then cp data/signals.json public_runs/latest/signals.json; fi
+          if [ -f artifacts/run_stats.json ]; then cp artifacts/run_stats.json public_runs/latest/run_stats.json; fi
+          if [ -f artifacts/debug_scan.json ]; then cp artifacts/debug_scan.json public_runs/latest/debug_scan.json; fi
 
           cp -r public_runs/latest/* "public_runs/$ts/" || true
 
@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A data artifacts public_runs
           if git diff --cached --quiet; then
@@ -68,11 +68,12 @@ jobs:
           else
             git commit -m "ci: update analyses outputs [skip ci]"
             git push
+          fi
 
       - name: Print raw URLs
         run: |
-          echo "summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
-          echo "signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json"
-          echo "snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json"
-          echo "run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json"
-          echo "debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json"
+          echo summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json
+          echo signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json
+          echo snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json
+          echo run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json
+          echo debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json
