@@ -68,14 +68,11 @@ jobs:
           else
             git commit -m "ci: update analyses outputs [skip ci]"
             git push
-          fi
 
       - name: Print raw URLs
         run: |
-          cat <<'EOF'
-summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json
-signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json
-snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json
-run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json
-debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json
-EOF
+          echo "summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
+          echo "signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json"
+          echo "snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json"
+          echo "run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json"
+          echo "debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json"
