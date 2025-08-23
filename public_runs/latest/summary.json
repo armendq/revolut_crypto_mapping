@@ -1,0 +1,21 @@
+{
+  "generated_at_utc": "2025-08-23T21-16-12Z",
+  "regime": {
+    "ok": true,
+    "reason": "",
+    "last": 115219.17,
+    "vwap": 115191.58200790617,
+    "ema9": 115200.36798059018
+  },
+  "equity": 41000.0,
+  "cash": 32000.0,
+  "candidates": [],
+  "signals": {
+    "type": "C",
+    "text": "Hold and wait."
+  },
+  "run_stats": {
+    "elapsed_ms": 257476,
+    "time": "2025-08-23T21:16:12.665935+00:00"
+  }
+}
