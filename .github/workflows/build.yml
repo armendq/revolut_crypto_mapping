@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EQUITY: ${{ vars.EQUITY || '41000' }}
-      CASH:   ${{ vars.CASH   || '32000' }}
+      CASH: ${{ vars.CASH || '32000' }}
 
     steps:
       - name: Checkout
@@ -34,7 +34,6 @@ jobs:
 
       - name: Generate mapping (safe)
         run: |
-          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
@@ -42,13 +41,10 @@ jobs:
           fi
 
       - name: Run analyses
-        run: |
-          set -e
-          python -m scripts.analyses
+        run: python -m scripts.analyses
 
       - name: Publish artifacts into public_runs
         run: |
-          set -e
           mkdir -p public_runs/latest
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
@@ -89,7 +85,6 @@ PY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A data artifacts public_runs
@@ -98,11 +93,10 @@ PY
           else
             git commit -m "ci: update analyses outputs [skip ci]"
             git push
-          fi
 
       - name: Print raw URLs
         run: |
-          echo "RAW URLs on main:"
+          echo "RAW URLs available:"
           echo "summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
           echo "signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json"
           echo "snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json"
