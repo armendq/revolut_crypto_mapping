@@ -12,7 +12,7 @@ sigs  = load_json("data/signals.json")
 stats = load_json("artifacts/run_stats.json")
 
 out = {
-    "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
+    "generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     "regime": snap.get("regime"),
     "equity": snap.get("equity"),
     "cash": snap.get("cash"),
