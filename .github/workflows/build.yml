@@ -63,35 +63,33 @@ jobs:
 
       - name: Build summary.json
         run: |
-          set -e
-          python - << 'PY'
-import json, os, time
-def load(p):
-    try:
-        with open(p) as f: return json.load(f)
-    except Exception:
-        return {}
-snap  = load("artifacts/market_snapshot.json")
-sigs  = load("data/signals.json")
-stats = load("artifacts/run_stats.json")
-out = {
-  "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
-  "regime": snap.get("regime"),
-  "equity": snap.get("equity"),
-  "cash": snap.get("cash"),
-  "candidates": snap.get("candidates", []),
-  "signals": sigs,
-  "run_stats": stats,
-}
-os.makedirs("public_runs/latest", exist_ok=True)
-with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
-PY
+          python - <<'PY'
+          import json, os, time
+          def load(p):
+              try:
+                  with open(p) as f: return json.load(f)
+              except Exception:
+                  return {}
+          snap  = load("artifacts/market_snapshot.json")
+          sigs  = load("data/signals.json")
+          stats = load("artifacts/run_stats.json")
+          out = {
+            "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
+            "regime": snap.get("regime"),
+            "equity": snap.get("equity"),
+            "cash": snap.get("cash"),
+            "candidates": snap.get("candidates", []),
+            "signals": sigs,
+            "run_stats": stats,
+          }
+          os.makedirs("public_runs/latest", exist_ok=True)
+          with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
+          PY
 
       - name: Commit changes to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
