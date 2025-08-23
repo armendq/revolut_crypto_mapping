@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EQUITY: ${{ vars.EQUITY || '41000' }}
-      CASH: ${{ vars.CASH || '32000' }}
+      CASH:   ${{ vars.CASH   || '32000' }}
 
     steps:
       - name: Checkout
@@ -40,7 +40,6 @@ jobs:
           else
             echo "No mapping.py found; skipping mapping generation."
           fi
-          echo "✅ Mapping ensured or skipped."
 
       - name: Run analyses
         run: |
@@ -64,37 +63,36 @@ jobs:
       - name: Build summary.json
         run: |
           python - <<'PY'
-          import json, os, time
-          def load(p):
-              try:
-                  with open(p) as f: return json.load(f)
-              except Exception:
-                  return {}
-          snap  = load("artifacts/market_snapshot.json")
-          sigs  = load("data/signals.json")
-          stats = load("artifacts/run_stats.json")
-          out = {
-            "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
-            "regime": snap.get("regime"),
-            "equity": snap.get("equity"),
-            "cash": snap.get("cash"),
-            "candidates": snap.get("candidates", []),
-            "signals": sigs,
-            "run_stats": stats,
-          }
-          os.makedirs("public_runs/latest", exist_ok=True)
-          with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
-          PY
+import json, os, time
+def load(p):
+    try:
+        with open(p) as f: return json.load(f)
+    except Exception:
+        return {}
+snap  = load("artifacts/market_snapshot.json")
+sigs  = load("data/signals.json")
+stats = load("artifacts/run_stats.json")
+out = {
+  "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
+  "regime": snap.get("regime"),
+  "equity": snap.get("equity"),
+  "cash": snap.get("cash"),
+  "candidates": snap.get("candidates", []),
+  "signals": sigs,
+  "run_stats": stats,
+}
+os.makedirs("public_runs/latest", exist_ok=True)
+with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
+PY
 
       - name: Commit changes to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add -A data artifacts public_runs
-
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -102,22 +100,11 @@ jobs:
             git push
           fi
 
-      - name: Publish to gh-pages
+      - name: Print raw URLs
         run: |
-          set -e
-          rm -rf /tmp/ghp && mkdir -p /tmp/ghp
-          cp -r public_runs /tmp/ghp/
-          git fetch origin gh-pages || true
-          git switch -C gh-pages
-          rm -rf *
-          cp -r /tmp/ghp/public_runs/* .
-          touch .nojekyll
-          git add .
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --cached --quiet; then
-            echo "No changes to publish."
-          else
-            git commit -m "publish runs $(date -u +'%F %T')"
-            git push -u origin gh-pages
-          fi
+          echo "RAW URLs on main:"
+          echo "summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
+          echo "signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json"
+          echo "snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json"
+          echo "run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json"
+          echo "debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json"
