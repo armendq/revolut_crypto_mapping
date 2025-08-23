@@ -56,19 +56,37 @@ jobs:
       - name: Build summary.json
         run: python scripts/build_summary.py
 
-      - name: Commit changes to main
+      - name: Commit changes to main (rebase-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data artifacts public_runs
+
+          # Rebase onto latest remote main to avoid non-fast-forward errors
+          git fetch origin main
+          git -c rebase.autoStash=true pull --rebase origin main || true
+
+          git add -A data artifacts public_runs || true
+
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "ci: update analyses outputs [skip ci]"
-            git push
+            git commit -m "ci: update analyses outputs [skip ci]" || true
           fi
+
+          # Retry push up to 3 times
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              break
+            fi
+            echo "Push failed, retrying ($i)..."
+            git fetch origin main
+            git -c rebase.autoStash=true pull --rebase origin main || true
+            sleep $((i*2))
+          done
 
       - name: Print raw URLs
         run: |
