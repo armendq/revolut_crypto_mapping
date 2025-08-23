@@ -2,7 +2,7 @@ name: Run mapping & analyses
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch: {}
 
 permissions:
@@ -11,12 +11,16 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      EQUITY: ${{ vars.EQUITY || '41000' }}
+      CASH: ${{ vars.CASH || '32000' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,12 +40,9 @@ jobs:
           else
             echo "No mapping.py found; skipping mapping generation."
           fi
-          echo "✅ Ensured mapping files exist (or skipped)."
+          echo "✅ Mapping ensured or skipped."
 
       - name: Run analyses
-        env:
-          EQUITY: ${{ vars.EQUITY || '41000' }}
-          CASH:   ${{ vars.CASH   || '32000' }}
         run: |
           set -e
           python -m scripts.analyses
@@ -68,7 +69,8 @@ import json, os, time
 def load(p):
     try:
         with open(p) as f: return json.load(f)
-    except: return {}
+    except Exception:
+        return {}
 snap  = load("artifacts/market_snapshot.json")
 sigs  = load("data/signals.json")
 stats = load("artifacts/run_stats.json")
@@ -85,7 +87,7 @@ os.makedirs("public_runs/latest", exist_ok=True)
 with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
 PY
 
-      - name: Commit changes
+      - name: Commit changes to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -93,13 +95,7 @@ PY
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          echo "=== Status before staging ==="
-          git status --porcelain
-
           git add -A data artifacts public_runs
-
-          echo "=== Status after staging ==="
-          git status --porcelain
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -111,7 +107,6 @@ PY
       - name: Publish to gh-pages
         run: |
           set -e
-          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           rm -rf /tmp/ghp && mkdir -p /tmp/ghp
           cp -r public_runs /tmp/ghp/
           git fetch origin gh-pages || true
