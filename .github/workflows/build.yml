@@ -60,6 +60,31 @@ jobs:
 
           cp -r public_runs/latest/* "public_runs/$ts/"
 
+      - name: Build summary.json
+        run: |
+          set -e
+          python - << 'PY'
+import json, os, time
+def load(p):
+    try:
+        with open(p) as f: return json.load(f)
+    except: return {}
+snap  = load("artifacts/market_snapshot.json")
+sigs  = load("data/signals.json")
+stats = load("artifacts/run_stats.json")
+out = {
+  "generated_at_utc": time.strftime("%Y-%m-%dT%H-%M-%SZ", time.gmtime()),
+  "regime": snap.get("regime"),
+  "equity": snap.get("equity"),
+  "cash": snap.get("cash"),
+  "candidates": snap.get("candidates", []),
+  "signals": sigs,
+  "run_stats": stats,
+}
+os.makedirs("public_runs/latest", exist_ok=True)
+with open("public_runs/latest/summary.json","w") as f: json.dump(out,f,indent=2)
+PY
+
       - name: Commit changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,4 +106,25 @@ jobs:
           else
             git commit -m "ci: update analyses outputs [skip ci]"
             git push
+          fi
+
+      - name: Publish to gh-pages
+        run: |
+          set -e
+          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          rm -rf /tmp/ghp && mkdir -p /tmp/ghp
+          cp -r public_runs /tmp/ghp/
+          git fetch origin gh-pages || true
+          git switch -C gh-pages
+          rm -rf *
+          cp -r /tmp/ghp/public_runs/* .
+          touch .nojekyll
+          git add .
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "publish runs $(date -u +'%F %T')"
+            git push -u origin gh-pages
           fi
