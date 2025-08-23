@@ -28,7 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
-      # If you have scripts/mapping.py keep this step; otherwise it will just fail safe.
       - name: Generate mapping (safe)
         run: |
           set -e
@@ -47,6 +46,20 @@ jobs:
           set -e
           python -m scripts.analyses
 
+      - name: Publish artifacts into public_runs
+        run: |
+          set -e
+          mkdir -p public_runs/latest
+          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          mkdir -p "public_runs/$ts"
+
+          cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json || true
+          cp data/signals.json              public_runs/latest/signals.json || true
+          cp artifacts/run_stats.json       public_runs/latest/run_stats.json || true
+          cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json || true
+
+          cp -r public_runs/latest/* "public_runs/$ts/"
+
       - name: Commit changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,7 +71,7 @@ jobs:
           echo "=== Status before staging ==="
           git status --porcelain
 
-          git add -A data artifacts
+          git add -A data artifacts public_runs
 
           echo "=== Status after staging ==="
           git status --porcelain
@@ -66,6 +79,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update data & snapshot [skip ci]"
+            git commit -m "ci: update analyses outputs [skip ci]"
             git push
           fi
