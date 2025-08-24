@@ -59,22 +59,8 @@ jobs:
           ls -l artifacts || true
           ls -l data || true
 
-      - name: Prepare public_runs/latest
-        run: |
-          mkdir -p public_runs/latest
-          cp artifacts/market_snapshot.json public_runs/latest/summary.json
-
-          python scripts/prepare_signals.py
-
-          cp artifacts/run_stats.json  public_runs/latest/run_stats.json
-          cp artifacts/debug_scan.json public_runs/latest/debug_scan.json
-
-          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
-          mkdir -p "public_runs/$ts"
-          cp public_runs/latest/* "public_runs/$ts/"
-
-          # Keep only newest timestamped folder
-          ls -1dt public_runs/20* 2>/dev/null | tail -n +2 | xargs -r rm -rf
+      - name: Publish public runs
+        run: python scripts/publish_latest.py
 
       - name: Commit changes to main
         run: |
