@@ -56,6 +56,14 @@ jobs:
       - name: Build summary.json
         run: python scripts/build_summary.py
 
+      - name: Verify summary.json
+        run: |
+          set -e
+          test -f public_runs/latest/summary.json
+          sz=$(wc -c < public_runs/latest/summary.json || echo 0)
+          echo "summary.json size: $sz bytes"
+          [ "$sz" -ge 50 ]
+
       - name: Commit changes to main (rebase-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,35 +71,20 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Rebase onto latest remote main to avoid non-fast-forward errors
           git fetch origin main
           git -c rebase.autoStash=true pull --rebase origin main || true
-
           git add -A data artifacts public_runs || true
-
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "ci: update analyses outputs [skip ci]" || true
+            git push origin HEAD:main
           fi
 
-          # Retry push up to 3 times
-          for i in 1 2 3; do
-            if git push origin HEAD:main; then
-              echo "Pushed on attempt $i"
-              break
-            fi
-            echo "Push failed, retrying ($i)..."
-            git fetch origin main
-            git -c rebase.autoStash=true pull --rebase origin main || true
-            sleep $((i*2))
-          done
-
-      - name: Print raw URLs
-        run: |
-          echo summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json
-          echo signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json
-          echo snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json
-          echo run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json
-          echo debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public_runs
+          force_orphan: true
