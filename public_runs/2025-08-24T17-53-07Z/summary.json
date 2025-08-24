@@ -1,11 +1,11 @@
 {
-  "generated_at_utc": "2025-08-24T17:53:07Z",
+  "generated_at_utc": "2025-08-24T17:43:42Z",
   "regime": {
     "ok": false,
     "reason": "btc-below-vwap-and-ema",
-    "last": 114291.98,
-    "vwap": 114691.84065254017,
-    "ema9": 114306.65928242018
+    "last": 114248.71,
+    "vwap": 114708.03175561724,
+    "ema9": 114310.0048787815
   },
   "equity": 41964.0,
   "cash": 0.0,
@@ -15,7 +15,7 @@
     "text": "Hold and wait."
   },
   "run_stats": {
-    "elapsed_ms": 457322,
-    "time": "2025-08-24T17:53:07.821903+00:00"
+    "elapsed_ms": 434130,
+    "time": "2025-08-24T17:43:41.958644+00:00"
   }
 }
