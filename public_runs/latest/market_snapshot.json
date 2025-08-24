@@ -1,21 +1,21 @@
 {
-  "time": "2025-08-24T18:52:04.571939+00:00",
+  "time": "2025-08-24T19:00:47.460362+00:00",
   "equity": 41964.0,
   "cash": 0.0,
   "breach": false,
   "breach_reason": "",
   "regime": {
-    "ok": true,
-    "reason": "",
-    "last": 114680.16,
-    "vwap": 114647.00707748173,
-    "ema9": 114655.52434997896
+    "ok": false,
+    "reason": "btc-below-vwap-and-ema",
+    "last": 114494.03,
+    "vwap": 114639.47297860993,
+    "ema9": 114606.13678398654
   },
-  "universe_count": 190,
+  "universe_count": 192,
   "candidates": [],
   "reject_stats": {
-    "liquidity": 27,
-    "bars": 24,
+    "liquidity": 25,
+    "bars": 26,
     "rules": 166
   }
 }
