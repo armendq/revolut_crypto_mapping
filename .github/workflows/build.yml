@@ -55,7 +55,26 @@ jobs:
 
       - name: Build summary.json
         run: python scripts/build_summary.py
+      - name: Verify summary.json
+        run: |
+          set -e
+          test -f public_runs/latest/summary.json
+          sz=$(wc -c < public_runs/latest/summary.json || echo 0)
+          echo "summary.json size: $sz bytes"
+          if [ "$sz" -lt 50 ]; then
+            echo "summary.json is too small or empty"; exit 1
+          fi
+          echo "summary.json (first 60 lines):"
+          nl -ba public_runs/latest/summary.json | sed -n '1,60p'
 
+      - name: Show inputs for summary
+        run: |
+          echo "market_snapshot.json (first 40 lines)"
+          nl -ba artifacts/market_snapshot.json | sed -n '1,40p' || true
+          echo "signals.json (first 40 lines)"
+          nl -ba data/signals.json | sed -n '1,40p' || true
+          echo "run_stats.json (first 40 lines)"
+          nl -ba artifacts/run_stats.json | sed -n '1,40p' || true
       - name: Commit changes to main (rebase-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
