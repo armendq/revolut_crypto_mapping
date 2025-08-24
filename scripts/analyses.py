@@ -26,27 +26,26 @@ RUN_STATS = ARTIFACTS / "run_stats.json"
 DEBUG_PATH = ARTIFACTS / "debug_scan.json"
 DEBUG_LOG: List[Dict[str, Any]] = []
 
-# ---------- config (relaxed, two-lane) ----------
-# Read floor from env, default 40k per your update
+# ---------- config ----------
 EQUITY_FLOOR = float(os.getenv("EQUITY_FLOOR", "40000"))
 
 # Lane A (orderbook-grade)
 VOL_USD_MIN_A = 3_000_000        # 24h USD volume threshold
 MAX_SPREAD_A  = 0.012            # 1.2%
 
-# Lane B (CG-only momentum “exception lane”)
-VOL_USD_MIN_B = 15_000_000       # higher vol bar for CG-only
+# Lane B (CG-only exception lane for explosive movers)
+VOL_USD_MIN_B = 15_000_000
 EXC_1H_MIN    = 0.08             # +8% 1h
 EXC_24H_MIN   = 0.20             # +20% 24h
 
-# Breakout/micro-pullback
-BR_MIN = 0.008                   # +0.8% vs prev close
-BR_MAX = 0.12                    # +12% vs prev close
-RVOL_MIN = 2.0                   # relaxed
+# Breakout + micro pullback
+BR_MIN   = 0.008                 # +0.8%
+BR_MAX   = 0.12                  # +12%
+RVOL_MIN = 2.0
 FADE_MAX = 0.012                 # 1.2%
 RANGE_MAX = 0.015                # 1.5%
 
-RISK_PCT = 0.012                 # 1.2% risk
+RISK_PCT = 0.012
 STRONG_ALLOC = 0.60
 WEAK_ALLOC   = 0.30
 
@@ -117,7 +116,8 @@ def cg_search_id(symbol: str) -> Optional[str]:
 
 def cg_simple_price_vol(cid: str) -> Optional[Dict[str, float]]:
     d = _http_json(f"{COINGECKO_BASE}/simple/price?ids={cid}&vs_currencies=usd&include_24hr_vol=true")
-    if not d or cid not in d: return None
+    if not d or cid not in d:
+        return None
     try:
         x = d[cid]
         return {"price": float(x.get("usd")), "vol_usd": float(x.get("usd_24h_vol", 0.0))}
@@ -126,7 +126,8 @@ def cg_simple_price_vol(cid: str) -> Optional[Dict[str, float]]:
 
 def cg_markets(cid: str) -> Optional[Dict[str, float]]:
     d = _http_json(f"{COINGECKO_BASE}/coins/markets?vs_currency=usd&ids={cid}&price_change_percentage=1h,24h")
-    if not isinstance(d, list) or not d: return None
+    if not isinstance(d, list) or not d:
+        return None
     try:
         x = d[0]
         return {
@@ -139,13 +140,14 @@ def cg_markets(cid: str) -> Optional[Dict[str, float]]:
 
 def cg_minute_prices(cid: str) -> List[List[float]]:
     d = _http_json(f"{COINGECKO_BASE}/coins/{cid}/market_chart?vs_currency=usd&days=1&interval=minutely")
-    if not d or "prices" not in d: return []
+    if not d or "prices" not in d:
+        return []
     return d["prices"]  # [ [ms, price], ... ]
 
 def cg_1m_bars_from_chart(cid: str, limit: int = 120) -> List[Dict[str, float]]:
     pts = cg_minute_prices(cid)
-    if not pts: return []
-    # build pseudo-1m candles
+    if not pts:
+        return []
     bars: List[Dict[str, float]] = []
     for i in range(max(1, len(pts) - limit), len(pts)):
         t, c = pts[i]
@@ -166,15 +168,11 @@ def cb_orderbook_best(symbol: str) -> Optional[Dict[str, float]]:
     if not data or "bids" not in data or "asks" not in data:
         return None
     try:
-        bid = float(data["bids")[0][0])  # typo guard below
+        bid = float(data["bids"][0][0])
+        ask = float(data["asks"][0][0])
+        return {"bid": bid, "ask": ask}
     except Exception:
-        try:
-            bid = float(data["bids"][0][0]); ask = float(data["asks"][0][0])
-            return {"bid": bid, "ask": ask}
-        except Exception:
-            return None
-    ask = float(data["asks"][0][0])
-    return {"bid": bid, "ask": ask}
+        return None
 
 def cb_24h_stats(symbol: str) -> Optional[Dict[str, float]]:
     pid = cb_product_id(symbol)
@@ -210,7 +208,8 @@ def binance_24h_and_book(symbol_usdt: str) -> Optional[Dict[str, float]]:
             try:
                 last = float(t["lastPrice"])
                 vol_usd = float(t["volume"]) * last
-                bid = float(d["bids"][0][0]); ask = float(d["asks"][0][0])
+                bid = float(d["bids"][0][0])
+                ask = float(d["asks"][0][0])
                 return {"price": last, "vol_usd": vol_usd, "bid": bid, "ask": ask}
             except Exception as e:
                 last_err = str(e)
@@ -239,7 +238,7 @@ def aggressive_breakout(bars_1m: List[Dict[str, float]]) -> Optional[Dict[str, f
     if pct < BR_MIN or pct > BR_MAX:
         return None
     vol_med = median([b["v"] for b in bars_1m[-16:-1]]) if any(b["v"] for b in bars_1m[-16:-1]) else 0.0
-    rvol = (last["v"] / vol_med) if vol_med > 0 else 3.0  # default proxy if no volume
+    rvol = (last["v"] / vol_med) if vol_med > 0 else 3.0  # proxy if no volume
     if rvol < RVOL_MIN:
         return None
     hh15 = max(b["h"] for b in bars_1m[-15:])
@@ -271,7 +270,7 @@ def check_regime() -> Dict[str, Any]:
         e9 = _as_float(ema(close, span=9))
     except Exception:
         return {"ok": False, "reason": "calc-error"}
-    # Relaxed gate: either VWAP or EMA9
+    # relaxed: VWAP OR EMA9
     ok = (last > vw) or (last > e9)
     return {"ok": ok, "reason": "" if ok else "btc-below-vwap-and-ema", "last": last, "vwap": vw, "ema9": e9}
 
@@ -296,15 +295,15 @@ def load_revolut_mapping() -> List[Dict[str, Any]]:
     return out
 
 def best_binance_symbol(entry: Dict[str, Any]) -> Optional[str]:
-    if entry.get("binance"): return entry["binance"]
+    if entry.get("binance"):
+        return entry["binance"]
     t = (entry.get("ticker") or "").upper()
     return f"{t}USDT" if t else None
 
 # ---------- data fetch combo ----------
 def fetch_meta_for_symbol(ticker: str, binance_sym: Optional[str]) -> Dict[str, Any]:
     """
-    Returns meta dict with keys:
-      src, price, vol_usd, bid, ask, spread, cid, pc_1h, pc_24h
+    Return meta with keys: src, price, vol_usd, bid, ask, spread, cid, pc_1h, pc_24h
     """
     cid = cg_search_id(ticker) or ""
     # A) Binance
@@ -333,11 +332,12 @@ def fetch_meta_for_symbol(ticker: str, binance_sym: Optional[str]) -> Dict[str, 
 def get_1m_bars_any(ticker: str, meta: Dict[str, Any], binance_sym: Optional[str], limit: int = 120) -> List[Dict[str, float]]:
     if meta["src"] == "binance" and binance_sym:
         b = binance_klines_1m(binance_sym, limit=limit)
-        if b: return b
+        if b:
+            return b
     if meta["src"] == "coinbase":
-        b = cb_klines_1m(ticker, limit=limit)
-        if b: return b
-    # CG fallback
+        b = cb_klines_1m(ticker, limit=120)
+        if b:
+            return b
     if meta.get("cid"):
         return cg_1m_bars_from_chart(meta["cid"], limit=limit)
     return []
@@ -349,11 +349,10 @@ def position_size(entry: float, stop: float, equity: float, cash: float, strong_
     qty = risk_dollars / dist
     usd = qty * entry
     cap = STRONG_ALLOC if strong_regime else WEAK_ALLOC
-    # Tighter cap for CG-only exception lane
-    per_trade_cap = cap * equity * (0.5 if lane == "B" else 1.0)
+    per_trade_cap = cap * equity * (0.5 if lane == "B" else 1.0)  # tighter for CG-only lane
     return max(0.0, min(usd, per_trade_cap, cash))
 
-# ---------- MAIN ----------
+# ---------- main ----------
 def main():
     t0 = perf_counter()
     DEBUG_LOG.append({"stage":"run","event":"start","ts":_now_iso()})
@@ -392,19 +391,22 @@ def main():
 
     # mapping
     mapping = load_revolut_mapping()
-    orderbook_lane = []
-    exception_lane = []
+    orderbook_lane: List[Dict[str, Any]] = []
+    exception_lane: List[Dict[str, Any]] = []
+
     for m in mapping:
         tkr = (m.get("ticker") or "").upper()
-        if not tkr: continue
-        if tkr in ("ETH","DOT"):  # staked / not rotated
+        if not tkr:
             continue
+        if tkr in ("ETH", "DOT"):  # ETH/DOT not rotated; DOT staked
+            continue
+
         sym = best_binance_symbol(m)
         meta = fetch_meta_for_symbol(tkr, sym)
         src = meta["src"]
 
-        # Lane A: orderbook-grade
-        if src in ("binance","coinbase"):
+        # Lane A
+        if src in ("binance", "coinbase"):
             if meta["vol_usd"] < VOL_USD_MIN_A:
                 snapshot["reject_stats"]["A_vol"] += 1; continue
             if meta.get("spread", 1.0) > MAX_SPREAD_A:
@@ -417,7 +419,8 @@ def main():
             if not (br and pb):
                 snapshot["reject_stats"]["A_rules"] += 1; continue
             atr1m = atr_from_klines(bars, period=14)
-            if atr1m <= 0: snapshot["reject_stats"]["A_rules"] += 1; continue
+            if atr1m <= 0:
+                snapshot["reject_stats"]["A_rules"] += 1; continue
             score = br["rvol"] * (1.0 + br["pct"])
             orderbook_lane.append({
                 "lane":"A","ticker":tkr,"symbol":sym or cb_product_id(tkr),
@@ -427,7 +430,7 @@ def main():
             })
             continue
 
-        # Lane B: CG-only exception
+        # Lane B (CG-only)
         if src == "coingecko":
             if meta["vol_usd"] < VOL_USD_MIN_B:
                 snapshot["reject_stats"]["B_vol"] += 1; continue
@@ -438,12 +441,10 @@ def main():
             bars = get_1m_bars_any(tkr, meta, sym, limit=120)
             if not bars:
                 snapshot["reject_stats"]["bars"] += 1; continue
-            # Use last bar; synthetic RVOL already handled
             pb = micro_pullback_ok(bars)
             atr1m = atr_from_klines(bars, period=14)
             if not pb or atr1m <= 0.0:
                 snapshot["reject_stats"]["B_momentum"] += 1; continue
-            # score favors 1h speed and 24h persistence
             score = (1.0 + pc1*5.0) * (1.0 + pc24)
             exception_lane.append({
                 "lane":"B","ticker":tkr,"symbol":sym or tkr,
@@ -453,29 +454,27 @@ def main():
             })
             continue
 
-        # Unknown or no meta
+        # Unknown meta
         if src == "none":
             snapshot["reject_stats"]["A_meta"] += 1
         else:
             snapshot["reject_stats"]["B_meta"] += 1
 
-    # rank
     orderbook_lane.sort(key=lambda x: x["score"], reverse=True)
     exception_lane.sort(key=lambda x: x["score"], reverse=True)
 
-    # choose up to 2 total, prefer lane A then B
+    # choose up to 2 total; prefer lane A
     chosen: List[Dict[str, Any]] = []
-    if orderbook_lane: chosen.append(orderbook_lane[0])
+    if orderbook_lane:
+        chosen.append(orderbook_lane[0])
     if len(chosen) < 2 and len(orderbook_lane) > 1:
         chosen.append(orderbook_lane[1])
     if len(chosen) < 2 and exception_lane:
         chosen.append(exception_lane[0])
 
-    # snapshot candidates (top 3 for visibility)
     snapshot["candidates"] = (orderbook_lane + exception_lane)[:3]
     snapshot["universe_count"] = len(orderbook_lane) + len(exception_lane)
 
-    # outputs
     if not chosen:
         if blocked_451:
             snapshot["regime"] = {"ok": False, "reason": "binance-451-block"}
@@ -486,16 +485,16 @@ def main():
         print("Hold and wait. (No qualified candidates.)")
         return
 
-    # size each pick with cap
-    plan_lines = []
+    # sizing and plan
+    plan_lines: List[str] = []
     total_cap = (STRONG_ALLOC if strong else WEAK_ALLOC) * equity
     remaining = min(total_cap, cash)
-    for i, c in enumerate(chosen):
-        entry = c["entry"]; stop = c["stop"]; atr = c["atr1m"]
-        lane = c["lane"]
-        # size
+
+    for c in chosen:
+        entry = c["entry"]; stop = c["stop"]; atr = c["atr1m"]; lane = c["lane"]
         usd = position_size(entry, stop, equity, remaining, strong, lane)
         remaining = max(0.0, remaining - usd)
+
         t1 = entry + 0.8 * atr
         t2 = entry + 1.5 * atr
         plan_lines.extend([
@@ -503,19 +502,17 @@ def main():
             f"  Entry {entry:.6f} | Stop {stop:.6f} | T1 {t1:.6f} | T2 {t2:.6f}",
             f"  Position ${usd:,.2f} | Trail after +1R"
         ])
-        # update candidate with computed size (for summary consumers)
+
         c["t1"] = t1; c["t2"] = t2; c["usd"] = usd
 
         if remaining <= 0:
             break
 
-    text = "\n".join(plan_lines) if plan_lines else "Hold and wait."
-    SIGNAL_PATH.write_text(json.dumps({"type":"B","text": text}, indent=2))
-
+    SIGNAL_PATH.write_text(json.dumps({"type":"B","text":"\n".join(plan_lines)}, indent=2))
     SNAP_PATH.write_text(json.dumps(snapshot, indent=2))
     DEBUG_PATH.write_text(json.dumps(DEBUG_LOG, indent=2))
     RUN_STATS.write_text(json.dumps({"elapsed_ms": int((perf_counter()-t0)*1000), "time": _now_iso()}, indent=2))
-    print(text)
+    print("\n".join(plan_lines))
 
 if __name__ == "__main__":
     main()
