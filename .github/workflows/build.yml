@@ -5,7 +5,7 @@ on:
     branches: ["main"]
   schedule:
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 concurrency:
   group: publish-public-runs
@@ -32,11 +32,13 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -e
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
       - name: Generate mapping (safe)
         run: |
+          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
@@ -78,3 +80,37 @@ out = {
 }
 dst.write_text(json.dumps(out, indent=2))
 print("Wrote", dst)
+PY
+          cp artifacts/run_stats.json  public_runs/latest/run_stats.json
+          cp artifacts/debug_scan.json public_runs/latest/debug_scan.json
+          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          mkdir -p "public_runs/$ts"
+          cp public_runs/latest/* "public_runs/$ts/"
+          # keep only newest timestamped folder
+          for d in $(ls -1dt 'public_runs/20*' 2>/dev/null | tail -n +2); do
+            rm -rf "$d"
+          done
+
+      - name: Commit changes to main (conflict-safe)
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git -c rebase.autoStash=true pull --rebase origin main || true
+          git add -A data artifacts public_runs || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "ci: publish signals & summary $(date -u +'%Y-%m-%dT%H:%M:%SZ') [skip ci]" || true
+            git push origin HEAD:main || true
+          fi
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public_runs
+          force_orphan: true
+```0
