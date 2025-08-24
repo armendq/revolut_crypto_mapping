@@ -2,14 +2,10 @@ name: Run mapping & analyses
 
 on:
   push:
-    branches: ["main"]
-  schedule:
-    - cron: "*/15 * * * *"
+    branches: [ "main" ]
   workflow_dispatch: {}
-
-concurrency:
-  group: publish-public-runs
-  cancel-in-progress: true
+  schedule:
+    - cron: "*/15 * * * *"   # run every 15 minutes
 
 permissions:
   contents: write
@@ -23,7 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -37,60 +32,50 @@ jobs:
 
       - name: Generate mapping (safe)
         run: |
+          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
             echo "No mapping.py found; skipping mapping generation."
           fi
+          echo "✅ Ensured mapping files exist (or skipped)."
 
       - name: Run analyses
         env:
-          EQUITY: "41964"
-          CASH: "0"
-          EQUITY_FLOOR: "40000"
-        run: python -m scripts.analyses
-
-      - name: Publish artifacts into public_runs
-        run: |
-          mkdir -p public_runs/latest
-          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
-          mkdir -p "public_runs/$ts"
-
-          if [ -f artifacts/market_snapshot.json ]; then cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json; fi
-          if [ -f data/signals.json ]; then cp data/signals.json public_runs/latest/signals.json; fi
-          if [ -f artifacts/run_stats.json ]; then cp artifacts/run_stats.json public_runs/latest/run_stats.json; fi
-          if [ -f artifacts/debug_scan.json ]; then cp artifacts/debug_scan.json public_runs/latest/debug_scan.json; fi
-
-          cp -r public_runs/latest/* "public_runs/$ts/" || true
-
-      - name: Build summary.json
-        run: python scripts/build_summary.py
-
-      - name: Verify summary.json
+          EQUITY: ${{ vars.EQUITY || '41000' }}
+          CASH:   ${{ vars.CASH   || '32000' }}
+          EQUITY_FLOOR: ${{ vars.EQUITY_FLOOR || '40000' }}
         run: |
           set -e
-          test -f public_runs/latest/summary.json
-          sz=$(wc -c < public_runs/latest/summary.json || echo 0)
-          echo "summary.json size: $sz bytes"
-          [ "$sz" -ge 50 ]
-          nl -ba public_runs/latest/summary.json | sed -n '1,40p'
+          python -m scripts.analyses
 
-      - name: Commit changes to main (conflict-safe)
+      - name: Commit changes to main artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git -c rebase.autoStash=true pull --rebase origin main || true
-          git add -A data artifacts public_runs || true
+
+          echo "=== Status before staging ==="
+          git status --porcelain
+
+          git add -A data artifacts
+
+          echo "=== Status after staging ==="
+          git status --porcelain
+
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "ci: publish runs $(date -u +'%Y-%m-%dT%H:%M:%SZ') [skip ci]" || true
-            git push origin HEAD:main || true
+            git commit -m "chore: update data & snapshot [skip ci]"
+            git push
           fi
+
+      - name: Prepare latest summary
+        run: |
+          mkdir -p public_runs/latest
+          cp artifacts/market_snapshot.json public_runs/latest/summary.json
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
