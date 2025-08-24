@@ -2,114 +2,114 @@
   {
     "stage": "run",
     "event": "start",
-    "ts": "2025-08-24T15:27:09.527701+00:00"
+    "ts": "2025-08-24T15:35:54.528132+00:00"
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=1INCH",
-    "ms": 334,
+    "ms": 321,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=1INCHUSDT",
-    "ms": 1090,
+    "ms": 1225,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=1INCHUSDT&limit=5",
-    "ms": 563,
+    "ms": 893,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AAVE",
-    "ms": 189,
+    "ms": 231,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AAVEUSDT",
-    "ms": 839,
+    "ms": 843,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AAVEUSDT&limit=5",
-    "ms": 565,
+    "ms": 964,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=AAVEUSDT&interval=1m&limit=120",
-    "ms": 757,
+    "ms": 962,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ACA",
-    "ms": 308,
+    "ms": 85,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ACAUSDT",
-    "ms": 563,
+    "ms": 1203,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ACAUSDT&limit=5",
-    "ms": 795,
+    "ms": 707,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ACAUSDT&interval=1m&limit=120",
-    "ms": 736,
+    "ms": 1413,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ADA",
-    "ms": 196,
+    "ms": 89,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ADAUSDT",
-    "ms": 559,
+    "ms": 935,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ADAUSDT&limit=5",
-    "ms": 704,
+    "ms": 938,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ADAUSDT&interval=1m&limit=120",
-    "ms": 923,
+    "ms": 848,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AERGO",
-    "ms": 281,
+    "ms": 221,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AERGOUSDT",
-    "ms": 563,
+    "ms": 1009,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AERGOUSDT&limit=5",
-    "ms": 777,
+    "ms": 1186,
     "ok": true
   },
   {
@@ -119,38 +119,38 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AERGO-USD/stats",
-    "ms": 463,
+    "ms": 76,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AERGO-USD/book?level=1",
-    "ms": 592,
+    "ms": 142,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AGLD",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 293,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AGLDUSDT",
-    "ms": 752,
+    "ms": 803,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AGLDUSDT&limit=5",
-    "ms": 804,
+    "ms": 1212,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AIOZ",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 226,
+    "ok": true
   },
   {
     "stage": "http",
@@ -161,20 +161,20 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AIOZ-USD/stats",
-    "ms": 254,
+    "ms": 93,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AIOZ-USD/book?level=1",
-    "ms": 133,
+    "ms": 79,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AKT",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 237,
+    "ok": true
   },
   {
     "stage": "http",
@@ -185,37 +185,37 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AKT-USD/stats",
-    "ms": 253,
+    "ms": 129,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/AKT-USD/book?level=1",
-    "ms": 121,
+    "ms": 132,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ALGO",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 220,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ALGOUSDT",
-    "ms": 1048,
+    "ms": 774,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ALGOUSDT&limit=5",
-    "ms": 771,
+    "ms": 1028,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ALGOUSDT&interval=1m&limit=120",
-    "ms": 694,
+    "ms": 1103,
     "ok": true
   },
   {
@@ -227,13 +227,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ALICEUSDT",
-    "ms": 557,
+    "ms": 1453,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ALICEUSDT&limit=5",
-    "ms": 561,
+    "ms": 981,
     "ok": true
   },
   {
@@ -245,13 +245,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ALPHAUSDT",
-    "ms": 1330,
+    "ms": 938,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ALPHAUSDT&limit=5",
-    "ms": 561,
+    "ms": 682,
     "ok": true
   },
   {
@@ -273,25 +273,25 @@
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=AMP",
-    "ms": 110,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AMPUSDT",
-    "ms": 565,
+    "ms": 1110,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AMPUSDT&limit=5",
-    "ms": 1331,
+    "ms": 694,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=AMPUSDT&interval=1m&limit=120",
-    "ms": 699,
+    "ms": 941,
     "ok": true
   },
   {
@@ -303,13 +303,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ANKRUSDT",
-    "ms": 557,
+    "ms": 1297,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ANKRUSDT&limit=5",
-    "ms": 559,
+    "ms": 680,
     "ok": true
   },
   {
@@ -321,19 +321,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=APEUSDT",
-    "ms": 558,
+    "ms": 1114,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=APEUSDT&limit=5",
-    "ms": 558,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=APEUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 882,
     "ok": true
   },
   {
@@ -345,19 +345,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=API3USDT",
-    "ms": 559,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=API3USDT&limit=5",
-    "ms": 566,
+    "ms": 694,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=API3USDT&interval=1m&limit=120",
-    "ms": 698,
+    "ms": 942,
     "ok": true
   },
   {
@@ -369,19 +369,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=APTUSDT",
-    "ms": 563,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=APTUSDT&limit=5",
-    "ms": 793,
+    "ms": 701,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=APTUSDT&interval=1m&limit=120",
-    "ms": 694,
+    "ms": 1219,
     "ok": true
   },
   {
@@ -393,19 +393,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ARUSDT",
-    "ms": 846,
+    "ms": 1286,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ARUSDT&limit=5",
-    "ms": 561,
+    "ms": 1109,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ARUSDT&interval=1m&limit=120",
-    "ms": 695,
+    "ms": 844,
     "ok": true
   },
   {
@@ -417,19 +417,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ARBUSDT",
-    "ms": 726,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ARBUSDT&limit=5",
-    "ms": 561,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ARBUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 942,
     "ok": true
   },
   {
@@ -441,19 +441,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ARKMUSDT",
-    "ms": 562,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ARKMUSDT&limit=5",
-    "ms": 567,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ARKMUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1393,
     "ok": true
   },
   {
@@ -465,13 +465,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ARPAUSDT",
-    "ms": 754,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ARPAUSDT&limit=5",
-    "ms": 563,
+    "ms": 680,
     "ok": true
   },
   {
@@ -483,13 +483,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ASTRUSDT",
-    "ms": 713,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ASTRUSDT&limit=5",
-    "ms": 624,
+    "ms": 759,
     "ok": true
   },
   {
@@ -501,19 +501,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ATOMUSDT",
-    "ms": 559,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ATOMUSDT&limit=5",
-    "ms": 558,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ATOMUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 853,
     "ok": true
   },
   {
@@ -525,13 +525,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AUDIOUSDT",
-    "ms": 563,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AUDIOUSDT&limit=5",
-    "ms": 723,
+    "ms": 678,
     "ok": true
   },
   {
@@ -543,19 +543,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AVAXUSDT",
-    "ms": 561,
+    "ms": 1107,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AVAXUSDT&limit=5",
-    "ms": 565,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=AVAXUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 861,
     "ok": true
   },
   {
@@ -567,13 +567,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=AXSUSDT",
-    "ms": 558,
+    "ms": 758,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=AXSUSDT&limit=5",
-    "ms": 564,
+    "ms": 683,
     "ok": true
   },
   {
@@ -585,13 +585,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BALUSDT",
-    "ms": 564,
+    "ms": 717,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BALUSDT&limit=5",
-    "ms": 559,
+    "ms": 983,
     "ok": true
   },
   {
@@ -601,133 +601,133 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BAL-USD/stats",
-    "ms": 238,
+    "ms": 82,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BAL-USD/book?level=1",
-    "ms": 497,
+    "ms": 112,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=BAND",
-    "ms": 268,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BANDUSDT",
-    "ms": 563,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BANDUSDT&limit=5",
-    "ms": 561,
+    "ms": 1110,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=BANDUSDT&interval=1m&limit=120",
-    "ms": 699,
+    "ms": 846,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=BAT",
-    "ms": 121,
+    "ms": 204,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BATUSDT",
-    "ms": 560,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BATUSDT&limit=5",
-    "ms": 559,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=BCH",
-    "ms": 292,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BCHUSDT",
-    "ms": 562,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://data-api.binance.vision/api/v3/depth?symbol=BCHUSDT&limit=5",
-    "ms": 558,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://data-api.binance.vision/api/v3/klines?symbol=BCHUSDT&interval=1m&limit=120",
-    "ms": 696,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/search?query=BICO",
-    "ms": 264,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BICOUSDT",
-    "ms": 575,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://data-api.binance.vision/api/v3/depth?symbol=BICOUSDT&limit=5",
-    "ms": 564,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/search?query=BLUR",
     "ms": 227,
     "ok": true
   },
   {
     "stage": "http",
+    "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BCHUSDT",
+    "ms": 686,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://data-api.binance.vision/api/v3/depth?symbol=BCHUSDT&limit=5",
+    "ms": 679,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://data-api.binance.vision/api/v3/klines?symbol=BCHUSDT&interval=1m&limit=120",
+    "ms": 1219,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/search?query=BICO",
+    "ms": 238,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BICOUSDT",
+    "ms": 679,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://data-api.binance.vision/api/v3/depth?symbol=BICOUSDT&limit=5",
+    "ms": 1108,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/search?query=BLUR",
+    "ms": 162,
+    "ok": true
+  },
+  {
+    "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BLURUSDT",
-    "ms": 564,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BLURUSDT&limit=5",
-    "ms": 559,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=BLZ",
-    "ms": 263,
+    "ms": 226,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BLZUSDT",
-    "ms": 566,
+    "ms": 686,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BLZUSDT&limit=5",
-    "ms": 559,
+    "ms": 990,
     "ok": true
   },
   {
@@ -737,13 +737,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BLZ-USD/stats",
-    "ms": 131,
+    "ms": 67,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BLZ-USD/book?level=1",
-    "ms": 140,
+    "ms": 122,
     "ok": true
   },
   {
@@ -779,13 +779,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BNTUSDT",
-    "ms": 589,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BNTUSDT&limit=5",
-    "ms": 558,
+    "ms": 1107,
     "ok": true
   },
   {
@@ -797,19 +797,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BONKUSDT",
-    "ms": 562,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BONKUSDT&limit=5",
-    "ms": 561,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=BONKUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 941,
     "ok": true
   },
   {
@@ -821,13 +821,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BONDUSDT",
-    "ms": 560,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BONDUSDT&limit=5",
-    "ms": 561,
+    "ms": 680,
     "ok": true
   },
   {
@@ -849,25 +849,25 @@
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=BTC",
-    "ms": 127,
+    "ms": 59,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT",
-    "ms": 557,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BTCUSDT&limit=5",
-    "ms": 558,
+    "ms": 686,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=120",
-    "ms": 699,
+    "ms": 1232,
     "ok": true
   },
   {
@@ -879,13 +879,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTGUSDT",
-    "ms": 557,
+    "ms": 686,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BTGUSDT&limit=5",
-    "ms": 562,
+    "ms": 678,
     "ok": true
   },
   {
@@ -919,13 +919,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BTRST-USD/stats",
-    "ms": 130,
+    "ms": 59,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/BTRST-USD/book?level=1",
-    "ms": 128,
+    "ms": 179,
     "ok": true
   },
   {
@@ -937,13 +937,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTTUSDT",
-    "ms": 560,
+    "ms": 689,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=BTTUSDT&limit=5",
-    "ms": 559,
+    "ms": 707,
     "ok": true
   },
   {
@@ -971,13 +971,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CELOUSDT",
-    "ms": 561,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CELOUSDT&limit=5",
-    "ms": 557,
+    "ms": 682,
     "ok": true
   },
   {
@@ -989,13 +989,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CELRUSDT",
-    "ms": 563,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CELRUSDT&limit=5",
-    "ms": 557,
+    "ms": 688,
     "ok": true
   },
   {
@@ -1007,19 +1007,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CFXUSDT",
-    "ms": 557,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CFXUSDT&limit=5",
-    "ms": 562,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=CFXUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 847,
     "ok": true
   },
   {
@@ -1031,13 +1031,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CHZUSDT",
-    "ms": 558,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CHZUSDT&limit=5",
-    "ms": 558,
+    "ms": 976,
     "ok": true
   },
   {
@@ -1049,13 +1049,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CHRUSDT",
-    "ms": 558,
+    "ms": 1111,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CHRUSDT&limit=5",
-    "ms": 560,
+    "ms": 690,
     "ok": true
   },
   {
@@ -1067,13 +1067,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CLVUSDT",
-    "ms": 565,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CLVUSDT&limit=5",
-    "ms": 560,
+    "ms": 683,
     "ok": true
   },
   {
@@ -1083,7 +1083,7 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/CLV-USD/stats",
-    "ms": 229,
+    "ms": 93,
     "ok": true
   },
   {
@@ -1101,13 +1101,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=COMPUSDT",
-    "ms": 563,
+    "ms": 986,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=COMPUSDT&limit=5",
-    "ms": 559,
+    "ms": 682,
     "ok": true
   },
   {
@@ -1119,13 +1119,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=COTIUSDT",
-    "ms": 558,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=COTIUSDT&limit=5",
-    "ms": 561,
+    "ms": 756,
     "ok": true
   },
   {
@@ -1167,13 +1167,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/CRO-USD/stats",
-    "ms": 260,
+    "ms": 108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/CRO-USD/book?level=1",
-    "ms": 125,
+    "ms": 130,
     "ok": true
   },
   {
@@ -1185,19 +1185,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CRVUSDT",
-    "ms": 560,
+    "ms": 714,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CRVUSDT&limit=5",
-    "ms": 558,
+    "ms": 1109,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=CRVUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 847,
     "ok": true
   },
   {
@@ -1209,13 +1209,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CTSIUSDT",
-    "ms": 561,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CTSIUSDT&limit=5",
-    "ms": 557,
+    "ms": 680,
     "ok": true
   },
   {
@@ -1227,13 +1227,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CVCUSDT",
-    "ms": 563,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CVCUSDT&limit=5",
-    "ms": 561,
+    "ms": 682,
     "ok": true
   },
   {
@@ -1245,13 +1245,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=CVXUSDT",
-    "ms": 558,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=CVXUSDT&limit=5",
-    "ms": 561,
+    "ms": 680,
     "ok": true
   },
   {
@@ -1263,13 +1263,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DAIUSDT",
-    "ms": 560,
+    "ms": 711,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DAIUSDT&limit=5",
-    "ms": 557,
+    "ms": 980,
     "ok": true
   },
   {
@@ -1279,13 +1279,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DAI-USD/stats",
-    "ms": 223,
+    "ms": 80,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DAI-USD/book?level=1",
-    "ms": 215,
+    "ms": 94,
     "ok": true
   },
   {
@@ -1297,13 +1297,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DARUSDT",
-    "ms": 559,
+    "ms": 689,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DARUSDT&limit=5",
-    "ms": 558,
+    "ms": 1109,
     "ok": true
   },
   {
@@ -1331,13 +1331,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DASHUSDT",
-    "ms": 564,
+    "ms": 977,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DASHUSDT&limit=5",
-    "ms": 564,
+    "ms": 683,
     "ok": true
   },
   {
@@ -1349,13 +1349,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DENTUSDT",
-    "ms": 557,
+    "ms": 712,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DENTUSDT&limit=5",
-    "ms": 557,
+    "ms": 982,
     "ok": true
   },
   {
@@ -1367,13 +1367,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DGBUSDT",
-    "ms": 558,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DGBUSDT&limit=5",
-    "ms": 560,
+    "ms": 683,
     "ok": true
   },
   {
@@ -1391,13 +1391,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DIMO-USD/stats",
-    "ms": 444,
+    "ms": 113,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DIMO-USD/book?level=1",
-    "ms": 221,
+    "ms": 132,
     "ok": true
   },
   {
@@ -1409,13 +1409,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DNTUSDT",
-    "ms": 560,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DNTUSDT&limit=5",
-    "ms": 559,
+    "ms": 977,
     "ok": true
   },
   {
@@ -1425,55 +1425,55 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DNT-USD/stats",
-    "ms": 96,
+    "ms": 68,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/DNT-USD/book?level=1",
-    "ms": 131,
+    "ms": 75,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=DOGE",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 55,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DOGEUSDT",
-    "ms": 558,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DOGEUSDT&limit=5",
-    "ms": 559,
+    "ms": 756,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=DOGEUSDT&interval=1m&limit=120",
-    "ms": 718,
+    "ms": 854,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=DREP",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 220,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DREPUSDT",
-    "ms": 557,
+    "ms": 683,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DREPUSDT&limit=5",
-    "ms": 559,
+    "ms": 680,
     "ok": true
   },
   {
@@ -1494,128 +1494,140 @@
   },
   {
     "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/simple/price?ids=drep-new&vs_currencies=usd&include_24hr_vol=true",
+    "ms": 140,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=drep-new&price_change_percentage=1h,24h",
+    "ms": 174,
+    "ok": true
+  },
+  {
+    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=DYDX",
-    "ms": 116,
+    "ms": 76,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=DYDXUSDT",
-    "ms": 558,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=DYDXUSDT&limit=5",
-    "ms": 574,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=DYDXUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 842,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=EGLD",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 217,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=EGLDUSDT",
-    "ms": 560,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=EGLDUSDT&limit=5",
-    "ms": 562,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ENA",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 150,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ENAUSDT",
-    "ms": 557,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ENAUSDT&limit=5",
-    "ms": 560,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ENAUSDT&interval=1m&limit=120",
-    "ms": 708,
+    "ms": 878,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ENJ",
-    "ms": 272,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ENJUSDT",
-    "ms": 557,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ENJUSDT&limit=5",
-    "ms": 567,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ENS",
-    "ms": 375,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ENSUSDT",
-    "ms": 559,
+    "ms": 977,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ENSUSDT&limit=5",
-    "ms": 561,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ENSUSDT&interval=1m&limit=120",
-    "ms": 694,
+    "ms": 1380,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=EOS",
-    "ms": 255,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=EOSUSDT",
-    "ms": 560,
+    "ms": 697,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=EOSUSDT&limit=5",
-    "ms": 556,
+    "ms": 756,
     "ok": true
   },
   {
@@ -1625,44 +1637,44 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/EOS-USD/stats",
-    "ms": 418,
+    "ms": 61,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/EOS-USD/book?level=1",
-    "ms": 475,
+    "ms": 116,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ETC",
-    "ms": 269,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ETCUSDT",
-    "ms": 560,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ETCUSDT&limit=5",
-    "ms": 557,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ETCUSDT&interval=1m&limit=120",
-    "ms": 699,
+    "ms": 878,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=ETHW",
-    "ms": 250,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
@@ -1684,18 +1696,6 @@
   },
   {
     "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum-pow-iou&vs_currencies=usd&include_24hr_vol=true",
-    "ok": false,
-    "err": "HTTP 429"
-  },
-  {
-    "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=ethereum-pow-iou&price_change_percentage=1h,24h",
-    "ok": false,
-    "err": "HTTP 429"
-  },
-  {
-    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=EUL",
     "ok": false,
     "err": "HTTP 429"
@@ -1709,13 +1709,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/EUL-USD/stats",
-    "ms": 459,
+    "ms": 120,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/EUL-USD/book?level=1",
-    "ms": 164,
+    "ms": 128,
     "ok": true
   },
   {
@@ -1727,19 +1727,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FETUSDT",
-    "ms": 576,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FETUSDT&limit=5",
-    "ms": 562,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=FETUSDT&interval=1m&limit=120",
-    "ms": 691,
+    "ms": 855,
     "ok": true
   },
   {
@@ -1751,19 +1751,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FIDAUSDT",
-    "ms": 557,
+    "ms": 693,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FIDAUSDT&limit=5",
-    "ms": 561,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=FIDAUSDT&interval=1m&limit=120",
-    "ms": 698,
+    "ms": 844,
     "ok": true
   },
   {
@@ -1775,19 +1775,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FILUSDT",
-    "ms": 558,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FILUSDT&limit=5",
-    "ms": 560,
+    "ms": 758,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=FILUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 842,
     "ok": true
   },
   {
@@ -1799,19 +1799,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FLOKIUSDT",
-    "ms": 557,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FLOKIUSDT&limit=5",
-    "ms": 560,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=FLOKIUSDT&interval=1m&limit=120",
-    "ms": 695,
+    "ms": 870,
     "ok": true
   },
   {
@@ -1823,13 +1823,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FLOWUSDT",
-    "ms": 560,
+    "ms": 689,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FLOWUSDT&limit=5",
-    "ms": 556,
+    "ms": 978,
     "ok": true
   },
   {
@@ -1847,13 +1847,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/FLR-USD/stats",
-    "ms": 123,
+    "ms": 143,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/FLR-USD/book?level=1",
-    "ms": 290,
+    "ms": 144,
     "ok": true
   },
   {
@@ -1865,19 +1865,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FORTHUSDT",
-    "ms": 557,
+    "ms": 687,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FORTHUSDT&limit=5",
-    "ms": 562,
+    "ms": 756,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=FORTHUSDT&interval=1m&limit=120",
-    "ms": 699,
+    "ms": 843,
     "ok": true
   },
   {
@@ -1889,13 +1889,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FTMUSDT",
-    "ms": 558,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FTMUSDT&limit=5",
-    "ms": 560,
+    "ms": 682,
     "ok": true
   },
   {
@@ -1923,37 +1923,37 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=FXSUSDT",
-    "ms": 557,
+    "ms": 982,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=FXSUSDT&limit=5",
-    "ms": 557,
+    "ms": 981,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=GALA",
-    "ms": 118,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GALAUSDT",
-    "ms": 562,
+    "ms": 700,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GALAUSDT&limit=5",
-    "ms": 575,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=GALAUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 856,
     "ok": true
   },
   {
@@ -1971,13 +1971,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/GFI-USD/stats",
-    "ms": 93,
+    "ms": 66,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/GFI-USD/book?level=1",
-    "ms": 240,
+    "ms": 123,
     "ok": true
   },
   {
@@ -1989,13 +1989,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GHSTUSDT",
-    "ms": 562,
+    "ms": 1112,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GHSTUSDT&limit=5",
-    "ms": 562,
+    "ms": 683,
     "ok": true
   },
   {
@@ -2007,13 +2007,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GLMUSDT",
-    "ms": 560,
+    "ms": 982,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GLMUSDT&limit=5",
-    "ms": 559,
+    "ms": 984,
     "ok": true
   },
   {
@@ -2025,13 +2025,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GLMRUSDT",
-    "ms": 561,
+    "ms": 683,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GLMRUSDT&limit=5",
-    "ms": 556,
+    "ms": 681,
     "ok": true
   },
   {
@@ -2043,13 +2043,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GMTUSDT",
-    "ms": 565,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GMTUSDT&limit=5",
-    "ms": 558,
+    "ms": 693,
     "ok": true
   },
   {
@@ -2061,13 +2061,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GMXUSDT",
-    "ms": 558,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GMXUSDT&limit=5",
-    "ms": 558,
+    "ms": 713,
     "ok": true
   },
   {
@@ -2079,13 +2079,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GNOUSDT",
-    "ms": 558,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GNOUSDT&limit=5",
-    "ms": 563,
+    "ms": 979,
     "ok": true
   },
   {
@@ -2097,20 +2097,20 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GNSUSDT",
-    "ms": 562,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GNSUSDT&limit=5",
-    "ms": 559,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=GODS",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 225,
+    "ok": true
   },
   {
     "stage": "http",
@@ -2121,97 +2121,97 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/GODS-USD/stats",
-    "ms": 195,
+    "ms": 65,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/GODS-USD/book?level=1",
-    "ms": 253,
+    "ms": 122,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=GRT",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 241,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=GRTUSDT",
-    "ms": 560,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=GRTUSDT&limit=5",
-    "ms": 561,
+    "ms": 685,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=GRTUSDT&interval=1m&limit=120",
-    "ms": 691,
+    "ms": 843,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=HBAR",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 238,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=HBARUSDT",
-    "ms": 557,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=HBARUSDT&limit=5",
-    "ms": 562,
+    "ms": 999,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=HBARUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 853,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=HFT",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 211,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=HFTUSDT",
-    "ms": 563,
+    "ms": 756,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=HFTUSDT&limit=5",
-    "ms": 558,
+    "ms": 683,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=HIGH",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 214,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=HIGHUSDT",
-    "ms": 562,
+    "ms": 1114,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=HIGHUSDT&limit=5",
-    "ms": 560,
+    "ms": 680,
     "ok": true
   },
   {
@@ -2229,13 +2229,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/HOPR-USD/stats",
-    "ms": 136,
+    "ms": 58,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/HOPR-USD/book?level=1",
-    "ms": 217,
+    "ms": 216,
     "ok": true
   },
   {
@@ -2247,13 +2247,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=HOTUSDT",
-    "ms": 562,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=HOTUSDT&limit=5",
-    "ms": 558,
+    "ms": 681,
     "ok": true
   },
   {
@@ -2265,19 +2265,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ICPUSDT",
-    "ms": 558,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ICPUSDT&limit=5",
-    "ms": 558,
+    "ms": 758,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ICPUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 845,
     "ok": true
   },
   {
@@ -2289,19 +2289,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=IDEXUSDT",
-    "ms": 563,
+    "ms": 1107,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=IDEXUSDT&limit=5",
-    "ms": 558,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=IDEXUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 844,
     "ok": true
   },
   {
@@ -2313,13 +2313,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ILVUSDT",
-    "ms": 562,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ILVUSDT&limit=5",
-    "ms": 561,
+    "ms": 682,
     "ok": true
   },
   {
@@ -2331,13 +2331,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=IMXUSDT",
-    "ms": 562,
+    "ms": 685,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=IMXUSDT&limit=5",
-    "ms": 557,
+    "ms": 756,
     "ok": true
   },
   {
@@ -2349,19 +2349,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=INJUSDT",
-    "ms": 563,
+    "ms": 711,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=INJUSDT&limit=5",
-    "ms": 563,
+    "ms": 981,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=INJUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1380,
     "ok": true
   },
   {
@@ -2373,13 +2373,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=IOTXUSDT",
-    "ms": 562,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=IOTXUSDT&limit=5",
-    "ms": 559,
+    "ms": 984,
     "ok": true
   },
   {
@@ -2391,121 +2391,121 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=JASMYUSDT",
-    "ms": 559,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=JASMYUSDT&limit=5",
-    "ms": 558,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=JASMYUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 941,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=JTO",
-    "ms": 258,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=JTOUSDT",
-    "ms": 562,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=JTOUSDT&limit=5",
-    "ms": 562,
+    "ms": 977,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=JTOUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 1380,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=JUP",
-    "ms": 299,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=JUPUSDT",
-    "ms": 557,
+    "ms": 686,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=JUPUSDT&limit=5",
-    "ms": 561,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=JUPUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 855,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=KAVA",
-    "ms": 261,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=KAVAUSDT",
-    "ms": 560,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=KAVAUSDT&limit=5",
-    "ms": 563,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=KDA",
-    "ms": 276,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=KDAUSDT",
-    "ms": 558,
+    "ms": 755,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=KDAUSDT&limit=5",
-    "ms": 560,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=KNC",
-    "ms": 259,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=KNCUSDT",
-    "ms": 556,
+    "ms": 1107,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=KNCUSDT&limit=5",
-    "ms": 560,
+    "ms": 700,
     "ok": true
   },
   {
@@ -2517,13 +2517,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=KSMUSDT",
-    "ms": 560,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=KSMUSDT&limit=5",
-    "ms": 565,
+    "ms": 678,
     "ok": true
   },
   {
@@ -2535,43 +2535,43 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LDOUSDT",
-    "ms": 559,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LDOUSDT&limit=5",
-    "ms": 563,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=LDOUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 854,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=LINK",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 52,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LINKUSDT",
-    "ms": 604,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LINKUSDT&limit=5",
-    "ms": 562,
+    "ms": 986,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=LINKUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 1380,
     "ok": true
   },
   {
@@ -2583,13 +2583,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LPTUSDT",
-    "ms": 563,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LPTUSDT&limit=5",
-    "ms": 564,
+    "ms": 682,
     "ok": true
   },
   {
@@ -2601,13 +2601,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LQTYUSDT",
-    "ms": 572,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LQTYUSDT&limit=5",
-    "ms": 557,
+    "ms": 678,
     "ok": true
   },
   {
@@ -2619,13 +2619,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LRCUSDT",
-    "ms": 563,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LRCUSDT&limit=5",
-    "ms": 561,
+    "ms": 681,
     "ok": true
   },
   {
@@ -2637,37 +2637,37 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LSKUSDT",
-    "ms": 559,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LSKUSDT&limit=5",
-    "ms": 559,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=LTC",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 53,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=LTCUSDT",
-    "ms": 562,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=LTCUSDT&limit=5",
-    "ms": 558,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=LTCUSDT&interval=1m&limit=120",
-    "ms": 695,
+    "ms": 1380,
     "ok": true
   },
   {
@@ -2679,67 +2679,67 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MAGICUSDT",
-    "ms": 560,
+    "ms": 767,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MAGICUSDT&limit=5",
-    "ms": 558,
+    "ms": 686,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=MANA",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 62,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MANAUSDT",
-    "ms": 560,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MANAUSDT&limit=5",
-    "ms": 563,
+    "ms": 990,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=MASK",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 228,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MASKUSDT",
-    "ms": 556,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MASKUSDT&limit=5",
-    "ms": 561,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=MATIC",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 261,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MATICUSDT",
-    "ms": 558,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MATICUSDT&limit=5",
-    "ms": 563,
+    "ms": 680,
     "ok": true
   },
   {
@@ -2749,31 +2749,31 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/MATIC-USD/stats",
-    "ms": 123,
+    "ms": 70,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/MATIC-USD/book?level=1",
-    "ms": 252,
+    "ms": 118,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=MC",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 252,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MCUSDT",
-    "ms": 558,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MCUSDT&limit=5",
-    "ms": 560,
+    "ms": 756,
     "ok": true
   },
   {
@@ -2794,6 +2794,18 @@
   },
   {
     "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/simple/price?ids=merit-circle&vs_currencies=usd&include_24hr_vol=true",
+    "ms": 132,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=merit-circle&price_change_percentage=1h,24h",
+    "ms": 140,
+    "ok": true
+  },
+  {
+    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=MDT",
     "ok": false,
     "err": "HTTP 429"
@@ -2801,13 +2813,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MDTUSDT",
-    "ms": 557,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MDTUSDT&limit=5",
-    "ms": 560,
+    "ms": 685,
     "ok": true
   },
   {
@@ -2819,13 +2831,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MINAUSDT",
-    "ms": 560,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MINAUSDT&limit=5",
-    "ms": 557,
+    "ms": 982,
     "ok": true
   },
   {
@@ -2837,19 +2849,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MKRUSDT",
-    "ms": 562,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MKRUSDT&limit=5",
-    "ms": 561,
+    "ms": 707,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=MKRUSDT&interval=1m&limit=120",
-    "ms": 695,
+    "ms": 941,
     "ok": true
   },
   {
@@ -2861,13 +2873,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=MLNUSDT",
-    "ms": 559,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=MLNUSDT&limit=5",
-    "ms": 563,
+    "ms": 680,
     "ok": true
   },
   {
@@ -2921,25 +2933,25 @@
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=NEAR",
-    "ms": 116,
+    "ms": 52,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=NEARUSDT",
-    "ms": 559,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=NEARUSDT&limit=5",
-    "ms": 560,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=NEARUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 850,
     "ok": true
   },
   {
@@ -2951,13 +2963,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=NEXOUSDT",
-    "ms": 562,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=NEXOUSDT&limit=5",
-    "ms": 561,
+    "ms": 679,
     "ok": true
   },
   {
@@ -2969,13 +2981,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=NKNUSDT",
-    "ms": 563,
+    "ms": 760,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=NKNUSDT&limit=5",
-    "ms": 557,
+    "ms": 1108,
     "ok": true
   },
   {
@@ -2987,13 +2999,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=OCEANUSDT",
-    "ms": 559,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=OCEANUSDT&limit=5",
-    "ms": 557,
+    "ms": 688,
     "ok": true
   },
   {
@@ -3003,13 +3015,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/OCEAN-USD/stats",
-    "ms": 452,
+    "ms": 60,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/OCEAN-USD/book?level=1",
-    "ms": 127,
+    "ms": 120,
     "ok": true
   },
   {
@@ -3021,13 +3033,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=OGNUSDT",
-    "ms": 559,
+    "ms": 977,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=OGNUSDT&limit=5",
-    "ms": 561,
+    "ms": 983,
     "ok": true
   },
   {
@@ -3039,13 +3051,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=OMGUSDT",
-    "ms": 562,
+    "ms": 696,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=OMGUSDT&limit=5",
-    "ms": 558,
+    "ms": 682,
     "ok": true
   },
   {
@@ -3073,19 +3085,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ONDOUSDT",
-    "ms": 562,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ONDOUSDT&limit=5",
-    "ms": 563,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ONDOUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 848,
     "ok": true
   },
   {
@@ -3097,13 +3109,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ONGUSDT",
-    "ms": 557,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ONGUSDT&limit=5",
-    "ms": 560,
+    "ms": 679,
     "ok": true
   },
   {
@@ -3115,13 +3127,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ONTUSDT",
-    "ms": 559,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ONTUSDT&limit=5",
-    "ms": 562,
+    "ms": 680,
     "ok": true
   },
   {
@@ -3133,19 +3145,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=OPUSDT",
-    "ms": 558,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=OPUSDT&limit=5",
-    "ms": 558,
+    "ms": 757,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=OPUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1223,
     "ok": true
   },
   {
@@ -3157,19 +3169,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ORCAUSDT",
-    "ms": 561,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ORCAUSDT&limit=5",
-    "ms": 563,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ORCAUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 843,
     "ok": true
   },
   {
@@ -3181,13 +3193,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=OXTUSDT",
-    "ms": 560,
+    "ms": 978,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=OXTUSDT&limit=5",
-    "ms": 558,
+    "ms": 694,
     "ok": true
   },
   {
@@ -3199,13 +3211,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PAXGUSDT",
-    "ms": 558,
+    "ms": 699,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PAXGUSDT&limit=5",
-    "ms": 562,
+    "ms": 698,
     "ok": true
   },
   {
@@ -3217,97 +3229,97 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PENDLEUSDT",
-    "ms": 558,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PENDLEUSDT&limit=5",
-    "ms": 560,
+    "ms": 977,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=PENDLEUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 1380,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=PEPE",
-    "ms": 134,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PEPEUSDT",
-    "ms": 561,
+    "ms": 770,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PEPEUSDT&limit=5",
-    "ms": 562,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=PEPEUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 847,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=PERP",
-    "ms": 285,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PERPUSDT",
-    "ms": 559,
+    "ms": 699,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PERPUSDT&limit=5",
-    "ms": 558,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=PIXEL",
-    "ms": 261,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PIXELUSDT",
-    "ms": 566,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PIXELUSDT&limit=5",
-    "ms": 561,
+    "ms": 989,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=PLA",
-    "ms": 297,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PLAUSDT",
-    "ms": 559,
+    "ms": 697,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PLAUSDT&limit=5",
-    "ms": 557,
+    "ms": 1108,
     "ok": true
   },
   {
@@ -3329,8 +3341,8 @@
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=POKT",
-    "ms": 250,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
@@ -3352,18 +3364,6 @@
   },
   {
     "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/simple/price?ids=pocket-network&vs_currencies=usd&include_24hr_vol=true",
-    "ms": 195,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=pocket-network&price_change_percentage=1h,24h",
-    "ok": false,
-    "err": "HTTP 429"
-  },
-  {
-    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=POLS",
     "ok": false,
     "err": "HTTP 429"
@@ -3371,13 +3371,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=POLSUSDT",
-    "ms": 559,
+    "ms": 769,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=POLSUSDT&limit=5",
-    "ms": 571,
+    "ms": 731,
     "ok": true
   },
   {
@@ -3387,13 +3387,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/POLS-USD/stats",
-    "ms": 254,
+    "ms": 64,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/POLS-USD/book?level=1",
-    "ms": 242,
+    "ms": 81,
     "ok": true
   },
   {
@@ -3405,13 +3405,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=POLYXUSDT",
-    "ms": 561,
+    "ms": 685,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=POLYXUSDT&limit=5",
-    "ms": 563,
+    "ms": 991,
     "ok": true
   },
   {
@@ -3423,109 +3423,109 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PONDUSDT",
-    "ms": 559,
+    "ms": 699,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PONDUSDT&limit=5",
-    "ms": 559,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=POWR",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 215,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=POWRUSDT",
-    "ms": 558,
+    "ms": 706,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=POWRUSDT&limit=5",
-    "ms": 562,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=PUNDIX",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 226,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PUNDIXUSDT",
-    "ms": 577,
+    "ms": 756,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=PUNDIXUSDT&limit=5",
-    "ms": 559,
+    "ms": 687,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=QI",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 240,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=QIUSDT",
-    "ms": 576,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=QIUSDT&limit=5",
-    "ms": 558,
+    "ms": 1010,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=QNT",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 259,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=QNTUSDT",
-    "ms": 561,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=QNTUSDT&limit=5",
-    "ms": 558,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=QTUM",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 217,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=QTUMUSDT",
-    "ms": 563,
+    "ms": 709,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=QTUMUSDT&limit=5",
-    "ms": 558,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=QTUMUSDT&interval=1m&limit=120",
-    "ms": 697,
+    "ms": 1217,
     "ok": true
   },
   {
@@ -3537,19 +3537,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RADUSDT",
-    "ms": 561,
+    "ms": 767,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RADUSDT&limit=5",
-    "ms": 560,
+    "ms": 738,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=RADUSDT&interval=1m&limit=120",
-    "ms": 698,
+    "ms": 1232,
     "ok": true
   },
   {
@@ -3561,13 +3561,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RAREUSDT",
-    "ms": 557,
+    "ms": 700,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RAREUSDT&limit=5",
-    "ms": 559,
+    "ms": 1119,
     "ok": true
   },
   {
@@ -3585,13 +3585,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/RARI-USD/stats",
-    "ms": 134,
+    "ms": 131,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/RARI-USD/book?level=1",
-    "ms": 141,
+    "ms": 160,
     "ok": true
   },
   {
@@ -3603,19 +3603,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RAYUSDT",
-    "ms": 563,
+    "ms": 978,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RAYUSDT&limit=5",
-    "ms": 564,
+    "ms": 694,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=RAYUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 867,
     "ok": true
   },
   {
@@ -3627,13 +3627,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RENUSDT",
-    "ms": 560,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RENUSDT&limit=5",
-    "ms": 561,
+    "ms": 681,
     "ok": true
   },
   {
@@ -3661,13 +3661,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=REQUSDT",
-    "ms": 562,
+    "ms": 1177,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=REQUSDT&limit=5",
-    "ms": 561,
+    "ms": 756,
     "ok": true
   },
   {
@@ -3679,13 +3679,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RLCUSDT",
-    "ms": 557,
+    "ms": 710,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RLCUSDT&limit=5",
-    "ms": 559,
+    "ms": 699,
     "ok": true
   },
   {
@@ -3721,13 +3721,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RNDRUSDT",
-    "ms": 560,
+    "ms": 1008,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RNDRUSDT&limit=5",
-    "ms": 559,
+    "ms": 980,
     "ok": true
   },
   {
@@ -3779,13 +3779,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ROSEUSDT",
-    "ms": 562,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ROSEUSDT&limit=5",
-    "ms": 558,
+    "ms": 697,
     "ok": true
   },
   {
@@ -3797,13 +3797,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RPLUSDT",
-    "ms": 563,
+    "ms": 728,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RPLUSDT&limit=5",
-    "ms": 560,
+    "ms": 758,
     "ok": true
   },
   {
@@ -3815,13 +3815,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=RSRUSDT",
-    "ms": 559,
+    "ms": 707,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=RSRUSDT&limit=5",
-    "ms": 560,
+    "ms": 977,
     "ok": true
   },
   {
@@ -3833,19 +3833,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SANDUSDT",
-    "ms": 562,
+    "ms": 691,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SANDUSDT&limit=5",
-    "ms": 557,
+    "ms": 982,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SANDUSDT&interval=1m&limit=120",
-    "ms": 694,
+    "ms": 878,
     "ok": true
   },
   {
@@ -3857,13 +3857,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SCUSDT",
-    "ms": 561,
+    "ms": 1107,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SCUSDT&limit=5",
-    "ms": 562,
+    "ms": 731,
     "ok": true
   },
   {
@@ -3893,25 +3893,25 @@
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SHIB",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 52,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SHIBUSDT",
-    "ms": 559,
+    "ms": 683,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SHIBUSDT&limit=5",
-    "ms": 562,
+    "ms": 976,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SHIBUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1017,
     "ok": true
   },
   {
@@ -3923,19 +3923,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SKLUSDT",
-    "ms": 557,
+    "ms": 693,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SKLUSDT&limit=5",
-    "ms": 562,
+    "ms": 986,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SKLUSDT&interval=1m&limit=120",
-    "ms": 691,
+    "ms": 1012,
     "ok": true
   },
   {
@@ -3947,13 +3947,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SLPUSDT",
-    "ms": 565,
+    "ms": 1107,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SLPUSDT&limit=5",
-    "ms": 557,
+    "ms": 697,
     "ok": true
   },
   {
@@ -3965,13 +3965,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SNTUSDT",
-    "ms": 558,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SNTUSDT&limit=5",
-    "ms": 559,
+    "ms": 979,
     "ok": true
   },
   {
@@ -3999,43 +3999,43 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SNXUSDT",
-    "ms": 561,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SNXUSDT&limit=5",
-    "ms": 558,
+    "ms": 1010,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SNXUSDT&interval=1m&limit=120",
-    "ms": 701,
+    "ms": 844,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SOL",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 53,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SOLUSDT",
-    "ms": 560,
+    "ms": 809,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SOLUSDT&limit=5",
-    "ms": 559,
+    "ms": 684,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&limit=120",
-    "ms": 690,
+    "ms": 867,
     "ok": true
   },
   {
@@ -4047,19 +4047,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SPELLUSDT",
-    "ms": 558,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SPELLUSDT&limit=5",
-    "ms": 560,
+    "ms": 816,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SPELLUSDT&interval=1m&limit=120",
-    "ms": 690,
+    "ms": 1219,
     "ok": true
   },
   {
@@ -4071,152 +4071,152 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=STGUSDT",
-    "ms": 560,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=STGUSDT&limit=5",
-    "ms": 561,
+    "ms": 712,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=STGUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 867,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=STORJ",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 211,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=STORJUSDT",
-    "ms": 559,
+    "ms": 697,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=STORJUSDT&limit=5",
-    "ms": 561,
+    "ms": 998,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=STRK",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 232,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=STRKUSDT",
-    "ms": 563,
+    "ms": 1109,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=STRKUSDT&limit=5",
-    "ms": 561,
+    "ms": 810,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=STRKUSDT&interval=1m&limit=120",
-    "ms": 691,
+    "ms": 844,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=STX",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 241,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=STXUSDT",
-    "ms": 559,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=STXUSDT&limit=5",
-    "ms": 561,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SUI",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 73,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SUIUSDT",
-    "ms": 562,
+    "ms": 697,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SUIUSDT&limit=5",
-    "ms": 559,
+    "ms": 705,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SUIUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 842,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SUSHI",
-    "ms": 266,
+    "ms": 234,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SUSHIUSDT",
-    "ms": 585,
+    "ms": 811,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SUSHIUSDT&limit=5",
-    "ms": 557,
+    "ms": 1115,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SYN",
-    "ms": 280,
+    "ms": 247,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=SYNUSDT",
-    "ms": 563,
+    "ms": 809,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=SYNUSDT&limit=5",
-    "ms": 558,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=SYNUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 1219,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=SYNTH",
-    "ms": 272,
-    "ok": true
+    "ok": false,
+    "err": "HTTP 429"
   },
   {
     "stage": "http",
@@ -4238,18 +4238,6 @@
   },
   {
     "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/simple/price?ids=synthesizeai&vs_currencies=usd&include_24hr_vol=true",
-    "ms": 248,
-    "ok": true
-  },
-  {
-    "stage": "http",
-    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=synthesizeai&price_change_percentage=1h,24h",
-    "ms": 174,
-    "ok": true
-  },
-  {
-    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=T",
     "ok": false,
     "err": "HTTP 429"
@@ -4257,13 +4245,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TUSDT",
-    "ms": 564,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TUSDT&limit=5",
-    "ms": 565,
+    "ms": 690,
     "ok": true
   },
   {
@@ -4299,19 +4287,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TIAUSDT",
-    "ms": 561,
+    "ms": 809,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TIAUSDT&limit=5",
-    "ms": 563,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=TIAUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1388,
     "ok": true
   },
   {
@@ -4323,19 +4311,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TONUSDT",
-    "ms": 560,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TONUSDT&limit=5",
-    "ms": 575,
+    "ms": 699,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=TONUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 848,
     "ok": true
   },
   {
@@ -4347,13 +4335,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TRBUSDT",
-    "ms": 565,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TRBUSDT&limit=5",
-    "ms": 558,
+    "ms": 809,
     "ok": true
   },
   {
@@ -4365,37 +4353,37 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TRUUSDT",
-    "ms": 558,
+    "ms": 811,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TRUUSDT&limit=5",
-    "ms": 560,
+    "ms": 700,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=TRX",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 76,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=TRXUSDT",
-    "ms": 562,
+    "ms": 981,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=TRXUSDT&limit=5",
-    "ms": 582,
+    "ms": 981,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=TRXUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 873,
     "ok": true
   },
   {
@@ -4407,19 +4395,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=UMAUSDT",
-    "ms": 557,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=UMAUSDT&limit=5",
-    "ms": 561,
+    "ms": 683,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=UMAUSDT&interval=1m&limit=120",
-    "ms": 696,
+    "ms": 1401,
     "ok": true
   },
   {
@@ -4431,19 +4419,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=UNIUSDT",
-    "ms": 574,
+    "ms": 699,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=UNIUSDT&limit=5",
-    "ms": 598,
+    "ms": 809,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=UNIUSDT&interval=1m&limit=120",
-    "ms": 691,
+    "ms": 843,
     "ok": true
   },
   {
@@ -4455,19 +4443,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=USDCUSDT",
-    "ms": 561,
+    "ms": 982,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=USDCUSDT&limit=5",
-    "ms": 563,
+    "ms": 680,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=USDCUSDT&interval=1m&limit=120",
-    "ms": 694,
+    "ms": 1225,
     "ok": true
   },
   {
@@ -4485,19 +4473,19 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/USDT-USD/stats",
-    "ms": 208,
+    "ms": 74,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/USDT-USD/book?level=1",
-    "ms": 195,
+    "ms": 126,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/USDT-USD/candles?granularity=60",
-    "ms": 195,
+    "ms": 119,
     "ok": true
   },
   {
@@ -4509,19 +4497,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=VETUSDT",
-    "ms": 601,
+    "ms": 1108,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=VETUSDT&limit=5",
-    "ms": 561,
+    "ms": 701,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=VETUSDT&interval=1m&limit=120",
-    "ms": 726,
+    "ms": 866,
     "ok": true
   },
   {
@@ -4533,13 +4521,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=VOXELUSDT",
-    "ms": 573,
+    "ms": 682,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=VOXELUSDT&limit=5",
-    "ms": 558,
+    "ms": 980,
     "ok": true
   },
   {
@@ -4551,13 +4539,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=VTHOUSDT",
-    "ms": 562,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=VTHOUSDT&limit=5",
-    "ms": 571,
+    "ms": 809,
     "ok": true
   },
   {
@@ -4569,13 +4557,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=WAVESUSDT",
-    "ms": 561,
+    "ms": 689,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=WAVESUSDT&limit=5",
-    "ms": 578,
+    "ms": 678,
     "ok": true
   },
   {
@@ -4603,13 +4591,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=WAXPUSDT",
-    "ms": 563,
+    "ms": 980,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=WAXPUSDT&limit=5",
-    "ms": 561,
+    "ms": 1108,
     "ok": true
   },
   {
@@ -4621,19 +4609,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=WBTCUSDT",
-    "ms": 577,
+    "ms": 697,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=WBTCUSDT&limit=5",
-    "ms": 561,
+    "ms": 981,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=WBTCUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 883,
     "ok": true
   },
   {
@@ -4651,13 +4639,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/WCFG-USD/stats",
-    "ms": 171,
+    "ms": 110,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/WCFG-USD/book?level=1",
-    "ms": 130,
+    "ms": 133,
     "ok": true
   },
   {
@@ -4669,19 +4657,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=WLDUSDT",
-    "ms": 626,
+    "ms": 678,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=WLDUSDT&limit=5",
-    "ms": 562,
+    "ms": 693,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=WLDUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 1022,
     "ok": true
   },
   {
@@ -4693,13 +4681,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=WOOUSDT",
-    "ms": 557,
+    "ms": 1132,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=WOOUSDT&limit=5",
-    "ms": 558,
+    "ms": 979,
     "ok": true
   },
   {
@@ -4711,37 +4699,37 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=XLMUSDT",
-    "ms": 561,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=XLMUSDT&limit=5",
-    "ms": 562,
+    "ms": 729,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=XLMUSDT&interval=1m&limit=120",
-    "ms": 693,
+    "ms": 1007,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=XMR",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 219,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=XMRUSDT",
-    "ms": 562,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=XMRUSDT&limit=5",
-    "ms": 558,
+    "ms": 980,
     "ok": true
   },
   {
@@ -4762,62 +4750,74 @@
   },
   {
     "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=usd&include_24hr_vol=true",
+    "ms": 151,
+    "ok": true
+  },
+  {
+    "stage": "http",
+    "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=monero&price_change_percentage=1h,24h",
+    "ms": 136,
+    "ok": true
+  },
+  {
+    "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=XRP",
-    "ms": 129,
+    "ms": 115,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=XRPUSDT",
-    "ms": 579,
+    "ms": 811,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=XRPUSDT&limit=5",
-    "ms": 561,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=XRPUSDT&interval=1m&limit=120",
-    "ms": 692,
+    "ms": 1380,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=XTZ",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 262,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=XTZUSDT",
-    "ms": 557,
+    "ms": 700,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=XTZUSDT&limit=5",
-    "ms": 574,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.coingecko.com/api/v3/search?query=XVS",
-    "ok": false,
-    "err": "HTTP 429"
+    "ms": 215,
+    "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=XVSUSDT",
-    "ms": 562,
+    "ms": 681,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=XVSUSDT&limit=5",
-    "ms": 562,
+    "ms": 977,
     "ok": true
   },
   {
@@ -4829,13 +4829,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=YFIUSDT",
-    "ms": 560,
+    "ms": 687,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=YFIUSDT&limit=5",
-    "ms": 611,
+    "ms": 980,
     "ok": true
   },
   {
@@ -4847,13 +4847,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=YGGUSDT",
-    "ms": 559,
+    "ms": 809,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=YGGUSDT&limit=5",
-    "ms": 560,
+    "ms": 1108,
     "ok": true
   },
   {
@@ -4865,19 +4865,19 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ZECUSDT",
-    "ms": 562,
+    "ms": 702,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ZECUSDT&limit=5",
-    "ms": 562,
+    "ms": 698,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/klines?symbol=ZECUSDT&interval=1m&limit=120",
-    "ms": 720,
+    "ms": 846,
     "ok": true
   },
   {
@@ -4895,13 +4895,13 @@
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/ZETA-USD/stats",
-    "ms": 445,
+    "ms": 70,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://api.exchange.coinbase.com/products/ZETA-USD/book?level=1",
-    "ms": 137,
+    "ms": 142,
     "ok": true
   },
   {
@@ -4913,13 +4913,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ZILUSDT",
-    "ms": 561,
+    "ms": 679,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ZILUSDT&limit=5",
-    "ms": 593,
+    "ms": 682,
     "ok": true
   },
   {
@@ -4931,13 +4931,13 @@
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/ticker/24hr?symbol=ZRXUSDT",
-    "ms": 560,
+    "ms": 979,
     "ok": true
   },
   {
     "stage": "http",
     "url": "https://data-api.binance.vision/api/v3/depth?symbol=ZRXUSDT&limit=5",
-    "ms": 598,
+    "ms": 809,
     "ok": true
   }
 ]
