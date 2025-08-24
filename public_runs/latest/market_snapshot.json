@@ -1,13 +1,5 @@
 {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  "time": "2025-08-24T07:47:23.462421+00:00",
-=======
-  "time": "2025-08-24T07:51:41.366468+00:00",
->>>>>>> Stashed changes
-=======
-  "time": "2025-08-24T07:54:08.911828+00:00",
->>>>>>> Stashed changes
+  "time": "2025-08-24T10:14:18.498278+00:00",
   "equity": 41000.0,
   "cash": 32000.0,
   "breach": false,
@@ -15,36 +7,19 @@
   "regime": {
     "ok": false,
     "reason": "btc-below-vwap-or-ema",
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    "last": 114953.15,
-    "vwap": 115071.81636333618,
-    "ema9": 114932.22861433285
-=======
-    "last": 114944.64,
-    "vwap": 115071.78771101865,
-    "ema9": 114930.52661433285
->>>>>>> Stashed changes
-=======
-    "last": 114923.86,
-    "vwap": 115082.2587318486,
-    "ema9": 114931.08023317304
->>>>>>> Stashed changes
+    "last": 114819.49,
+    "vwap": 115104.43615293516,
+    "ema9": 114827.5958046486
   },
-  "universe_count": 58,
+  "universe_count": 60,
   "candidates": [],
   "reject_stats": {
-<<<<<<< Updated upstream
-    "meta": 11,
-    "no_spread": 15,
-=======
-    "meta": 13,
-    "no_spread": 13,
->>>>>>> Stashed changes
-    "vol": 133,
+    "meta": 17,
+    "no_spread": 9,
+    "vol": 131,
     "spread": 0,
     "bars": 0,
-    "br": 58,
+    "br": 60,
     "pb": 0,
     "atr": 0
   }
