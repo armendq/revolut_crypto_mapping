@@ -1,9 +1,5 @@
 {
-<<<<<<< Updated upstream
-  "time": "2025-08-24T07:47:23.462421+00:00",
-=======
   "time": "2025-08-24T07:51:41.366468+00:00",
->>>>>>> Stashed changes
   "equity": 41000.0,
   "cash": 32000.0,
   "breach": false,
@@ -11,15 +7,9 @@
   "regime": {
     "ok": false,
     "reason": "btc-below-vwap-or-ema",
-<<<<<<< Updated upstream
-    "last": 114953.15,
-    "vwap": 115071.81636333618,
-    "ema9": 114932.22861433285
-=======
     "last": 114944.64,
     "vwap": 115071.78771101865,
     "ema9": 114930.52661433285
->>>>>>> Stashed changes
   },
   "universe_count": 58,
   "candidates": [],
