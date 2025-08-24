@@ -1,5 +1,5 @@
 {
-  "time": "2025-08-24T23:36:00.441975+00:00",
+  "time": "2025-08-24T23:46:06.442054+00:00",
   "equity": 41964.0,
   "cash": 0.0,
   "breach": false,
@@ -7,15 +7,15 @@
   "regime": {
     "ok": true,
     "reason": "",
-    "last": 113548.63,
-    "vwap": 113422.37410930287,
-    "ema9": 113465.26806991381
+    "last": 113439.89,
+    "vwap": 113420.39922943038,
+    "ema9": 113464.90125593106
   },
-  "universe_count": 197,
+  "universe_count": 196,
   "candidates": [],
   "reject_stats": {
-    "liquidity": 20,
-    "bars": 26,
+    "liquidity": 21,
+    "bars": 25,
     "rules": 171
   }
 }
