@@ -59,26 +59,39 @@ jobs:
           test -f data/signals.json
           test -f artifacts/run_stats.json
           test -f artifacts/debug_scan.json
-          echo "Artifacts present:"
-          ls -l artifacts || true
-          echo "Data present:"
-          ls -l data || true
+          echo "Artifacts present:" && ls -l artifacts || true
+          echo "Data present:" && ls -l data || true
 
-      - name: Prepare public_runs/latest
+      - name: Prepare public_runs/latest (force-fresh signals)
         run: |
           set -e
           mkdir -p public_runs/latest
-          # publish key outputs
+          # summary
           cp artifacts/market_snapshot.json public_runs/latest/summary.json
-          cp data/signals.json            public_runs/latest/signals.json
-          cp artifacts/run_stats.json     public_runs/latest/run_stats.json
-          cp artifacts/debug_scan.json    public_runs/latest/debug_scan.json
-          # timestamped snapshot
+          # signals wrapper with timestamp so content always changes
+          python - <<'PY'
+import json, datetime, pathlib
+src = pathlib.Path("data/signals.json")
+dst = pathlib.Path("public_runs/latest/signals.json")
+payload = json.loads(src.read_text())
+out = {
+  "generated_at_utc": datetime.datetime.utcnow().isoformat()+"Z",
+  "signals": payload
+}
+dst.write_text(json.dumps(out, indent=2))
+print("Wrote", dst)
+PY
+          # other artifacts
+          cp artifacts/run_stats.json  public_runs/latest/run_stats.json
+          cp artifacts/debug_scan.json public_runs/latest/debug_scan.json
+          # timestamped snapshot (keep only the newest)
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
           cp public_runs/latest/* "public_runs/$ts/"
-          # cleanup: keep only 20 most recent timestamped dirs
-          ls -1dt public_runs/20* | tail -n +21 | xargs -r rm -rf
+          # remove all older timestamped folders, keep only newest
+          for d in $(ls -1dt public_runs/20* 2>/dev/null | tail -n +2); do
+            rm -rf "$d"
+          done
 
       - name: Commit changes to main (conflict-safe)
         env:
@@ -104,3 +117,4 @@ jobs:
           publish_branch: gh-pages
           publish_dir: public_runs
           force_orphan: true
+```0
