@@ -7,11 +7,12 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,26 +56,15 @@ jobs:
 
       - name: Build summary.json
         run: python scripts/build_summary.py
+
       - name: Verify summary.json
         run: |
           set -e
           test -f public_runs/latest/summary.json
           sz=$(wc -c < public_runs/latest/summary.json || echo 0)
           echo "summary.json size: $sz bytes"
-          if [ "$sz" -lt 50 ]; then
-            echo "summary.json is too small or empty"; exit 1
-          fi
-          echo "summary.json (first 60 lines):"
-          nl -ba public_runs/latest/summary.json | sed -n '1,60p'
+          [ "$sz" -ge 50 ]
 
-      - name: Show inputs for summary
-        run: |
-          echo "market_snapshot.json (first 40 lines)"
-          nl -ba artifacts/market_snapshot.json | sed -n '1,40p' || true
-          echo "signals.json (first 40 lines)"
-          nl -ba data/signals.json | sed -n '1,40p' || true
-          echo "run_stats.json (first 40 lines)"
-          nl -ba artifacts/run_stats.json | sed -n '1,40p' || true
       - name: Commit changes to main (rebase-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,35 +72,36 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Rebase onto latest remote main to avoid non-fast-forward errors
           git fetch origin main
           git -c rebase.autoStash=true pull --rebase origin main || true
-
           git add -A data artifacts public_runs || true
-
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "ci: update analyses outputs [skip ci]" || true
+            git push origin HEAD:main
           fi
 
-          # Retry push up to 3 times
-          for i in 1 2 3; do
-            if git push origin HEAD:main; then
-              echo "Pushed on attempt $i"
-              break
-            fi
-            echo "Push failed, retrying ($i)..."
-            git fetch origin main
-            git -c rebase.autoStash=true pull --rebase origin main || true
-            sleep $((i*2))
-          done
+      # Publish ONLY the public_runs folder to a public gh-pages branch
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: public_runs
+          force_orphan: true
 
-      - name: Print raw URLs
-        run: |
-          echo summary.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json
-          echo signals.json: https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/signals.json
-          echo snapshot:     https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/market_snapshot.json
-          echo run_stats:    https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/run_stats.json
-          echo debug_scan:   https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/debug_scan.json
+  # Optional: set up GitHub Pages (first run auto-creates branch)
+  pages:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public_runs
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
