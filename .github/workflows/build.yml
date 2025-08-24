@@ -3,7 +3,13 @@ name: Run mapping & analyses
 on:
   push:
     branches: ["main"]
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes (UTC)
   workflow_dispatch: {}
+
+concurrency:
+  group: publish-public-runs
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -63,23 +69,45 @@ jobs:
           sz=$(wc -c < public_runs/latest/summary.json || echo 0)
           echo "summary.json size: $sz bytes"
           [ "$sz" -ge 50 ]
+          echo "First 60 lines:"
+          nl -ba public_runs/latest/summary.json | sed -n '1,60p'
 
-      - name: Commit changes to main (rebase-safe)
+      - name: Commit changes to main (conflict-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git -c rebase.autoStash=true pull --rebase origin main || true
+
           git add -A data artifacts public_runs || true
+
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "ci: update analyses outputs [skip ci]" || true
-            git push origin HEAD:main
+            git commit -m "ci: publish runs $(date -u +'%Y-%m-%dT%H:%M:%SZ') [skip ci]" || true
           fi
+
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push failed, retrying ($i)..."
+            git fetch origin main
+            git -c rebase.autoStash=true pull --rebase origin main || true
+            # Resolve public_runs conflicts in our favor if any
+            if git ls-files -u | grep -q '^'; then
+              git checkout --ours -- public_runs || true
+              git add -A public_runs
+              git rebase --continue || true
+            fi
+            sleep $((i*2))
+          done
+          echo "Failed to push after retries."
+          exit 1
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
