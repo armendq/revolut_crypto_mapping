@@ -68,15 +68,17 @@ jobs:
         run: |
           set -e
           mkdir -p public_runs/latest
-          # summary = market snapshot for bots; signals = human/execution
+          # publish key outputs
           cp artifacts/market_snapshot.json public_runs/latest/summary.json
           cp data/signals.json            public_runs/latest/signals.json
           cp artifacts/run_stats.json     public_runs/latest/run_stats.json
           cp artifacts/debug_scan.json    public_runs/latest/debug_scan.json
-          # timestamped snapshot for history
+          # timestamped snapshot
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
           cp public_runs/latest/* "public_runs/$ts/"
+          # cleanup: keep only 20 most recent timestamped dirs
+          ls -1dt public_runs/20* | tail -n +21 | xargs -r rm -rf
 
       - name: Commit changes to main (conflict-safe)
         env:
