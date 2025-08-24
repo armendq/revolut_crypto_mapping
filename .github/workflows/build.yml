@@ -2,10 +2,14 @@ name: Run mapping & analyses
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+    branches: ["main"]
   schedule:
-    - cron: "*/15 * * * *"   # run every 15 minutes
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: publish-public-runs
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -19,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,50 +37,63 @@ jobs:
 
       - name: Generate mapping (safe)
         run: |
-          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
             echo "No mapping.py found; skipping mapping generation."
           fi
-          echo "✅ Ensured mapping files exist (or skipped)."
 
       - name: Run analyses
         env:
-          EQUITY: ${{ vars.EQUITY || '41000' }}
-          CASH:   ${{ vars.CASH   || '32000' }}
+          EQUITY: ${{ vars.EQUITY || '41964' }}
+          CASH:   ${{ vars.CASH   || '0' }}
           EQUITY_FLOOR: ${{ vars.EQUITY_FLOOR || '40000' }}
         run: |
           set -e
           python -m scripts.analyses
 
-      - name: Commit changes to main artifacts
+      - name: Verify outputs exist
+        run: |
+          set -e
+          test -f artifacts/market_snapshot.json
+          test -f data/signals.json
+          test -f artifacts/run_stats.json
+          test -f artifacts/debug_scan.json
+          echo "Artifacts present:"
+          ls -l artifacts || true
+          echo "Data present:"
+          ls -l data || true
+
+      - name: Prepare public_runs/latest
+        run: |
+          set -e
+          mkdir -p public_runs/latest
+          # summary = market snapshot for bots; signals = human/execution
+          cp artifacts/market_snapshot.json public_runs/latest/summary.json
+          cp data/signals.json            public_runs/latest/signals.json
+          cp artifacts/run_stats.json     public_runs/latest/run_stats.json
+          cp artifacts/debug_scan.json    public_runs/latest/debug_scan.json
+          # timestamped snapshot for history
+          ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          mkdir -p "public_runs/$ts"
+          cp public_runs/latest/* "public_runs/$ts/"
+
+      - name: Commit changes to main (conflict-safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          echo "=== Status before staging ==="
-          git status --porcelain
-
-          git add -A data artifacts
-
-          echo "=== Status after staging ==="
-          git status --porcelain
-
+          git fetch origin main
+          git -c rebase.autoStash=true pull --rebase origin main || true
+          git add -A data artifacts public_runs || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update data & snapshot [skip ci]"
-            git push
+            git commit -m "ci: publish signals & summary $(date -u +'%Y-%m-%dT%H:%M:%SZ') [skip ci]" || true
+            git push origin HEAD:main || true
           fi
-
-      - name: Prepare latest summary
-        run: |
-          mkdir -p public_runs/latest
-          cp artifacts/market_snapshot.json public_runs/latest/summary.json
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
