@@ -32,13 +32,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          set -e
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
       - name: Generate mapping (safe)
         run: |
-          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
@@ -50,13 +48,10 @@ jobs:
           EQUITY: ${{ vars.EQUITY || '41964' }}
           CASH: ${{ vars.CASH || '0' }}
           EQUITY_FLOOR: ${{ vars.EQUITY_FLOOR || '40000' }}
-        run: |
-          set -e
-          python -m scripts.analyses
+        run: python -m scripts.analyses
 
       - name: Verify outputs exist
         run: |
-          set -e
           test -f artifacts/market_snapshot.json
           test -f data/signals.json
           test -f artifacts/run_stats.json
@@ -64,40 +59,29 @@ jobs:
           ls -l artifacts || true
           ls -l data || true
 
-      - name: Prepare public_runs/latest (force-fresh signals)
+      - name: Prepare public_runs/latest
         run: |
-          set -e
           mkdir -p public_runs/latest
           cp artifacts/market_snapshot.json public_runs/latest/summary.json
-          python - <<'PY'
-import json, datetime, pathlib
-src = pathlib.Path("data/signals.json")
-dst = pathlib.Path("public_runs/latest/signals.json")
-payload = json.loads(src.read_text())
-out = {
-  "generated_at_utc": datetime.datetime.utcnow().isoformat() + "Z",
-  "signals": payload
-}
-dst.write_text(json.dumps(out, indent=2))
-print("Wrote", dst)
-PY
+
+          python scripts/prepare_signals.py
+
           cp artifacts/run_stats.json  public_runs/latest/run_stats.json
           cp artifacts/debug_scan.json public_runs/latest/debug_scan.json
+
           ts="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
           mkdir -p "public_runs/$ts"
           cp public_runs/latest/* "public_runs/$ts/"
-          # keep only newest timestamped folder
-          for d in $(ls -1dt 'public_runs/20*' 2>/dev/null | tail -n +2); do
-            rm -rf "$d"
-          done
 
-      - name: Commit changes to main (conflict-safe)
+          # Keep only newest timestamped folder
+          ls -1dt public_runs/20* 2>/dev/null | tail -n +2 | xargs -r rm -rf
+
+      - name: Commit changes to main
         run: |
-          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          git -c rebase.autoStash=true pull --rebase origin main || true
+          git pull --rebase origin main || true
           git add -A data artifacts public_runs || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -113,4 +97,3 @@ PY
           publish_branch: gh-pages
           publish_dir: public_runs
           force_orphan: true
-```0
