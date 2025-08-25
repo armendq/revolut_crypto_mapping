@@ -29,18 +29,19 @@ jobs:
 
       - name: Run analyses
         run: |
-          python -m scripts.analyses || echo "Analyses failed"
+          python -m scripts.analyses
 
       - name: Prepare outputs
         run: |
           mkdir -p public_runs/latest
-          echo '{ "status": "ok" }' > public_runs/latest/summary.json
+          cp artifacts/*.json public_runs/latest/ || true
+          cp data/*.json public_runs/latest/ || true
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public_runs/latest/summary.json
+          git add public_runs/latest/*.json
           git commit -m "update summary [skip ci]" || echo "No changes"
           git push
 
