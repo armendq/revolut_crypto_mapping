@@ -1,46 +1,30 @@
 name: build
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"  # every 15 minutes
-  push:
-    branches: [ "main" ]
+    # every 15 minutes
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
 
 concurrency:
-  group: build-revolut
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      # --- Analysis knobs (safe defaults; override here anytime) ---
-      MIN_VOL24_USD: "25000000"
-      MIN_MCAP_USD: "50000000"
-
-      FAST_MOM_ENABLED: "true"
-      FAST_MOM_TIMEFRAME: "15m"
-      FAST_MOM_MIN_MOVE_PCT: "8"
-      FAST_MOM_MIN_RVOL: "3"
-      FAST_MOM_MAX_SPREAD_PCT: "0.6"
-      FAST_MOM_RISK_PCT: "0.6"
-      FAST_MOM_CAP_PCT: "10"
-      REGIME_GATE_FAST: "false"
-
-      SWING_LOOKBACK_HIGH: "20"
-      ATR_PERIOD: "14"
-      RISK_PCT_SWING: "1.2"
-
-      CAP_OK: "0.60"
-      CAP_WEAK: "0.30"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -50,51 +34,47 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ccxt==4.3.81 numpy==1.26.4 pandas==2.2.2 requests
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run analyses
         run: |
-          python scripts/analyses.py
+          set -e
+          python -m scripts.analyses
+
+      - name: Prepare public_runs/latest
+        run: |
+          set -e
+          mkdir -p public_runs/latest
+          [ -f summary.json ] && cp -f summary.json public_runs/latest/ || true
+          [ -f public_runs/latest/summary.json ] || (echo "summary.json missing" && exit 1)
 
       - name: Verify outputs exist
         run: |
           test -f public_runs/latest/summary.json
-          echo "Output OK"
 
       - name: Clean old public_runs folders (keep latest)
         run: |
-          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
-
-      - name: Commit changes to main (force-safe)
-        run: |
-          set -e
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name  "github-actions[bot]"
-          git add -A
-          git commit -m "ci: update analyses outputs [skip ci]" || echo "No changes to commit."
-          # rebase safely even if remote advanced; --autostash prevents dirty index errors
-          git pull --rebase --autostash origin main || true
-          git push origin HEAD:main || true
+          find public_runs -maxdepth 1 -mindepth 1 -type d ! -name latest -exec rm -rf {} +
 
       - name: Deploy to gh-pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages
-          folder: public_runs
-          clean: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public_runs
+          keep_files: true
+          commit_message: "ci: publish public_runs (latest)"
 
-      - name: Verify Pages endpoint (soft)
+      - name: Verify Pages endpoint
+        continue-on-error: true
+        shell: bash
         run: |
-          set +e
+          set -e
           url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
           echo "Checking $url"
-          for i in 1 2 3 4 5; do
+          for i in {1..4}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
             echo "HTTP $code"
-            if [ "$code" = "200" ]; then
-              exit 0
-            fi
-            sleep 10
+            [ "$code" = "200" ] && exit 0
+            sleep 5
           done
           echo "Pages may still be propagating; not failing the build."
-          exit 0
