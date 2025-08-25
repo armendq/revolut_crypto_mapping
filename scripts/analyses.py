@@ -1,524 +1,431 @@
-# scripts/analyses.py
-# Scanner-only. Publishes rich, machine-readable outputs for execution.
-# No manual EQUITY/CASH. I compute entries/stops/ATR; you size at execution.
+"""
+Analyses runner (Phase-1 relaxed filters + momentum path)
+
+Outputs to:
+  public_runs/latest/summary.json
+  public_runs/latest/signals.json
+  public_runs/latest/run_stats.json
+  public_runs/latest/market_snapshot.json
+  public_runs/latest/debug_scan.json
+
+Notes
+- Prefers data/portfolio.json for equity/cash; falls back to env vars.
+- Universe keeps CG-only assets (no order book) and flags them.
+- Two entry paths:
+  1) Aggressive 1m breakout + micro pullback (relaxed)
+  2) Momentum: 5m HH breakout + 15m ROC + RVOL(5m)
+- Always writes candidates even if signal type is "C".
+Rules respected:
+- DOT is staked/untouchable; ETH & DOT are not rotated.
+- Floor check: equity must be >= 40_000 (hard stop to open new risk).
+"""
+
+from __future__ import annotations
 
 import json
-import statistics
-import urllib.request
-import urllib.error
+import math
+import os
 import time
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Optional, Dict, List, Any
-from time import perf_counter
+from dataclasses import dataclass, asdict
+from datetime import datetime, timezone, timedelta
+from typing import List, Dict, Any, Optional
 
+import requests
 import pandas as pd
 
-# local helpers
-from scripts.marketdata import get_btc_5m_klines, ema, vwap
+# ---------- Config (relaxed) ----------
+VOL_USD_MIN = 3_000_000         # was 8M
+MAX_SPREAD = 0.01               # 1% (was 0.5%)
+FLOOR_EQUITY = 40_000
 
-# paths
-ARTIFACTS = Path("artifacts")
-DATA = Path("data")
-ARTIFACTS.mkdir(parents=True, exist_ok=True)
-DATA.mkdir(parents=True, exist_ok=True)
+# Aggressive 1m breakout window (relaxed)
+BREAKOUT_PCT_MIN = 0.010        # +1.0%
+BREAKOUT_PCT_MAX = 0.060        # +6.0%
+RVOL_1M_MIN = 2.5               # was 4.0
+MICRO_FADE_MAX = 0.010          # 1.0% (was 0.6%)
 
-SNAP_PATH = ARTIFACTS / "market_snapshot.json"   # rich summary
-SIGNAL_PATH = DATA / "signals.json"              # structured signals
-RUN_STATS = ARTIFACTS / "run_stats.json"
-DEBUG_PATH = ARTIFACTS / "debug_scan.json"
-DEBUG_LOG: List[Dict[str, Any]] = []
+# Momentum path
+HH_LOOKBACK_5M = 20             # bars
+ROC_15M_LOOKBACK = 30           # bars of 30s (we'll calculate differently)
+ROC_15M_MIN = 0.04              # +4%
+RVOL_5M_MIN = 1.8
 
-# config
-UNIVERSE_VOL_MIN_USD = 500_000   # skip only if 24h volume known and < $500k
-ASSUMED_TIGHT_SPREAD = 0.002
-
-# permissive breakout to surface opportunities
-BR_MIN = 0.008        # +0.8% vs prev close
-RVOL_MIN = 1.5        # vs 15-bar median
-HH_CONFIRM = 0.001    # 0.1% above recent high
-FADE_MAX = 0.015      # <=1.5% fade ok
-RANGE_MAX = 0.020     # <=2.0% intrabar range ok
-
-# sizing constants (published for the executor)
+# Risk model
 RISK_PCT = 0.012
-STRONG_ALLOC = 0.60
-WEAK_ALLOC = 0.30
+CAP_OK = 0.60
+CAP_WEAK = 0.30
 
-# endpoints
-BINANCE_BASES = ["https://data-api.binance.vision"]
-COINBASE_BASE = "https://api.exchange.coinbase.com"
-COINGECKO_BASE = "https://api.coingecko.com/api/v3"
+DATA_DIR = "public_runs/latest"
+os.makedirs(DATA_DIR, exist_ok=True)
 
-blocked_451 = False
+# ---------- Small helpers ----------
+def utcnow_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
-
-# utils
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _as_float(x: Any) -> float:
-    if hasattr(x, "iloc"):
-        return float(x.iloc[-1])
-    return float(x)
-
-
-def _http_json(url: str, timeout: int = 20) -> Optional[Any]:
-    global blocked_451
-    req = urllib.request.Request(url, headers={"User-Agent": "rev-scan/2.1"})
-    t0 = perf_counter()
+def read_json(path: str) -> Optional[dict]:
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            raw = r.read().decode()
-            data = json.loads(raw)
-        DEBUG_LOG.append({"stage": "http", "url": url, "ms": int((perf_counter() - t0) * 1000), "ok": True})
-        return data
-    except urllib.error.HTTPError as he:
-        if he.code == 451:
-            blocked_451 = True
-        DEBUG_LOG.append({"stage": "http", "url": url, "ok": False, "err": f"HTTP {he.code}"})
-        return None
-    except Exception as e:
-        DEBUG_LOG.append({"stage": "http", "url": url, "ok": False, "err": str(e)})
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
         return None
 
+def write_json(path: str, data: Any):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
-def median(seq: List[float]) -> float:
-    return statistics.median(seq) if seq else 0.0
+def env_float(name: str, default: float) -> float:
+    val = os.getenv(name)
+    try:
+        return float(val) if val is not None else default
+    except Exception:
+        return default
 
+# ---------- Basic market fetchers (CoinGecko + Binance lite) ----------
+CG_BASE = "https://api.coingecko.com/api/v3"
 
-def true_range(h: float, l: float, pc: float) -> float:
-    return max(h - l, abs(h - pc), abs(l - pc))
-
-
-def atr_from_klines(bars: List[Dict[str, float]], period: int = 14) -> float:
-    if len(bars) < period + 1:
-        return 0.0
-    trs = []
-    for i in range(1, period + 1):
-        h = bars[-i]["h"]
-        l = bars[-i]["l"]
-        pc = bars[-i - 1]["c"]
-        trs.append(true_range(h, l, pc))
-    return sum(trs) / len(trs)
-
-
-def spread_pct(bid: float, ask: float) -> float:
-    mid = (bid + ask) / 2.0
-    return 0.0 if mid == 0 else (ask - bid) / mid
-
-
-def ema_list(values: List[float], span: int) -> List[float]:
-    if not values:
-        return []
-    k = 2.0 / (span + 1.0)
-    out = [values[0]]
-    for v in values[1:]:
-        out.append(out[-1] + k * (v - out[-1]))
+def cg_simple_price(ids: List[str]) -> Dict[str, Any]:
+    # chunks of 100
+    out = {}
+    for i in range(0, len(ids), 100):
+        chunk = ids[i:i+100]
+        params = {
+            "ids": ",".join(chunk),
+            "vs_currencies": "usd",
+            "include_24hr_vol": "true",
+            "include_last_updated_at": "true",
+        }
+        r = requests.get(f"{CG_BASE}/simple/price", params=params, timeout=20)
+        r.raise_for_status()
+        out.update(r.json())
+        time.sleep(0.3)
     return out
 
+def cg_market_chart(coin_id: str, days: int = 1) -> pd.DataFrame:
+    # Minute-ish resolution for 1 day
+    r = requests.get(f"{CG_BASE}/coins/{coin_id}/market_chart",
+                     params={"vs_currency": "usd", "days": days}, timeout=30)
+    r.raise_for_status()
+    js = r.json()
+    # prices: [ [ms, price], ... ]
+    df = pd.DataFrame(js.get("prices", []), columns=["ts_ms", "price"])
+    df["time"] = pd.to_datetime(df["ts_ms"], unit="ms", utc=True)
+    df = df.set_index("time").drop(columns=["ts_ms"]).sort_index()
+    # build OHLC from price series (approx)
+    df["open"] = df["price"].rolling(2).apply(lambda x: x[0], raw=True)
+    df["high"] = df["price"].rolling(2).max()
+    df["low"] = df["price"].rolling(2).min()
+    df["close"] = df["price"]
+    df["vol"] = 1.0  # CG doesn't provide minute vol here; will proxy with RVOL from price moves
+    return df.dropna()
 
-# CoinGecko
-def cg_search_id(symbol: str) -> Optional[str]:
-    q = symbol.upper()
-    data = _http_json(f"{COINGECKO_BASE}/search?query={q}")
-    if not data or "coins" not in data:
-        return None
-    for c in data["coins"]:
-        if str(c.get("symbol", "")).upper() == q:
-            return c.get("id")
-    return None
-
-
-def cg_simple_price_vol(cid: str) -> Optional[Dict[str, float]]:
-    d = _http_json(f"{COINGECKO_BASE}/simple/price?ids={cid}&vs_currencies=usd&include_24hr_vol=true")
-    if not d or cid not in d:
-        return None
-    try:
-        x = d[cid]
-        return {"price": float(x.get("usd")), "vol_usd": float(x.get("usd_24h_vol", 0.0))}
-    except Exception:
-        return None
-
-
-def cg_minute_prices(cid: str) -> List[List[float]]:
-    d = _http_json(f"{COINGECKO_BASE}/coins/{cid}/market_chart?vs_currency=usd&days=1&interval=minutely")
-    if not d or "prices" not in d:
-        return []
-    return d["prices"]
-
-
-def cg_1m_bars_from_chart(cid: str, limit: int = 120) -> List[Dict[str, float]]:
-    pts = cg_minute_prices(cid)
-    if not pts:
-        return []
-    bars: List[Dict[str, float]] = []
-    start = max(1, len(pts) - limit)
-    for i in range(start, len(pts)):
-        t, c = pts[i]
-        prev_c = bars[-1]["c"] if bars else float(pts[i - 1][1]) if i > 0 else c
-        o = prev_c
-        h = max(o, c)
-        l = min(o, c)
-        bars.append({"ts": int(t), "o": float(o), "h": float(h), "l": float(l), "c": float(c), "v": 0.0})
-    return bars[-limit:]
-
-
-# Coinbase
-def cb_product_id(symbol: str) -> str:
-    return f"{symbol.upper()}-USD"
-
-
-def cb_orderbook_best(symbol: str) -> Optional[Dict[str, float]]:
-    pid = cb_product_id(symbol)
-    data = _http_json(f"{COINBASE_BASE}/products/{pid}/book?level=1")
-    if not data or "bids" not in data or "asks" not in data:
-        return None
-    try:
-        bid = float(data["bids"][0][0])
-        ask = float(data["asks"][0][0])
-        return {"bid": bid, "ask": ask}
-    except Exception:
-        return None
-
-
-def cb_24h_stats(symbol: str) -> Optional[Dict[str, float]]:
-    pid = cb_product_id(symbol)
-    data = _http_json(f"{COINBASE_BASE}/products/{pid}/stats")
-    if not data:
-        return None
-    try:
-        last = float(data.get("last", 0.0))
-        vol_base = float(data.get("volume", 0.0))
-        return {"price": last, "vol_usd": vol_base * last}
-    except Exception:
-        return None
-
-
-def cb_klines_1m(symbol: str, limit: int = 120) -> List[Dict[str, float]]:
-    pid = cb_product_id(symbol)
-    data = _http_json(f"{COINBASE_BASE}/products/{pid}/candles?granularity=60")
-    if not isinstance(data, list) or not data:
-        return []
-    try:
-        rows = sorted(data, key=lambda r: r[0])[-limit:]
-        return [{"ts": t * 1000, "o": float(op), "h": float(hi), "l": float(lo), "c": float(cl), "v": float(vol)}
-                for t, lo, hi, op, cl, vol in rows]
-    except Exception:
-        return []
-
-
-# Binance
-def binance_24h_and_book(symbol_usdt: str) -> Optional[Dict[str, float]]:
-    last_err = None
-    for base in BINANCE_BASES:
-        t = _http_json(f"{base}/api/v3/ticker/24hr?symbol={symbol_usdt}")
-        d = _http_json(f"{base}/api/v3/depth?symbol={symbol_usdt}&limit=5") if t else None
-        if t and d:
-            try:
-                last = float(t["lastPrice"])
-                vol_usd = float(t["volume"]) * last
-                bid = float(d["bids"][0][0])
-                ask = float(d["asks"][0][0])
-                return {"price": last, "vol_usd": vol_usd, "bid": bid, "ask": ask}
-            except Exception as e:
-                last_err = str(e)
-                continue
-    if last_err:
-        DEBUG_LOG.append({"stage": "binance_24h_and_book", "err": last_err})
-    return None
-
-
-def binance_klines_1m(symbol_usdt: str, limit: int = 120) -> List[Dict[str, float]]:
-    for base in BINANCE_BASES:
-        arr = _http_json(f"{base}/api/v3/klines?symbol={symbol_usdt}&interval=1m&limit={limit}")
-        if isinstance(arr, list) and arr:
-            try:
-                return [{"ts": x[0], "o": float(x[1]), "h": float(x[2]), "l": float(x[3]),
-                         "c": float(x[4]), "v": float(x[5])} for x in arr]
-            except Exception:
-                continue
-    return []
-
-
-# regime
-def check_regime() -> Dict[str, Any]:
-    bars = get_btc_5m_klines()
-    if bars is None or not isinstance(bars, pd.DataFrame) or bars.empty:
-        return {"ok": False, "reason": "no-btc-5m"}
-    close = bars["close"]
-    try:
-        last = _as_float(close.iloc[-1])
-        vw = _as_float(vwap(bars))
-        e9 = _as_float(ema(close, span=9))
-    except Exception:
-        return {"ok": False, "reason": "calc-error"}
-    ok = (last > vw) or (last > e9)  # permissive: either VWAP or EMA9
-    return {"ok": ok, "reason": "" if ok else "btc-below-vwap-and-ema", "last": last, "vwap": vw, "ema9": e9}
-
-
-# mapping
-def load_revolut_mapping() -> List[Dict[str, Any]]:
-    path = DATA / "revolut_mapping.json"
-    with open(path, "r", encoding="utf-8") as f:
-        obj = json.load(f)
-    out: List[Dict[str, Any]] = []
-    if isinstance(obj, list):
-        for m in obj:
-            if isinstance(m, dict):
-                out.append(m)
-            elif isinstance(m, str):
-                out.append({"ticker": m})
-    elif isinstance(obj, dict):
-        for k, v in obj.items():
-            if isinstance(v, dict):
-                vv = dict(v)
-                vv.setdefault("ticker", k)
-                out.append(vv)
-            else:
-                out.append({"ticker": k})
-    return out
-
-
-def best_binance_symbol(entry: Dict[str, Any]) -> Optional[str]:
-    if entry.get("binance"):
-        return entry["binance"]
-    t = (entry.get("ticker") or "").upper()
-    return f"{t}USDT" if t else None
-
-
-# meta + bars
-def fetch_meta_for_symbol(ticker: str, binance_sym: Optional[str]) -> Dict[str, Any]:
-    cid = cg_search_id(ticker) or ""
-
-    if binance_sym:
-        b = binance_24h_and_book(binance_sym)
-        if b:
-            spr = spread_pct(b["bid"], b["ask"])
-            return {"src": "binance", "price": b["price"], "vol_usd": b["vol_usd"], "bid": b["bid"], "ask": b["ask"],
-                    "spread": spr, "cid": cid}
-
-    cb_stats = cb_24h_stats(ticker)
-    cb_book = cb_orderbook_best(ticker)
-    if cb_stats and cb_book:
-        spr = spread_pct(cb_book["bid"], cb_book["ask"])
-        return {"src": "coinbase", "price": cb_stats["price"], "vol_usd": cb_stats["vol_usd"],
-                "bid": cb_book["bid"], "ask": cb_book["ask"], "spread": spr, "cid": cid}
-
-    if cid:
-        sp = cg_simple_price_vol(cid)
-        if sp:
-            return {"src": "coingecko", "price": sp["price"], "vol_usd": sp["vol_usd"],
-                    "bid": None, "ask": None, "spread": None, "cid": cid}
-
-    return {"src": "none", "price": 0.0, "vol_usd": 0.0, "bid": None, "ask": None, "spread": None, "cid": cid}
-
-
-def get_1m_bars_any(ticker: str, meta: Dict[str, Any], binance_sym: Optional[str], limit: int = 120) -> List[Dict[str, float]]:
-    if meta["src"] == "binance" and binance_sym:
-        b = binance_klines_1m(binance_sym, limit=limit)
-        if b:
-            return b
-    if meta["src"] == "coinbase":
-        b = cb_klines_1m(ticker, limit=limit)
-        if b:
-            return b
-    if meta.get("cid"):
-        return cg_1m_bars_from_chart(meta["cid"], limit=limit)
-    return []
-
-
-# signals logic
-def aggressive_breakout(bars_1m: List[Dict[str, float]]) -> Optional[Dict[str, float]]:
-    if len(bars_1m) < 20:
-        return None
-    last = bars_1m[-1]
-    prev = bars_1m[-2]
-    pct = (last["c"] / prev["c"]) - 1.0
-    if pct < BR_MIN:
-        return None
-    vol_med = median([b["v"] for b in bars_1m[-16:-1]])
-    rvol = (last["v"] / vol_med) if vol_med > 0 else 2.0  # CG klines have v=0; assume > RVOL_MIN
-    if rvol < RVOL_MIN:
-        return None
-    hh15 = max(b["h"] for b in bars_1m[-15:])
-    if last["c"] < hh15 * (1.0 + HH_CONFIRM):
-        return None
-    closes = [b["c"] for b in bars_1m[-90:]]
-    ema9 = ema_list(closes, span=9)
-    ema_up = len(ema9) >= 2 and ema9[-1] > ema9[-2]
-    if not ema_up:
-        return None
-    return {"pct": pct, "rvol": rvol, "hh15": hh15, "bar_ts": int(last["ts"])}
-
-
-def micro_pullback_ok(bars_1m: List[Dict[str, float]]) -> Optional[Dict[str, float]]:
-    if len(bars_1m) < 2:
-        return None
-    last = bars_1m[-1]
-    if last["h"] == 0 or last["c"] == 0:
-        return None
-    fade = (last["h"] - last["c"]) / last["h"]
-    intra = (last["h"] - last["l"]) / last["h"]
-    if fade <= FADE_MAX and intra <= RANGE_MAX:
-        return {"entry": last["c"], "stop": last["l"]}
-    return None
-
-
-def main():
-    t_run0 = perf_counter()
-    DEBUG_LOG.append({"stage": "run", "event": "start", "ts": _now_iso()})
-
-    # 1) Regime
-    regime = check_regime()
-    strong = bool(regime.get("ok", False))
-
-    # 2) Universe
-    mapping = load_revolut_mapping()
-    universe: List[Dict[str, Any]] = []
-    for m in mapping:
-        tkr = (m.get("ticker") or "").upper()
-        if not tkr:
-            continue
-        if tkr in ("ETH", "DOT"):  # do not rotate per rules
-            continue
-        sym = best_binance_symbol(m)
-        meta = fetch_meta_for_symbol(tkr, sym)
-        vol_usd = float(meta.get("vol_usd") or 0.0)
-        if vol_usd > 0.0 and vol_usd < UNIVERSE_VOL_MIN_USD:
-            continue
-        spr = meta.get("spread")
-        if spr is None:
-            spr = ASSUMED_TIGHT_SPREAD
-        universe.append({
-            "ticker": tkr,
-            "symbol": sym or cb_product_id(tkr),
-            "price": float(meta.get("price") or 0.0),
-            "bid": meta.get("bid"),
-            "ask": meta.get("ask"),
-            "spread": float(spr),
-            "vol_usd": vol_usd,
-            "src": meta.get("src"),
-            "cid": meta.get("cid"),
-        })
-
-    # 3) Scan for candidates
-    candidates: List[Dict[str, Any]] = []
-    for u in universe:
-        bars = get_1m_bars_any(u["ticker"], u, best_binance_symbol({"ticker": u["ticker"]}), limit=120)
-        if not bars or len(bars) < 20:
-            continue
-        br = aggressive_breakout(bars)
-        if not br:
-            continue
-        pb = micro_pullback_ok(bars)
-        entry = float(pb["entry"]) if pb else float(bars[-1]["c"])
-        stop = float(pb["stop"]) if pb else float(bars[-1]["l"])
-        atr1m = atr_from_klines(bars, period=14)
-        if atr1m <= 0.0:
-            continue
-        score = br["pct"] * (1.0 + br["rvol"])
-        candidates.append({
-            "ticker": u["ticker"],
-            "symbol": u["symbol"],
-            "src": u["src"],
-            "price": u["price"],
-            "bid": u["bid"],
-            "ask": u["ask"],
-            "spread": u["spread"],
-            "vol_usd": u["vol_usd"],
-            "entry": entry,
-            "stop": stop,
-            "atr1m": float(atr1m),
-            "rvol": float(br["rvol"]),
-            "pct": float(br["pct"]),
-            "bars_last_ts": int(br["bar_ts"]),
-            "score": float(score)
-        })
-
-    candidates.sort(key=lambda x: x["score"], reverse=True)
-    top_k = candidates[:5]
-
-    # 4) Rich summary payload
-    umap = {u["ticker"]: u for u in universe}
-    rich_candidates: List[Dict[str, Any]] = []
-    for c in top_k:
-        u = umap.get(c["ticker"], {})
-        rich_candidates.append({
-            "ticker": c["ticker"],
-            "venue": "binance" if u.get("src") == "binance" else u.get("src"),
-            "price": float(u.get("price", 0.0)),
-            "bid": float(u.get("bid") or 0.0) if u.get("bid") is not None else None,
-            "ask": float(u.get("ask") or 0.0) if u.get("ask") is not None else None,
-            "spread": float(u.get("spread", 0.0)),
-            "vol_usd_24h": float(u.get("vol_usd", 0.0)),
-            "entry": float(c["entry"]),
-            "stop": float(c["stop"]),
-            "atr1m": float(c["atr1m"]),
-            "rvol": float(c["rvol"]),
-            "breakout_pct": float(c["pct"]),
-            "breakout_bar_ts": int(c.get("bars_last_ts", int(time.time() * 1000))),
-            "revolut_symbol": u.get("symbol", c["ticker"]),
-            "score": float(c["score"])
-        })
-
-    rich_summary = {
-        "publish_version": 2,
-        "generated_at_utc": _now_iso(),
-        "regime": regime if not blocked_451 else {"ok": False, "reason": "binance-451-block"},
-        "calc": {
-            "RISK_PCT": RISK_PCT,
-            "STRONG_ALLOC": STRONG_ALLOC,
-            "WEAK_ALLOC": WEAK_ALLOC
-        },
-        "universe_count": len(universe),
-        "candidates": rich_candidates
+# ---------- Portfolio inputs ----------
+def load_portfolio() -> Dict[str, float]:
+    # Try data/portfolio.json first
+    pf = read_json("data/portfolio.json")
+    if pf and "equity" in pf and "cash" in pf:
+        return {"equity": float(pf["equity"]), "cash": float(pf["cash"])}
+    # fall back to env
+    return {
+        "equity": env_float("EQUITY", 41000.0),
+        "cash": env_float("CASH", 32000.0),
     }
 
-    # 5) Signals: structured
-    if strong and top_k:
-        top = top_k[0]
-        entry = float(top["entry"])
-        stop = float(top["stop"])
-        atr = float(top["atr1m"])
-        signals_obj = {
-            "type": "B",
-            "ticker": top["ticker"],
+# ---------- Mapping ----------
+def load_mapping() -> pd.DataFrame:
+    # Expect mapping at data/mapping.csv or json; otherwise fallback to a tiny universe (ETH/DOT)
+    if os.path.exists("data/mapping.csv"):
+        df = pd.read_csv("data/mapping.csv")
+    elif os.path.exists("data/mapping.json"):
+        df = pd.read_json("data/mapping.json")
+    else:
+        df = pd.DataFrame([
+            {"symbol": "ETH", "cg_id": "ethereum"},
+            {"symbol": "DOT", "cg_id": "polkadot"},
+        ])
+    # require cg_id
+    df = df[df["cg_id"].notna()].copy()
+    df["symbol"] = df["symbol"].str.upper()
+    return df
+
+# ---------- Indicators ----------
+def atr(df: pd.DataFrame, n: int = 14) -> float:
+    if len(df) < n + 1:
+        return float("nan")
+    h, l, c = df["high"], df["low"], df["close"]
+    prev_c = c.shift(1)
+    tr = pd.concat([(h - l).abs(), (h - prev_c).abs(), (l - prev_c).abs()], axis=1).max(axis=1)
+    return tr.rolling(n).mean().iloc[-1]
+
+def rvol(series: pd.Series, lookback: int = 15) -> float:
+    if len(series) < lookback + 1:
+        return float("nan")
+    last = series.iloc[-1]
+    avg = series.iloc[-(lookback+1):-1].mean()
+    return (last / avg) if avg > 0 else float("nan")
+
+def percent_change(a: float, b: float) -> float:
+    if b == 0 or not math.isfinite(a) or not math.isfinite(b):
+        return float("nan")
+    return (a - b) / b
+
+# ---------- Entry logic ----------
+def aggressive_breakout(df_1m: pd.DataFrame) -> Optional[Dict[str, Any]]:
+    if len(df_1m) < 20:
+        return None
+    c0 = df_1m["close"].iloc[-1]
+    c1 = df_1m["close"].iloc[-2]
+    pct = percent_change(c0, c1)
+    if not (BREAKOUT_PCT_MIN <= pct <= BREAKOUT_PCT_MAX):
+        return None
+    # Micro pullback: last bar low within MICRO_FADE_MAX of close
+    low_last = df_1m["low"].iloc[-1]
+    if (c0 - low_last) / c0 > MICRO_FADE_MAX:
+        return None
+    # RVOL on 1m close change magnitude
+    change_mag = df_1m["close"].diff().abs().fillna(0.0)
+    rv = rvol(change_mag, 15)
+    if not (rv >= RVOL_1M_MIN):
+        return None
+    # Break 15-bar high
+    hh = df_1m["high"].rolling(15).max().iloc[-2]
+    if c0 <= hh:
+        return None
+    return {"entry": float(c0), "stop_hint": float(low_last), "atype": "aggr_1m"}
+
+def momentum_breakout(df_5m: pd.DataFrame, df_1m: pd.DataFrame) -> Optional[Dict[str, Any]]:
+    if len(df_5m) < HH_LOOKBACK_5M + 1 or len(df_1m) < 30:
+        return None
+    c0 = df_5m["close"].iloc[-1]
+    hh = df_5m["high"].rolling(HH_LOOKBACK_5M).max().iloc[-2]
+    if not (c0 > hh):
+        return None
+    # 15m ROC via 1m series
+    c1m = df_1m["close"]
+    roc = percent_change(c1m.iloc[-1], c1m.iloc[max(0, len(c1m) - 15):].iloc[0])
+    if not (roc >= ROC_15M_MIN):
+        return None
+    # 5m RVOL using absolute returns
+    change_mag = df_5m["close"].pct_change().abs().fillna(0.0)
+    rv = rvol(change_mag, 12)  # ~1 hour of 5m bars for mean
+    if not (rv >= RVOL_5M_MIN):
+        return None
+    low_last1m = df_1m["low"].iloc[-1]
+    return {"entry": float(c0), "stop_hint": float(low_last1m), "atype": "mom_5m"}
+
+# ---------- Sizing ----------
+def position_size_usd(equity: float, cash: float, regime_ok: bool, entry: float, stop: float) -> float:
+    cap = CAP_OK if regime_ok else CAP_WEAK
+    max_alloc = (equity + cash) * cap
+    risk_dollars = equity * RISK_PCT
+    per_unit_risk = max(entry - stop, entry * 0.005)
+    qty = risk_dollars / per_unit_risk
+    usd = min(qty * entry, max_alloc)
+    return max(0.0, float(usd))
+
+# ---------- Pipeline ----------
+def build_universe(map_df: pd.DataFrame) -> pd.DataFrame:
+    ids = map_df["cg_id"].dropna().tolist()
+    prices = cg_simple_price(ids) if ids else {}
+    rows = []
+    for _, row in map_df.iterrows():
+        cg_id = row["cg_id"]
+        symbol = row["symbol"].upper()
+        p = prices.get(cg_id, {})
+        price = p.get("usd")
+        vol = p.get("usd_24h_vol")
+        ok_vol = (vol or 0) >= VOL_USD_MIN
+        rows.append({
+            "symbol": symbol,
+            "cg_id": cg_id,
+            "price": price,
+            "vol24": vol,
+            "spread": None,      # unknown (CG only)
+            "src": "coingecko",
+            "pass_liq": bool(ok_vol),
+            "pass_spread": True, # unknown → allow
+        })
+    df = pd.DataFrame(rows)
+    return df
+
+def fetch_ohlc_cg(cg_id: str) -> Dict[str, pd.DataFrame]:
+    # 1-day minute-ish resolution is adequate
+    df = cg_market_chart(cg_id, days=1)
+    if df.empty:
+        return {}
+    # Resample to 1m and 5m OHLC (best-effort from price)
+    df1 = df[["open", "high", "low", "close"]].copy()
+    df1m = df1.resample("1T").last().ffill()
+    df5m = df1.resample("5T").last().ffill()
+    return {"1m": df1m.tail(200), "5m": df5m.tail(200)}
+
+def compute_regime(btc_rows: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+    # BTC regime from 1m series with VWAP proxy (EMA of price as proxy) + EMA9
+    out = {"ok": False, "reason": "no-data", "last": None, "vwap": None, "ema9": None}
+    if not btc_rows:
+        return out
+    df1 = btc_rows["1m"]
+    if df1 is None or df1.empty:
+        return out
+    close = df1["close"]
+    last = float(close.iloc[-1])
+    ema9 = float(close.ewm(span=9, adjust=False).mean().iloc[-1])
+    vwap_proxy = float(close.ewm(span=30, adjust=False).mean().iloc[-1])
+    ok = (last >= vwap_proxy) and (last >= ema9)
+    return {"ok": ok, "reason": "" if ok else "btc-below-vwap-or-ema", "last": last, "vwap": vwap_proxy, "ema9": ema9}
+
+def main():
+    t0 = time.time()
+    portfolio = load_portfolio()
+    mapping = load_mapping()
+
+    # Build universe with CG-only (allow if vol >= threshold)
+    uni = build_universe(mapping)
+    uni_ok = uni[uni["pass_liq"] & uni["pass_spread"]].copy()
+
+    # Always include ETH and DOT even if liq fails (for status/visibility)
+    force_keep = {"ETH", "DOT"}
+    uni_ok = pd.concat([uni_ok, uni[uni["symbol"].isin(force_keep)]]).drop_duplicates("symbol")
+
+    # Fetch OHLC for BTC + universe
+    sym_to_rows: Dict[str, Dict[str, pd.DataFrame]] = {}
+    debug_scan = []
+
+    # Include BTC for regime
+    btc_rows = fetch_ohlc_cg("bitcoin")
+    regime = compute_regime(btc_rows)
+
+    candidates: List[Dict[str, Any]] = []
+    signals_out: Dict[str, Any] = {"type": "C", "text": "Hold and wait."}
+
+    for _, r in uni_ok.iterrows():
+        sym = r["symbol"]
+        if sym == "DOT":
+            reason = "dot-staked"
+            debug_scan.append({"symbol": sym, "kept": True, "note": reason})
+            continue
+        rows = fetch_ohlc_cg(r["cg_id"])
+        if not rows:
+            debug_scan.append({"symbol": sym, "kept": False, "note": "no-ohlc"})
+            continue
+
+        df1 = rows["1m"]
+        df5 = rows["5m"]
+        atr_val = float(atr(df1, 14)) if len(df1) >= 20 else float("nan")
+        last = float(df1["close"].iloc[-1])
+
+        # Aggressive breakout
+        sig = aggressive_breakout(df1)
+        # Momentum fallback
+        if sig is None:
+            sig = momentum_breakout(df5, df1)
+
+        entry = stop = None
+        if sig:
+            entry = float(sig["entry"])
+            # Use breakout bar low as stop; guard if ATR < noise
+            stop_hint = float(sig["stop_hint"])
+            min_noise = max(entry * 0.006, atr_val * 0.6 if math.isfinite(atr_val) else entry * 0.006)
+            stop = min(stop_hint, entry - min_noise)
+
+        # Candidate row (even if no signal)
+        cand = {
+            "symbol": sym,
+            "src": r["src"],
+            "price": last,
+            "atr": atr_val if math.isfinite(atr_val) else None,
             "entry": entry,
             "stop": stop,
-            "t1": entry + 0.8 * atr,
-            "t2": entry + 1.5 * atr,
-            "trail_after_R": 1.0,
-            "notes": [
-                "Use breakout bar low as stop",
-                "ETH and DOT not rotated",
-                "DOT staked"
-            ]
+            "atype": sig["atype"] if sig else None,
+            "vol24": r["vol24"],
         }
-    else:
-        signals_obj = {
-            "type": "C",
-            "notes": ["No qualified breakout"],
-            "candidates": rich_candidates[:3]
-        }
+        candidates.append(cand)
+        debug_scan.append({"symbol": sym, "kept": True, "note": "ok" if sig else "no-entry"})
 
-    # 6) Persist
-    SNAP_PATH.write_text(json.dumps(rich_summary, indent=2))
-    SIGNAL_PATH.write_text(json.dumps(signals_obj, indent=2))
-    DEBUG_PATH.write_text(json.dumps(DEBUG_LOG, indent=2))
-    RUN_STATS.write_text(json.dumps(
-        {"elapsed_ms": int((perf_counter() - t_run0) * 1000), "time": _now_iso()}, indent=2))
+    # Rank candidates (prefer with entry, then RVOL proxy via recent pct change)
+    def cand_score(c):
+        base = 1.0 if c["entry"] else 0.0
+        # favor higher 15m momentum using 1m series if available (approx via (entry/price))
+        mom = 0.0
+        if c["entry"] and c["price"] and c["price"] > 0:
+            mom = min(2.0, (c["entry"] / c["price"]) - 1.0)
+        return base * 10 + mom
 
-    # console output
-    if signals_obj["type"] == "B":
-        print(
-            f"{signals_obj['ticker']} | entry {signals_obj['entry']:.6f} | "
-            f"stop {signals_obj['stop']:.6f} | t1 {signals_obj['t1']:.6f} | t2 {signals_obj['t2']:.6f}"
-        )
-    else:
-        print("Hold and wait. No qualified breakout.")
+    candidates_sorted = sorted(candidates, key=cand_score, reverse=True)
+
+    # Select a signal if any candidate has an entry and we pass guards
+    chosen = next((c for c in candidates_sorted if c["entry"]), None)
+
+    if chosen:
+        # Guard rails: ETH and DOT not rotated (we will not rotate out, but can buy ETH if not rotating? Keep simple: allow ETH buy; do not sell)
+        # Floor check for new risk
+        if portfolio["equity"] < FLOOR_EQUITY:
+            signals_out = {"type": "C", "text": "Equity below floor; hold and wait."}
+        else:
+            entry = float(chosen["entry"])
+            stop = float(chosen["stop"])
+            atr_val = float(chosen["atr"]) if chosen["atr"] else entry * 0.01
+            t1 = entry + 0.8 * atr_val
+            t2 = entry + 1.5 * atr_val
+            size_usd = position_size_usd(
+                equity=portfolio["equity"],
+                cash=portfolio["cash"],
+                regime_ok=bool(regime["ok"]),
+                entry=entry,
+                stop=stop,
+            )
+            signals_out = {
+                "type": "B",
+                "text": "Breakout entry.",
+                "symbol": chosen["symbol"],
+                "entry": round(entry, 6),
+                "stop": round(stop, 6),
+                "t1": round(t1, 6),
+                "t2": round(t2, 6),
+                "size_usd": round(size_usd, 2),
+                "trail_after_R": 1.0,
+                "atype": chosen.get("atype"),
+            }
+
+    # Assemble summary
+    summary = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "regime": regime,
+        "equity": float(portfolio["equity"]),
+        "cash": float(portfolio["cash"]),
+        "candidates": candidates_sorted[:8],  # top few for brevity
+        "signals": signals_out,
+        "run_stats": {
+            "elapsed_ms": int((time.time() - t0) * 1000),
+            "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        },
+    }
+
+    # Write outputs atomically
+    write_json(os.path.join(DATA_DIR, "summary.json"), summary)
+    write_json(os.path.join(DATA_DIR, "signals.json"), {"signals": signals_out})
+    write_json(os.path.join(DATA_DIR, "run_stats.json"), summary["run_stats"])
+    write_json(os.path.join(DATA_DIR, "market_snapshot.json"), {
+        "universe_size": int(len(uni)),
+        "universe_kept": int(len(uni_ok)),
+    })
+    write_json(os.path.join(DATA_DIR, "debug_scan.json"), debug_scan)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # Always emit a minimal summary so the workflow doesn't leave stale Pages
+        err = {
+            "generated_at_utc": utcnow_iso(),
+            "regime": {"ok": False, "reason": "exception", "last": None, "vwap": None, "ema9": None},
+            "equity": env_float("EQUITY", 41000.0),
+            "cash": env_float("CASH", 32000.0),
+            "candidates": [],
+            "signals": {"type": "C", "text": f"Error: {type(e).__name__}"},
+            "run_stats": {"elapsed_ms": 0, "time": utcnow_iso()},
+        }
+        write_json(os.path.join(DATA_DIR, "summary.json"), err)
+        write_json(os.path.join(DATA_DIR, "signals.json"), {"signals": err["signals"]})
+        write_json(os.path.join(DATA_DIR, "run_stats.json"), err["run_stats"])
+        raise
