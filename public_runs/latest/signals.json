@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2025-08-25T08:21:48.399722Z",
-  "signals": {
-    "type": "C",
-    "text": "Hold and wait."
-  }
+  "type": "C",
+  "notes": [
+    "No qualified breakout"
+  ],
+  "candidates": []
 }
