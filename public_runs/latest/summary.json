@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2025-08-25T11:13:42+00:00",
+  "generated_at_utc": "2025-08-25T11:14:12+00:00",
   "regime": {
     "ok": false,
     "reason": "btc-below-vwap-or-ema",
@@ -26,7 +26,7 @@
     "text": "Hold and wait."
   },
   "run_stats": {
-    "elapsed_ms": 815,
-    "time": "2025-08-25T11:13:42+00:00"
+    "elapsed_ms": 694,
+    "time": "2025-08-25T11:14:12+00:00"
   }
 }
