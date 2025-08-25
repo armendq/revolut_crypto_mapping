@@ -1,11 +1,11 @@
 name: Run mapping & analyses
 
 on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/15 * * * *"    # every 15 minutes
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -13,9 +13,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,26 +27,50 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -e
           python -m pip install --upgrade pip
-          pip install pandas requests python-dateutil
+          pip install requests pandas python-dateutil pytz
+
+      # Optional mapping generator (safe to skip if missing)
+      - name: Generate mapping (safe)
+        run: |
+          set -e
+          if [ -f scripts/mapping.py ]; then
+            python scripts/mapping.py
+          else
+            echo "No mapping.py found; skipping mapping generation."
+          fi
 
       - name: Run analyses
+        env:
+          # Fallbacks; script will prefer data/portfolio.json when present
+          EQUITY: ${{ vars.EQUITY || '41000' }}
+          CASH:   ${{ vars.CASH   || '32000' }}
         run: |
+          set -e
           python -m scripts.analyses
 
-      - name: Prepare outputs
+      - name: Verify outputs exist
         run: |
-          mkdir -p public_runs/latest
-          cp artifacts/*.json public_runs/latest/ || true
-          cp data/*.json public_runs/latest/ || true
+          set -e
+          test -f public_runs/latest/summary.json
+          test -f public_runs/latest/run_stats.json
 
-      - name: Commit changes
+      - name: Commit changes to main (conflict-safe)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
+          set -e
+          git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public_runs/latest/*.json
-          git commit -m "update summary [skip ci]" || echo "No changes"
-          git push
+          git add -A public_runs data artifacts || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "ci: update analyses outputs [skip ci]"
+            # Try push; if remote moved, pull+rebase once then push
+            git push || (git pull --rebase && git push)
+          fi
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
@@ -51,3 +78,23 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: public_runs
+          force_orphan: true
+
+      - name: Verify Pages endpoint
+        if: always()
+        run: |
+          set -e
+          url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
+          echo "Checking $url"
+          tries=0
+          until [ $tries -ge 4 ]
+          do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "HTTP $code"
+            if [ "$code" = "200" ]; then
+              break
+            fi
+            tries=$((tries+1))
+            sleep 5
+          done
+          test "$code" = "200"
