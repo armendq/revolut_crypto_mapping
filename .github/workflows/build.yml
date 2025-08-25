@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,53 +28,33 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
-      # Optional: only runs if scripts/mapping.py exists
       - name: Generate mapping (safe)
         run: |
-          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
-            echo "No scripts/mapping.py found; skipping."
+            echo "No mapping.py found, skipping."
           fi
 
       - name: Run analyses
         env:
           EQUITY: ${{ vars.EQUITY || '41000' }}
           CASH:   ${{ vars.CASH   || '32000' }}
-        run: |
-          set -e
-          python -m scripts.analyses
+        run: python -m scripts.analyses
 
       - name: Verify outputs exist
-        run: |
-          set -e
-          test -f public_runs/latest/summary.json
-          echo "summary.json present."
+        run: test -f public_runs/latest/summary.json
 
-      - name: Commit changes to main (conflict-safe)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit changes to main
         run: |
-          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          echo "=== Status before staging ==="
-          git status --porcelain
-
-          git add -A data artifacts public_runs
-
-          echo "=== Status after staging ==="
-          git status --porcelain
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git fetch origin main
-            git pull --rebase --autostash origin main || true
+          git add -A data artifacts public_runs || true
+          if ! git diff --cached --quiet; then
             git commit -m "ci: update analyses outputs [skip ci]"
-            git push origin HEAD:main
+            git push
+          else
+            echo "No changes to commit"
           fi
 
       - name: Deploy to gh-pages
@@ -87,21 +65,18 @@ jobs:
           publish_dir: public_runs
           force_orphan: true
 
-      # GitHub Pages propagation can lag; retry until it’s live
       - name: Verify Pages endpoint
         run: |
-          set -e
           url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json"
           echo "Checking $url"
           for i in {1..10}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
             echo "Attempt $i: HTTP $code"
             if [ "$code" = "200" ]; then
-              echo "✅ Pages is serving summary.json"
+              echo "✅ summary.json is live"
               exit 0
             fi
             sleep 20
           done
-          echo "❌ Failed to verify $url after retries"
+          echo "❌ Failed to verify Pages endpoint"
           exit 1
-```0
