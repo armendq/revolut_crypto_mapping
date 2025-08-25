@@ -1,6 +1,14 @@
 {
   "signals": {
-    "type": "C",
-    "text": "Hold and wait."
+    "type": "B",
+    "text": "Breakout entry.",
+    "symbol": "OKB",
+    "entry": 186.160358,
+    "stop": 185.043396,
+    "t1": 186.809128,
+    "t2": 187.376802,
+    "size_usd": 43800.0,
+    "trail_after_R": 1.0,
+    "atype": "aggr_1m"
   }
 }
