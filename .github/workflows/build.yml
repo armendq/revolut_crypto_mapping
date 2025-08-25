@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -32,12 +32,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install pandas requests python-dateutil; fi
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pandas requests python-dateutil
+          fi
 
-      # Optional; safe no-op if script missing
       - name: Generate mapping (safe)
         run: |
-          if [ -f scripts/mapping.py ]; then python scripts/mapping.py; else echo "skip mapping"; fi
+          if [ -f scripts/mapping.py ]; then
+            python scripts/mapping.py
+          else
+            echo "skip mapping"
+          fi
 
       - name: Run analyses
         env:
@@ -50,47 +57,51 @@ jobs:
         run: |
           set -e
           mkdir -p public_runs/latest
-          # If analyses already wrote there, fine. Otherwise copy from common dirs.
           for f in summary.json signals.json run_stats.json market_snapshot.json debug_scan.json; do
             [ -f "public_runs/latest/$f" ] && continue
             [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
             [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
           done
-          # Hard guarantee summary.json exists to avoid 404s
           if [ ! -f public_runs/latest/summary.json ]; then
             echo '{"status":"ok"}' > public_runs/latest/summary.json
           fi
-
-      - name: Clean old public_runs folders (keep latest)
-        run: |
+          touch public_runs/.nojekyll
           find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
+          echo "Tree to publish:" && ls -R public_runs
 
-      - name: Commit to main (force-safe, no rebase)
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./public_runs
+          force_orphan: true
+
+      - name: Verify raw gh-pages (bypass Pages)
         run: |
           set -e
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A public_runs data artifacts || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "ci: publish public_runs/latest/summary.json [skip ci]"
-          git push origin HEAD:main --force
-
-      - name: Verify raw summary.json on main (retry)
-        run: |
-          set -e
-          url="https://raw.githubusercontent.com/${{ github.repository }}/main/public_runs/latest/summary.json?ts=$(date +%s)"
-          echo "Checking $url"
-          for i in 1 2 3 4 5 6; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            echo "Attempt $i -> HTTP $code"
-            if [ "$code" = "200" ]; then
-              echo "OK"
-              exit 0
-            fi
-            sleep 5
+          RAW_URL="https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/latest/summary.json?ts=$(date +%s)"
+          echo "Checking $RAW_URL"
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$RAW_URL")
+            echo "Attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 3
           done
-          echo "Raw URL not reachable yet"
+          echo "Raw gh-pages not reachable"
           exit 1
+
+      - name: Verify Pages endpoint (retry up to ~3 min)
+        run: |
+          set -e
+          URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/summary.json?ts=$(date +%s)"
+          echo "Checking $URL"
+          for i in $(seq 1 18); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            echo "Attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "Pages still not serving summary.json"
+          exit 1
+```0
