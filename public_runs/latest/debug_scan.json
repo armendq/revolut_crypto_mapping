@@ -175,12 +175,12 @@
     "note": "ok"
   },
   {
-    "symbol": "PEPE",
+    "symbol": "ENA",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "ENA",
+    "symbol": "PEPE",
     "kept": true,
     "note": "ok"
   },
@@ -255,12 +255,12 @@
     "note": "ok"
   },
   {
-    "symbol": "POL",
+    "symbol": "VET",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "VET",
+    "symbol": "POL",
     "kept": true,
     "note": "ok"
   }
