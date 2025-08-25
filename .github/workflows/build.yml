@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,19 +45,57 @@ jobs:
         run: python -m scripts.analyses
 
       - name: Verify outputs exist
-        run: test -f public_runs/latest/summary.json
-
-      - name: Commit changes to main
         run: |
+          test -f public_runs/latest/summary.json
+          echo "summary.json present."
+
+      - name: Clean old public_runs folders (keep latest)
+        run: |
+          mkdir -p public_runs/latest
+          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} +
+          echo "Kept only public_runs/latest."
+
+      - name: Commit changes to main (conflict-safe)
+        run: |
+          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -A data artifacts public_runs || true
-          if ! git diff --cached --quiet; then
-            git commit -m "ci: update analyses outputs [skip ci]"
-            git push
-          else
-            echo "No changes to commit"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
           fi
+
+          # Try commit, rebase on remote if needed, then push (retry up to 3x)
+          tries=0
+          while [ $tries -lt 3 ]; do
+            if ! git rev-parse --verify origin/main >/dev/null 2>&1; then
+              git fetch origin main
+            fi
+            # Rebase on top of remote to avoid non-fast-forward
+            git fetch origin main
+            git rebase origin/main || { echo "Rebase failed, aborting and retrying…" ; git rebase --abort || true ; sleep 2 ; tries=$((tries+1)) ; continue ; }
+
+            # If we got here, rebase succeeded; ensure commit exists (may have been rewritten)
+            if git diff --cached --quiet; then
+              echo "Nothing staged after rebase (already up to date)."
+            else
+              git commit -m "ci: update analyses outputs [skip ci]"
+            fi
+
+            # Push with lease to avoid clobbering fresh changes
+            if git push --force-with-lease; then
+              echo "Pushed successfully."
+              exit 0
+            fi
+            echo "Push failed; retrying…"
+            tries=$((tries+1))
+            sleep 2
+          done
+
+          echo "❌ Failed to push after retries."
+          exit 1
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
