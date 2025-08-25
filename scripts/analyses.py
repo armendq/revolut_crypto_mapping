@@ -2,448 +2,365 @@
 # -*- coding: utf-8 -*-
 
 """
-Analyses
---------
-Generates swing breakout signals and fast 15m momentum candidates.
-Outputs: public_runs/latest/summary.json
+analyses.py
+-----------
+Scans a broad crypto universe (from your mapping file), fetches hourly data
+from Binance, detects fresh breakouts, computes ATR and targets, then writes:
+  public_runs/latest/summary.json
+  public_runs/latest/run_stats.json
+  public_runs/latest/market_snapshot.json
+  public_runs/latest/debug_scan.json
 
-Rules respected:
-- DOT is staked/untouchable; ETH & DOT are not rotated
-- Use breakout bar low as stop
-- Trail after +1R (communicated via output notes)
+Design goals:
+- Wider universe (no hard-coded short list).
+- Transparent filtering (+ counts).
+- Robust, no exceptions bubbling up (graceful skips).
+- Signals:
+    "B"  -> fresh breakouts detected on the latest closed bar
+    "C"  -> no fresh breakouts; show top candidates (momentum + volume surge)
+- Rules respected:
+    * DOT is staked/untouchable.
+    * ETH and DOT are never “rotated out” by this script.
+    * Stop = breakout bar LOW.
+    * Targets: T1 = entry + 0.8*ATR, T2 = entry + 1.5*ATR.
+- Regime: simple BTC hourly regime check.
+
+Requires internet access in the runner (Binance public REST).
 """
 
+from __future__ import annotations
+
 import os
+import sys
 import json
 import math
 import time
-from pathlib import Path
+import traceback
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
-try:
-    from zoneinfo import ZoneInfo  # Python 3.9+
-except Exception:
-    ZoneInfo = None  # fallback handled below
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 
-# Lightweight deps only
-import requests  # used only to detect simple prices if ccxt unavailable
+# --------------- Configuration ---------------
 
-# ccxt is our primary OHLCV source
-try:
-    import ccxt  # type: ignore
-except Exception:
-    ccxt = None  # handled gracefully
+# Where to write results
+OUT_DIR = os.path.join("public_runs", "latest")
 
+# Mapping file(s) to discover symbols
+MAPPING_CANDIDATES = [
+    os.path.join("data", "mapping.json"),
+    os.path.join("mapping.json"),
+    os.path.join("data", "mapping_all.json"),
+]
 
-# -----------------------------
-# Environment / configuration
-# -----------------------------
+# Binance REST
+BINANCE_KLINES = "https://api.binance.com/api/v3/klines"  # ?symbol=BTCUSDT&interval=1h&limit=500
 
-def _get_env_float(name: str, default: float) -> float:
-    v = os.getenv(name, "")
+# Universe & filters
+INTERVAL = "1h"
+LIMIT = 500                    # last 500 hourly candles
+LOOKBACK_BREAKOUT = 20         # highest-high lookback (ex-current) for breakout
+ATR_LEN = 14
+MIN_QUOTE_VOL_24H = 1_000_000  # rough liquidity floor via 24h quote vol from klines sum
+VOLUME_SPIKE_MULT = 1.5        # latest bar volume vs avg(20)
+MAX_CANDIDATES = 15            # when in "C" mode
+
+# Sizing hints (these are only hints; final sizing happens downstream)
+RISK_PCT = 0.012               # 1.2%
+
+# Do not rotate / trade rules
+DO_NOT_ROTATE = {"ETH", "DOT"}
+UNTOUCHABLE = {"DOT"}          # staked
+
+# --------------- Utilities ---------------
+
+def ensure_outdir() -> None:
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+def read_json(path: str) -> Optional[Any]:
     try:
-        return float(v)
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
     except Exception:
-        return default
+        return None
 
-def _get_env_int(name: str, default: int) -> int:
-    v = os.getenv(name, "")
+def try_load_mapping() -> List[Dict[str, Any]]:
+    for p in MAPPING_CANDIDATES:
+        if os.path.exists(p):
+            data = read_json(p)
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict) and "assets" in data and isinstance(data["assets"], list):
+                return data["assets"]
+    # Fallback minimal universe if mapping missing
+    return [
+        {"symbol": "BTC", "binance": "BTCUSDT"},
+        {"symbol": "ETH", "binance": "ETHUSDT"},
+        {"symbol": "SOL", "binance": "SOLUSDT"},
+        {"symbol": "ARB", "binance": "ARBUSDT"},
+        {"symbol": "IMX", "binance": "IMXUSDT"},
+        {"symbol": "OP",  "binance": "OPUSDT"},
+        {"symbol": "DOT", "binance": "DOTUSDT"},
+    ]
+
+def http_get_json(url: str) -> Optional[Any]:
+    req = Request(url, headers={"User-Agent": "gh-actions-analysis/1.0"})
     try:
-        return int(v)
-    except Exception:
-        return default
+        with urlopen(req, timeout=30) as resp:
+            raw = resp.read()
+        return json.loads(raw.decode("utf-8"))
+    except (URLError, HTTPError, json.JSONDecodeError):
+        return None
 
-def _get_env_bool(name: str, default: bool) -> bool:
-    v = os.getenv(name, "").strip().lower()
-    if v in ("1", "true", "yes", "y", "on"):
-        return True
-    if v in ("0", "false", "no", "n", "off"):
-        return False
-    return default
+def fetch_klines_binance(symbol: str, interval: str, limit: int) -> Optional[List[List[Any]]]:
+    url = f"{BINANCE_KLINES}?symbol={symbol}&interval={interval}&limit={limit}"
+    data = http_get_json(url)
+    if isinstance(data, list) and data and isinstance(data[0], list):
+        return data
+    return None
 
+def array_high(arr: List[float]) -> float:
+    return max(arr) if arr else float("nan")
 
-# Universe & thresholds (safe defaults; can be overridden in workflow env)
-MIN_VOL24_USD      = _get_env_float("MIN_VOL24_USD", 25_000_000.0)
-MIN_MCAP_USD       = _get_env_float("MIN_MCAP_USD", 50_000_000.0)
+def array_low(arr: List[float]) -> float:
+    return min(arr) if arr else float("nan")
 
-FAST_MOM_ENABLED   = _get_env_bool("FAST_MOM_ENABLED", True)
-FAST_MOM_TIMEFRAME = os.getenv("FAST_MOM_TIMEFRAME", "15m")
-FAST_MOM_MIN_MOVE  = _get_env_float("FAST_MOM_MIN_MOVE_PCT", 8.0)   # % on last bar
-FAST_MOM_MIN_RVOL  = _get_env_float("FAST_MOM_MIN_RVOL", 3.0)
-FAST_MOM_MAX_SPREAD= _get_env_float("FAST_MOM_MAX_SPREAD_PCT", 0.6)
-FAST_MOM_RISK_PCT  = _get_env_float("FAST_MOM_RISK_PCT", 0.6) / 100.0
-FAST_MOM_CAP_PCT   = _get_env_float("FAST_MOM_CAP_PCT", 10.0) / 100.0
-REGIME_GATE_FAST   = _get_env_bool("REGIME_GATE_FAST", False)
+def true_range(h: float, l: float, pc: float) -> float:
+    return max(h - l, abs(h - pc), abs(l - pc))
 
-# Swing config
-SWING_LOOKBACK_HIGH    = _get_env_int("SWING_LOOKBACK_HIGH", 20)     # 20D breakout
-ATR_PERIOD             = _get_env_int("ATR_PERIOD", 14)
-RISK_PCT_SWING         = _get_env_float("RISK_PCT_SWING", 1.2) / 100.0
-
-# Regime cap (swing sizing cap gates)
-CAP_OK                 = _get_env_float("CAP_OK", 0.60)
-CAP_WEAK               = _get_env_float("CAP_WEAK", 0.30)
-
-# Repo paths
-ROOT = Path(__file__).resolve().parents[1]
-OUTDIR = ROOT / "public_runs" / "latest"
-OUTDIR.mkdir(parents=True, exist_ok=True)
-
-# Untouchables / not rotated
-UNTOUCHABLE = {"DOT"}
-NOT_ROTATED = {"ETH", "DOT"}
-
-
-# -----------------------------
-# Helpers
-# -----------------------------
-
-def now_prague_iso() -> str:
-    try:
-        tz = ZoneInfo("Europe/Prague") if ZoneInfo else None
-    except Exception:
-        tz = None
-    if tz:
-        return datetime.now(tz).isoformat()
-    return datetime.now(timezone.utc).astimezone().isoformat()
-
-def ema(series: List[float], period: int) -> List[float]:
-    if not series or period <= 1:
-        return series[:]
-    k = 2.0 / (period + 1.0)
-    out = []
-    s = series[0]
-    out.append(s)
-    for v in series[1:]:
-        s = v * k + s * (1 - k)
-        out.append(s)
+def sma(values: List[float], length: int) -> List[float]:
+    out: List[float] = []
+    window_sum = 0.0
+    q: List[float] = []
+    for v in values:
+        q.append(v)
+        window_sum += v
+        if len(q) > length:
+            window_sum -= q.pop(0)
+        out.append(window_sum / len(q))
     return out
 
-def true_range(h: List[float], l: List[float], c: List[float]) -> List[float]:
-    tr = []
-    for i in range(len(c)):
+def atr(highs: List[float], lows: List[float], closes: List[float], length: int) -> List[float]:
+    trs: List[float] = []
+    for i in range(len(closes)):
         if i == 0:
-            tr.append(h[i] - l[i])
+            trs.append(highs[i] - lows[i])
         else:
-            tr.append(max(h[i] - l[i], abs(h[i] - c[i-1]), abs(l[i] - c[i-1])))
-    return tr
+            trs.append(true_range(highs[i], lows[i], closes[i - 1]))
+    return sma(trs, length)
 
-def atr(h: List[float], l: List[float], c: List[float], period: int) -> List[float]:
-    tr = true_range(h, l, c)
-    return ema(tr, period)
+def sum_last(values: List[float], n: int) -> float:
+    return float(sum(values[-n:])) if values else 0.0
 
-def pct(a: float, b: float) -> float:
-    if b == 0:
-        return 0.0
-    return (a - b) / b * 100.0
+# --------------- Core analysis ---------------
 
-def safe_get(d: Dict[str, Any], key: str, default=None):
-    return d[key] if key in d else default
-
-
-# -----------------------------
-# Market data via ccxt
-# -----------------------------
-
-class Market:
-    def __init__(self):
-        self.exchanges = []
-        if ccxt:
-            # Try Binance → OKX → Kucoin (all public endpoints)
-            for ex in ("binance", "okx", "kucoin"):
-                try:
-                    inst = getattr(ccxt, ex)({"enableRateLimit": True})
-                    self.exchanges.append(inst)
-                except Exception:
-                    pass
-
-    def best_symbol(self, ticker: str) -> Optional[str]:
-        # We prefer /USDT; fallback /USD
-        candidates = [f"{ticker}/USDT", f"{ticker}/USD"]
-        for ex in self.exchanges:
-            for s in candidates:
-                try:
-                    m = ex.market(s)
-                    if m and not m.get("active") is False:
-                        return s
-                except Exception:
-                    continue
-        return None
-
-    def fetch_ohlcv(self, ticker: str, timeframe: str, limit: int = 210) -> Optional[List[List[float]]]:
-        symbol = self.best_symbol(ticker)
-        if not symbol:
-            return None
-        for ex in self.exchanges:
-            try:
-                return ex.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
-            except Exception:
-                continue
-        return None
-
-    def spread_pct(self, ticker: str) -> Optional[float]:
-        symbol = self.best_symbol(ticker)
-        if not symbol:
-            return None
-        for ex in self.exchanges:
-            try:
-                ob = ex.fetch_order_book(symbol, limit=5)
-                bid = ob["bids"][0][0] if ob["bids"] else None
-                ask = ob["asks"][0][0] if ob["asks"] else None
-                if bid and ask:
-                    mid = 0.5 * (bid + ask)
-                    return (ask - bid) / mid * 100.0
-            except Exception:
-                continue
-        return None
-
-
-# -----------------------------
-# Universe (simple & robust)
-# -----------------------------
-
-def load_universe() -> List[str]:
+def analyze_one(symbol: str, binance: str) -> Optional[Dict[str, Any]]:
     """
-    Build a conservative, Revolut-friendly universe. If a mapping file exists
-    in the repo (mapping/*.json), we use its tickers. Otherwise, use a sensible
-    default list that includes majors + midcaps (ACS included).
+    Returns a dict with computed metrics (even if no breakout),
+    or None if we couldn't fetch/process data.
     """
-    # Try to read mapping files if present
-    tickers: List[str] = []
-    mapping_dirs = [ROOT / "mapping", ROOT / "data", ROOT / "configs"]
-    for d in mapping_dirs:
-        if d.exists():
-            for p in d.glob("*.json"):
-                try:
-                    obj = json.loads(p.read_text())
-                    # attempt to extract tickers lists if known format
-                    if isinstance(obj, dict):
-                        if "tickers" in obj and isinstance(obj["tickers"], list):
-                            tickers.extend([str(x).upper() for x in obj["tickers"]])
-                        elif "mapping" in obj and isinstance(obj["mapping"], dict):
-                            tickers.extend([str(k).upper() for k in obj["mapping"].keys()])
-                except Exception:
-                    pass
+    kl = fetch_klines_binance(binance, INTERVAL, LIMIT)
+    if not kl or len(kl) < LOOKBACK_BREAKOUT + 2:
+        return None
 
-    if tickers:
-        tickers = sorted(set(tickers))
-    else:
-        # Fallback default (includes ACS as requested)
-        tickers = [
-            "BTC","ETH","SOL","BNB","XRP","ADA","AVAX","DOGE","TRX","LINK",
-            "MATIC","IMX","OP","ARB","DOT","NEAR","APT","ATOM","SUI","SEI",
-            "TIA","JUP","PYTH","INJ","RUNE","FTM","SAND","AXS","APE","AAVE",
-            "GRT","RNDR","WIF","BONK","SHIB","TIA","NEON","SHDW","ACS"
-        ]
-        tickers = sorted(set(tickers))
+    # Parse arrays
+    # Binance kline: [ openTime, open, high, low, close, volume, closeTime, quoteAssetVolume, trades, ... ]
+    highs = [float(k[2]) for k in kl]
+    lows  = [float(k[3]) for k in kl]
+    closes = [float(k[4]) for k in kl]
+    vols = [float(k[5]) for k in kl]
+    quote_vols = [float(k[7]) for k in kl]
 
-    # Never include untouchables for trading outputs (but keep for regime metrics if needed)
-    return tickers
+    # 24h liquidity proxy (24 candles if 1h)
+    liq_24h = sum_last(quote_vols, 24)
 
+    # Basic guards
+    if liq_24h < MIN_QUOTE_VOL_24H:
+        return {
+            "symbol": symbol,
+            "binance": binance,
+            "skip": "low_liquidity",
+            "liq_24h": liq_24h
+        }
 
-# -----------------------------
-# Regime (BTC daily vs EMA50)
-# -----------------------------
+    # Indicators
+    atr_arr = atr(highs, lows, closes, ATR_LEN)
+    atr_val = atr_arr[-2]  # latest CLOSED bar ATR
+    if atr_val <= 0 or math.isnan(atr_val):
+        return None
 
-def compute_regime(mkt: Market) -> Dict[str, Any]:
-    data = mkt.fetch_ohlcv("BTC", timeframe="1d", limit=120)
-    ok = False
-    reason = "insufficient-data"
-    if data and len(data) > 60:
-        closes = [x[4] for x in data]
-        ema50 = ema(closes, 50)
-        if closes[-1] > ema50[-1]:
-            ok = True
-            reason = "price>ema50"
-        else:
-            ok = False
-            reason = "price<=ema50"
-    return {"ok": ok, "reason": reason}
+    # Latest CLOSED bar = index -2 (last element is still-forming)
+    i = len(closes) - 2
+    last_close = closes[i]
+    last_high = highs[i]
+    last_low  = lows[i]
+    last_vol  = vols[i]
 
+    # Breakout setup: compare last close vs highest-high of previous LOOKBACK bars (exclude current bar)
+    prev_window_high = array_high(highs[i - LOOKBACK_BREAKOUT : i]) if i - LOOKBACK_BREAKOUT >= 0 else array_high(highs[:i])
+    vol_avg20 = sum_last(vols[:i], 20) / 20.0 if i >= 20 else sum_last(vols[:i], max(1, i)) / max(1, min(i, 20))
+    vol_spike = (last_vol / vol_avg20) if vol_avg20 > 0 else 0.0
 
-# -----------------------------
-# Swing breakout logic (daily)
-# -----------------------------
+    is_breakout = (last_close > prev_window_high) and (vol_spike >= VOLUME_SPIKE_MULT)
 
-def swing_breakouts(mkt: Market, tickers: List[str]) -> List[Dict[str, Any]]:
-    picks: List[Dict[str, Any]] = []
-    for t in tickers:
-        if t in UNTOUCHABLE:
-            continue  # never trade DOT
-        # Non-rotated filtering only matters when rotating between positions; okay to still signal
-        data = mkt.fetch_ohlcv(t, timeframe="1d", limit=max(SWING_LOOKBACK_HIGH + 5, ATR_PERIOD + 5))
-        if not data or len(data) < SWING_LOOKBACK_HIGH + 2:
-            continue
+    entry = max(last_close, prev_window_high) if is_breakout else prev_window_high
+    stop = last_low  # breakout bar low (rule)
 
-        o = [x[1] for x in data]
-        h = [x[2] for x in data]
-        l = [x[3] for x in data]
-        c = [x[4] for x in data]
+    t1 = entry + 0.8 * atr_val
+    t2 = entry + 1.5 * atr_val
 
-        prev_high = max(h[-(SWING_LOOKBACK_HIGH+1):-1])  # prior N-day high, exclude last bar
-        last_close = c[-1]
-        last_low = l[-1]
-        atr_list = atr(h, l, c, ATR_PERIOD)
-        last_atr = atr_list[-1]
+    # Simple momentum score: distance from SMA20 + volume surge
+    smas = sma(closes, 20)
+    mom = (last_close / smas[i] - 1.0) if smas[i] > 0 else 0.0
+    score = 0.7 * mom + 0.3 * min(vol_spike / 3.0, 1.0)
 
-        # Breakout if last close > previous N-day high
-        if last_close > prev_high:
-            entry = last_close
-            stop = last_low  # breakout bar low as stop (rule)
-            if stop >= entry:  # guard
-                continue
-            t1 = entry + 0.8 * last_atr
-            t2 = entry + 1.5 * last_atr
-            picks.append({
-                "ticker": t,
-                "entry": round(entry, 8),
-                "stop": round(stop, 8),
-                "atr": round(last_atr, 8),
-                "t1": round(t1, 8),
-                "t2": round(t2, 8),
-                "timeframe": "1d",
-                "type": "breakout"
-            })
-
-    # Rank by distance above prior high (proxy = (entry/stop) or simply ATR multiple)
-    picks.sort(key=lambda x: (x["entry"] - x["stop"]) / max(1e-9, x["atr"]), reverse=True)
-    return picks
-
-
-# -----------------------------
-# Fast 15m momentum scanner
-# -----------------------------
-
-def fast_candidates(mkt: Market, tickers: List[str]) -> List[Dict[str, Any]]:
-    if not FAST_MOM_ENABLED:
-        return []
-
-    cands: List[Dict[str, Any]] = []
-    for t in tickers:
-        if t in UNTOUCHABLE:
-            continue
-
-        # Spread guard (skip if too wide)
-        spr = mkt.spread_pct(t)
-        if spr is not None and spr > FAST_MOM_MAX_SPREAD:
-            continue
-
-        data = mkt.fetch_ohlcv(t, timeframe=FAST_MOM_TIMEFRAME, limit=max(40, ATR_PERIOD + 5))
-        if not data or len(data) < 30:
-            continue
-
-        o = [x[1] for x in data]
-        h = [x[2] for x in data]
-        l = [x[3] for x in data]
-        c = [x[4] for x in data]
-        v = [x[5] for x in data]
-
-        last_close = c[-1]
-        prev_close = c[-2]
-        chg15 = pct(last_close, prev_close)
-
-        avg_vol20 = sum(v[-20:]) / 20.0 if len(v) >= 20 else (sum(v) / len(v))
-        rvol = (v[-1] / max(1.0, avg_vol20)) if avg_vol20 else 0.0
-
-        ema9 = ema(c, 9)[-1]
-        ema20 = ema(c, 20)[-1]
-
-        if chg15 >= FAST_MOM_MIN_MOVE and rvol >= FAST_MOM_MIN_RVOL and last_close >= ema9 >= ema20:
-            atr_list = atr(h, l, c, ATR_PERIOD)
-            last_atr = atr_list[-1]
-            entry = last_close
-            stop = l[-1]  # breakout bar low on 15m
-            if stop >= entry:
-                continue
-            t1 = entry + 0.8 * last_atr
-            t2 = entry + 1.5 * last_atr
-            cands.append({
-                "ticker": t,
-                "entry": round(entry, 8),
-                "stop": round(stop, 8),
-                "atr": round(last_atr, 8),
-                "t1": round(t1, 8),
-                "t2": round(t2, 8),
-                "timeframe": FAST_MOM_TIMEFRAME,
-                "reason": "15m-rvol-spike",
-                "rvol": round(rvol, 3),
-                "chg_pct": round(chg15, 3),
-                "spread_pct": None if spr is None else round(spr, 3),
-                "cap_pct": FAST_MOM_CAP_PCT,
-                "risk_pct": FAST_MOM_RISK_PCT
-            })
-
-    # Rank by rvol, then % change
-    cands.sort(key=lambda x: (x["rvol"], x["chg_pct"]), reverse=True)
-    return cands
-
-
-# -----------------------------
-# Main
-# -----------------------------
-
-def main() -> None:
-    start = time.time()
-    mkt = Market()
-    tickers = load_universe()
-
-    regime = compute_regime(mkt)
-
-    swing = swing_breakouts(mkt, tickers)
-    fast = fast_candidates(mkt, tickers)
-
-    signals: Dict[str, Any] = {}
-    if swing:
-        signals["type"] = "B"   # breakout
-        signals["picks"] = swing[:3]  # top 3
-    elif fast:
-        # keep swing type separate; fast candidates go in their own section
-        signals["type"] = "C"   # candidates only (no swing breakouts)
-        signals["picks"] = []
-    else:
-        signals["type"] = "H"   # hold/wait
-        signals["picks"] = []
-
-    # Output summary
-    summary: Dict[str, Any] = {
-        "status": "ok",
-        "timestamp_prague": now_prague_iso(),
-        "regime": regime,
-        "signals": signals,
-        "candidates": swing,           # keep for backward compatibility
-        "fast_candidates": fast,       # NEW — this is what catches ACS-like moves
-        "notes": [
-            "DOT is staked and untouchable; ETH and DOT are not rotated.",
-            "Use breakout bar low as stop; trail after +1R.",
-            "Swing sizing cap: 60% when regime.ok else 30%.",
-            "Fast-momentum trades use smaller risk and cap (configurable)."
-        ],
-        "config": {
-            "SWING_LOOKBACK_HIGH": SWING_LOOKBACK_HIGH,
-            "ATR_PERIOD": ATR_PERIOD,
-            "RISK_PCT_SWING": RISK_PCT_SWING,
-            "FAST_MOM_ENABLED": FAST_MOM_ENABLED,
-            "FAST_MOM_TIMEFRAME": FAST_MOM_TIMEFRAME,
-            "FAST_MOM_MIN_MOVE_PCT": FAST_MOM_MIN_MOVE,
-            "FAST_MOM_MIN_RVOL": FAST_MOM_MIN_RVOL,
-            "FAST_MOM_MAX_SPREAD_PCT": FAST_MOM_MAX_SPREAD,
-            "FAST_MOM_RISK_PCT": FAST_MOM_RISK_PCT,
-            "FAST_MOM_CAP_PCT": FAST_MOM_CAP_PCT,
-            "REGIME_GATE_FAST": REGIME_GATE_FAST,
-            "CAP_OK": CAP_OK,
-            "CAP_WEAK": CAP_WEAK
-        },
-        "runtime_sec": round(time.time() - start, 3)
+    return {
+        "symbol": symbol,
+        "binance": binance,
+        "liq_24h": liq_24h,
+        "atr": atr_val,
+        "prev_window_high": prev_window_high,
+        "last_close": last_close,
+        "last_low": last_low,
+        "last_high": last_high,
+        "vol_spike": vol_spike,
+        "is_breakout": bool(is_breakout),
+        "entry": entry,
+        "stop": stop,
+        "t1": t1,
+        "t2": t2,
+        "score": score
     }
 
-    OUTDIR.mkdir(parents=True, exist_ok=True)
-    (OUTDIR / "summary.json").write_text(json.dumps(summary, indent=2))
-    # Optional: thin companion files
-    (OUTDIR / "signals.json").write_text(json.dumps({"signals": signals}, indent=2))
-    (OUTDIR / "run_stats.json").write_text(json.dumps({"runtime_sec": summary["runtime_sec"]}, indent=2))
+def btc_regime(mapping: List[Dict[str, Any]]) -> Dict[str, Any]:
+    btc_symbol = None
+    for a in mapping:
+        if a.get("symbol") == "BTC":
+            btc_symbol = a.get("binance") or "BTCUSDT"
+            break
+    if not btc_symbol:
+        btc_symbol = "BTCUSDT"
+    kl = fetch_klines_binance(btc_symbol, INTERVAL, LIMIT)
+    if not kl or len(kl) < 210:
+        return {"ok": False, "reason": "insufficient_bars"}
+    closes = [float(k[4]) for k in kl]
+    sma200 = sma(closes, 200)
+    ok = closes[-2] > sma200[-2]  # last closed bar vs SMA200
+    return {
+        "ok": bool(ok),
+        "trend_ref": "SMA200",
+        "price": closes[-2],
+        "sma200": sma200[-2]
+    }
 
-    print(f"[analyses] wrote {OUTDIR/'summary.json'} (swing picks: {len(swing)}, fast: {len(fast)})")
+def main() -> None:
+    start_ts = int(time.time())
+    ensure_outdir()
 
+    mapping = try_load_mapping()
+
+    # Build universe from mapping (prefer entries that define a Binance symbol)
+    universe: List[Dict[str, str]] = []
+    for a in mapping:
+        sym = str(a.get("symbol", "")).upper()
+        binance = a.get("binance")
+        if not sym or not binance:
+            continue
+        # Avoid obvious duplicates
+        if not any(x["binance"] == binance for x in universe):
+            universe.append({"symbol": sym, "binance": binance})
+
+    # If mapping was empty, universe contains a sane fallback already
+    universe_count = len(universe)
+
+    results: List[Dict[str, Any]] = []
+    skipped = {"low_liquidity": 0, "error": 0, "other": 0}
+
+    for u in universe:
+        try:
+            r = analyze_one(u["symbol"], u["binance"])
+            if r is None:
+                skipped["other"] += 1
+                continue
+            # Always collect (even skipped w/ reason) for debug visibility
+            results.append(r)
+        except Exception:
+            skipped["error"] += 1
+            results.append({
+                "symbol": u["symbol"],
+                "binance": u["binance"],
+                "skip": "exception",
+                "error": traceback.format_exc(limit=1)
+            })
+
+    # Separate valid metrics
+    valid = [x for x in results if "atr" in x and "entry" in x]
+
+    # Fresh breakouts for signal "B"
+    breakouts = [x for x in valid if x.get("is_breakout") and x["symbol"] not in UNTOUCHABLE]
+
+    # Candidate ranking (no fresh breakout -> "C")
+    candidates_pool = [x for x in valid if x["symbol"] not in UNTOUCHABLE]
+    candidates_pool.sort(key=lambda z: z.get("score", 0.0), reverse=True)
+    candidates = candidates_pool[:MAX_CANDIDATES]
+
+    # Regime
+    regime_info = btc_regime(mapping)
+
+    # Prepare outputs
+    market_snapshot = {
+        "time_unix": start_ts,
+        "universe_count": universe_count,
+        "scanned": len(results),
+        "valid": len(valid),
+        "skipped": skipped
+    }
+
+    swing = {
+        "breakouts": breakouts
+    }
+
+    fast = {
+        "candidates": candidates
+    }
+
+    # Signal selection
+    if breakouts:
+        signal = {"type": "B", "count": len(breakouts)}
+    else:
+        signal = {"type": "C", "count": len(candidates)}
+
+    summary = {
+        "status": "ok",
+        "time_unix": start_ts,
+        "regime": regime_info,
+        "signals": signal,
+        "notes": {
+            "risk_pct_hint": RISK_PCT,
+            "do_not_rotate": sorted(list(DO_NOT_ROTATE)),
+            "untouchable": sorted(list(UNTOUCHABLE)),
+            "interval": INTERVAL,
+            "lookback_breakout": LOOKBACK_BREAKOUT,
+            "atr_len": ATR_LEN,
+            "volume_spike_mult": VOLUME_SPIKE_MULT,
+            "min_quote_vol_24h": MIN_QUOTE_VOL_24H
+        }
+    }
+
+    # Persist files
+    try:
+        with open(os.path.join(OUT_DIR, "summary.json"), "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=2)
+        with open(os.path.join(OUT_DIR, "run_stats.json"), "w", encoding="utf-8") as f:
+            json.dump(market_snapshot, f, indent=2)
+        with open(os.path.join(OUT_DIR, "market_snapshot.json"), "w", encoding="utf-8") as f:
+            json.dump({"swing": swing, "fast": fast}, f, indent=2)
+        # Full debug dump (so we can inspect why assets got filtered out)
+        with open(os.path.join(OUT_DIR, "debug_scan.json"), "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+    except Exception:
+        # As a last resort, print to stdout to not fail the job
+        print("[warn] Failed to write outputs:", file=sys.stderr)
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
