@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# scripts/generate_mapping.py
+# scripts/generate_mapping.py 
 """
 Generate Revolut ↔ Binance symbol mapping.
 
