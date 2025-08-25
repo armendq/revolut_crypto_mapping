@@ -185,12 +185,12 @@
     "note": "ok"
   },
   {
-    "symbol": "MNT",
+    "symbol": "OKB",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "OKB",
+    "symbol": "MNT",
     "kept": true,
     "note": "ok"
   },
@@ -230,12 +230,12 @@
     "note": "ok"
   },
   {
-    "symbol": "ICP",
+    "symbol": "PI",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "PI",
+    "symbol": "ICP",
     "kept": true,
     "note": "ok"
   },
