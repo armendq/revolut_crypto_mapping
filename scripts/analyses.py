@@ -40,7 +40,7 @@ DEFAULT_MAPPING_FILES = [
 ]
 
 USER_AGENT = "revolut-analyses/1.0 (+https://github.com/armendq/revolut_crypto_mapping)"
-BINANCE_BASE = "https://api.binance.com"
+BINANCE_BASE = "https://data-api.binance.vision"
 BINANCE_VISION = "https://data-api.binance.vision"
 
 # Scan parameters
