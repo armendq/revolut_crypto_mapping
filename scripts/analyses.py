@@ -2,365 +2,387 @@
 # -*- coding: utf-8 -*-
 
 """
-analyses.py
------------
-Scans a broad crypto universe (from your mapping file), fetches hourly data
-from Binance, detects fresh breakouts, computes ATR and targets, then writes:
-  public_runs/latest/summary.json
-  public_runs/latest/run_stats.json
-  public_runs/latest/market_snapshot.json
-  public_runs/latest/debug_scan.json
+Lightweight market scan for Revolut-available coins.
+- Pure stdlib (urllib, json, time, datetime, pathlib, math)
+- Pulls basic market data from CoinGecko's public markets endpoint
+- Produces:
+    public_runs/latest/market_snapshot.json
+    public_runs/latest/debug_scan.json
+    public_runs/latest/run_stats.json
+    public_runs/latest/signals.json
+    public_runs/latest/summary.json
 
-Design goals:
-- Wider universe (no hard-coded short list).
-- Transparent filtering (+ counts).
-- Robust, no exceptions bubbling up (graceful skips).
-- Signals:
-    "B"  -> fresh breakouts detected on the latest closed bar
-    "C"  -> no fresh breakouts; show top candidates (momentum + volume surge)
-- Rules respected:
-    * DOT is staked/untouchable.
-    * ETH and DOT are never “rotated out” by this script.
-    * Stop = breakout bar LOW.
-    * Targets: T1 = entry + 0.8*ATR, T2 = entry + 1.5*ATR.
-- Regime: simple BTC hourly regime check.
+Signals:
+- If any coin meets a strong breakout condition (near 24h high with big 24h range
+  and elevated volume proxy), emits signals.type == "B" with a single best pick.
+- Otherwise emits signals.type == "C" with ranked candidates.
 
-Requires internet access in the runner (Binance public REST).
+“ATR” proxy:
+- Uses 24h True Range approximation: atr_24h = high_24h - low_24h
+- T1 = entry + 0.8 * atr_24h, T2 = entry + 1.5 * atr_24h
+
+Robustness:
+- Unknown/failed coins are skipped.
+- Any exception is caught and folded into debug + a minimal summary so the
+  workflow never fails due to data hiccups.
 """
 
 from __future__ import annotations
 
-import os
-import sys
 import json
 import math
 import time
-import traceback
-from typing import List, Dict, Any, Optional
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
+import urllib.error
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-# --------------- Configuration ---------------
 
-# Where to write results
-OUT_DIR = os.path.join("public_runs", "latest")
+# -------------------------
+# Configuration
+# -------------------------
 
-# Mapping file(s) to discover symbols
-MAPPING_CANDIDATES = [
-    os.path.join("data", "mapping.json"),
-    os.path.join("mapping.json"),
-    os.path.join("data", "mapping_all.json"),
-]
+OUT_DIR = Path("public_runs/latest")
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Binance REST
-BINANCE_KLINES = "https://api.binance.com/api/v3/klines"  # ?symbol=BTCUSDT&interval=1h&limit=500
+VS_CCY = "usd"
 
-# Universe & filters
-INTERVAL = "1h"
-LIMIT = 500                    # last 500 hourly candles
-LOOKBACK_BREAKOUT = 20         # highest-high lookback (ex-current) for breakout
-ATR_LEN = 14
-MIN_QUOTE_VOL_24H = 1_000_000  # rough liquidity floor via 24h quote vol from klines sum
-VOLUME_SPIKE_MULT = 1.5        # latest bar volume vs avg(20)
-MAX_CANDIDATES = 15            # when in "C" mode
+# Universe mapping: {symbol: coingecko_id}
+# NOTE: If you already maintain a mapping file in the repo, you can load it here
+# to override/extend this default dictionary.
+DEFAULT_UNIVERSE: Dict[str, str] = {
+    # large caps / majors
+    "BTC": "bitcoin",
+    "ETH": "ethereum",
+    "DOT": "polkadot",
+    "IMX": "immutable-x",
+    "ARB": "arbitrum",
+    "OP": "optimism",
+    # smaller / requested
+    "ACS": "access-protocol",
+    "NEON": "neon-evm",           # best-effort id
+    "SHDW": "genesysgo-shadow",   # best-effort id
+    # add more if needed
+}
 
-# Sizing hints (these are only hints; final sizing happens downstream)
-RISK_PCT = 0.012               # 1.2%
+# Breakout / candidate heuristics
+NEAR_HIGH_PCT = 1.0       # price within 1% of 24h high -> “near high”
+MIN_RANGE_PCT = 4.0       # (high-low)/price >= 4% -> meaningful range
+MIN_PCT_24H = 5.0         # 24h pct change at least this for candidates
 
-# Do not rotate / trade rules
-DO_NOT_ROTATE = {"ETH", "DOT"}
-UNTOUCHABLE = {"DOT"}          # staked
+# A tiny throttle for polite API usage
+REQUEST_SLEEP_SEC = 0.2
 
-# --------------- Utilities ---------------
 
-def ensure_outdir() -> None:
-    os.makedirs(OUT_DIR, exist_ok=True)
+# -------------------------
+# Helpers
+# -------------------------
 
-def read_json(path: str) -> Optional[Any]:
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def http_get_json(url: str, timeout: float = 20.0) -> Any:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "revolut-crypto-mapping-analyses/1.0 (+https://github.com/armendq)"
+        },
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        if resp.status != 200:
+            raise urllib.error.HTTPError(url, resp.status, "Non-200", resp.headers, None)
+        raw = resp.read()
+    return json.loads(raw.decode("utf-8"))
+
+
+def safe_float(x: Any) -> Optional[float]:
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+        if x is None:
+            return None
+        return float(x)
     except Exception:
         return None
 
-def try_load_mapping() -> List[Dict[str, Any]]:
-    for p in MAPPING_CANDIDATES:
-        if os.path.exists(p):
-            data = read_json(p)
-            if isinstance(data, list):
-                return data
-            if isinstance(data, dict) and "assets" in data and isinstance(data["assets"], list):
-                return data["assets"]
-    # Fallback minimal universe if mapping missing
-    return [
-        {"symbol": "BTC", "binance": "BTCUSDT"},
-        {"symbol": "ETH", "binance": "ETHUSDT"},
-        {"symbol": "SOL", "binance": "SOLUSDT"},
-        {"symbol": "ARB", "binance": "ARBUSDT"},
-        {"symbol": "IMX", "binance": "IMXUSDT"},
-        {"symbol": "OP",  "binance": "OPUSDT"},
-        {"symbol": "DOT", "binance": "DOTUSDT"},
-    ]
 
-def http_get_json(url: str) -> Optional[Any]:
-    req = Request(url, headers={"User-Agent": "gh-actions-analysis/1.0"})
+@dataclass
+class CoinRow:
+    symbol: str
+    id: str
+    price: Optional[float]
+    high24: Optional[float]
+    low24: Optional[float]
+    pct24: Optional[float]
+    mcap: Optional[float]
+    vol24: Optional[float]
+
+
+def fetch_markets(cg_ids: List[str]) -> Dict[str, CoinRow]:
+    """
+    Query CoinGecko markets for a batch of ids.
+    Returns mapping by id -> CoinRow
+    """
+    out: Dict[str, CoinRow] = {}
+    if not cg_ids:
+        return out
+
+    # CoinGecko markets endpoint (ids must be comma-separated list of ids)
+    ids_param = ",".join(sorted(set(cg_ids)))
+    url = (
+        "https://api.coingecko.com/api/v3/coins/markets?"
+        + urllib.parse.urlencode(
+            {
+                "vs_currency": VS_CCY,
+                "ids": ids_param,
+                "price_change_percentage": "24h",
+                "per_page": len(cg_ids),
+                "sparkline": "false",
+            }
+        )
+    )
+
+    data = []
     try:
-        with urlopen(req, timeout=30) as resp:
-            raw = resp.read()
-        return json.loads(raw.decode("utf-8"))
-    except (URLError, HTTPError, json.JSONDecodeError):
-        return None
+        data = http_get_json(url)
+    except Exception as e:
+        # If it fails entirely, return empty; caller will handle
+        OUT_DIR.joinpath("debug_scan.json").write_text(
+            json.dumps({"error": f"markets fetch failed: {type(e).__name__}: {e}"}, indent=2)
+        )
+        return out
 
-def fetch_klines_binance(symbol: str, interval: str, limit: int) -> Optional[List[List[Any]]]:
-    url = f"{BINANCE_KLINES}?symbol={symbol}&interval={interval}&limit={limit}"
-    data = http_get_json(url)
-    if isinstance(data, list) and data and isinstance(data[0], list):
-        return data
-    return None
-
-def array_high(arr: List[float]) -> float:
-    return max(arr) if arr else float("nan")
-
-def array_low(arr: List[float]) -> float:
-    return min(arr) if arr else float("nan")
-
-def true_range(h: float, l: float, pc: float) -> float:
-    return max(h - l, abs(h - pc), abs(l - pc))
-
-def sma(values: List[float], length: int) -> List[float]:
-    out: List[float] = []
-    window_sum = 0.0
-    q: List[float] = []
-    for v in values:
-        q.append(v)
-        window_sum += v
-        if len(q) > length:
-            window_sum -= q.pop(0)
-        out.append(window_sum / len(q))
+    for row in data:
+        # row keys: id, symbol, current_price, high_24h, low_24h, price_change_percentage_24h_in_currency, market_cap, total_volume, ...
+        cid = str(row.get("id") or "")
+        sym = str(row.get("symbol") or "").upper()
+        out[cid] = CoinRow(
+            symbol=sym,
+            id=cid,
+            price=safe_float(row.get("current_price")),
+            high24=safe_float(row.get("high_24h")),
+            low24=safe_float(row.get("low_24h")),
+            pct24=safe_float(row.get("price_change_percentage_24h_in_currency")),
+            mcap=safe_float(row.get("market_cap")),
+            vol24=safe_float(row.get("total_volume")),
+        )
     return out
 
-def atr(highs: List[float], lows: List[float], closes: List[float], length: int) -> List[float]:
-    trs: List[float] = []
-    for i in range(len(closes)):
-        if i == 0:
-            trs.append(highs[i] - lows[i])
-        else:
-            trs.append(true_range(highs[i], lows[i], closes[i - 1]))
-    return sma(trs, length)
 
-def sum_last(values: List[float], n: int) -> float:
-    return float(sum(values[-n:])) if values else 0.0
+def tr_and_atr_proxy(price: Optional[float], hi: Optional[float], lo: Optional[float]) -> Tuple[Optional[float], Optional[float]]:
+    """Return (true_range_24h, atr_proxy) using 24h high/low approximation."""
+    if price is None or hi is None or lo is None:
+        return None, None
+    true_range = max(hi - lo, 0.0)
+    atr = true_range  # one-day TR as ATR proxy
+    return true_range, atr
 
-# --------------- Core analysis ---------------
 
-def analyze_one(symbol: str, binance: str) -> Optional[Dict[str, Any]]:
-    """
-    Returns a dict with computed metrics (even if no breakout),
-    or None if we couldn't fetch/process data.
-    """
-    kl = fetch_klines_binance(binance, INTERVAL, LIMIT)
-    if not kl or len(kl) < LOOKBACK_BREAKOUT + 2:
+def near_high_condition(price: Optional[float], hi: Optional[float], pct: float) -> bool:
+    if price is None or hi is None or hi <= 0:
+        return False
+    return (hi - price) / hi * 100.0 <= pct
+
+
+def range_pct(price: Optional[float], hi: Optional[float], lo: Optional[float]) -> Optional[float]:
+    if price is None or hi is None or lo is None or price <= 0:
         return None
+    return (max(hi - lo, 0.0) / price) * 100.0
 
-    # Parse arrays
-    # Binance kline: [ openTime, open, high, low, close, volume, closeTime, quoteAssetVolume, trades, ... ]
-    highs = [float(k[2]) for k in kl]
-    lows  = [float(k[3]) for k in kl]
-    closes = [float(k[4]) for k in kl]
-    vols = [float(k[5]) for k in kl]
-    quote_vols = [float(k[7]) for k in kl]
 
-    # 24h liquidity proxy (24 candles if 1h)
-    liq_24h = sum_last(quote_vols, 24)
+def build_candidates(universe: Dict[str, str]) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    Returns: (candidates, debug_info)
+    """
+    cg_ids = list(universe.values())
+    markets = fetch_markets(cg_ids)
+    time.sleep(REQUEST_SLEEP_SEC)
 
-    # Basic guards
-    if liq_24h < MIN_QUOTE_VOL_24H:
-        return {
-            "symbol": symbol,
-            "binance": binance,
-            "skip": "low_liquidity",
-            "liq_24h": liq_24h
-        }
+    candidates: List[Dict[str, Any]] = []
+    debugs: Dict[str, Any] = {"universe_count": len(universe), "scanned": [], "skipped": []}
 
-    # Indicators
-    atr_arr = atr(highs, lows, closes, ATR_LEN)
-    atr_val = atr_arr[-2]  # latest CLOSED bar ATR
-    if atr_val <= 0 or math.isnan(atr_val):
-        return None
+    id_by_symbol = {sym: cid for sym, cid in universe.items()}
 
-    # Latest CLOSED bar = index -2 (last element is still-forming)
-    i = len(closes) - 2
-    last_close = closes[i]
-    last_high = highs[i]
-    last_low  = lows[i]
-    last_vol  = vols[i]
+    for sym, cid in id_by_symbol.items():
+        row = markets.get(cid)
+        if not row:
+            debugs["skipped"].append({"symbol": sym, "id": cid, "reason": "no_market_row"})
+            continue
 
-    # Breakout setup: compare last close vs highest-high of previous LOOKBACK bars (exclude current bar)
-    prev_window_high = array_high(highs[i - LOOKBACK_BREAKOUT : i]) if i - LOOKBACK_BREAKOUT >= 0 else array_high(highs[:i])
-    vol_avg20 = sum_last(vols[:i], 20) / 20.0 if i >= 20 else sum_last(vols[:i], max(1, i)) / max(1, min(i, 20))
-    vol_spike = (last_vol / vol_avg20) if vol_avg20 > 0 else 0.0
+        tr24, atr = tr_and_atr_proxy(row.price, row.high24, row.low24)
+        r_pct = range_pct(row.price, row.high24, row.low24)
 
-    is_breakout = (last_close > prev_window_high) and (vol_spike >= VOLUME_SPIKE_MULT)
+        # Filter: basic momentum & range
+        if row.pct24 is None or r_pct is None:
+            debugs["skipped"].append({"symbol": sym, "id": cid, "reason": "insufficient_data"})
+            continue
 
-    entry = max(last_close, prev_window_high) if is_breakout else prev_window_high
-    stop = last_low  # breakout bar low (rule)
+        if row.pct24 < MIN_PCT_24H or r_pct < MIN_RANGE_PCT:
+            debugs["skipped"].append(
+                {
+                    "symbol": sym,
+                    "id": cid,
+                    "reason": "weak_momentum_or_range",
+                    "pct24": row.pct24,
+                    "range_pct": r_pct,
+                }
+            )
+            continue
 
-    t1 = entry + 0.8 * atr_val
-    t2 = entry + 1.5 * atr_val
+        near_hi = near_high_condition(row.price, row.high24, NEAR_HIGH_PCT)
+        score = (row.pct24 or 0.0) + (r_pct or 0.0) + (5.0 if near_hi else 0.0)
 
-    # Simple momentum score: distance from SMA20 + volume surge
-    smas = sma(closes, 20)
-    mom = (last_close / smas[i] - 1.0) if smas[i] > 0 else 0.0
-    score = 0.7 * mom + 0.3 * min(vol_spike / 3.0, 1.0)
+        # Entry/Stop/T1/T2 using 24h high/low heuristic
+        entry = row.price
+        stop = row.low24  # “breakout bar low” proxy using 24h low
+        t1 = t2 = None
+        if atr is not None and entry is not None:
+            t1 = entry + 0.8 * atr
+            t2 = entry + 1.5 * atr
 
-    return {
-        "symbol": symbol,
-        "binance": binance,
-        "liq_24h": liq_24h,
-        "atr": atr_val,
-        "prev_window_high": prev_window_high,
-        "last_close": last_close,
-        "last_low": last_low,
-        "last_high": last_high,
-        "vol_spike": vol_spike,
-        "is_breakout": bool(is_breakout),
-        "entry": entry,
-        "stop": stop,
-        "t1": t1,
-        "t2": t2,
-        "score": score
-    }
+        candidates.append(
+            {
+                "symbol": sym,
+                "id": cid,
+                "price": row.price,
+                "high24": row.high24,
+                "low24": row.low24,
+                "pct24": row.pct24,
+                "range_pct": r_pct,
+                "atr_proxy": atr,
+                "near_24h_high": near_hi,
+                "entry": entry,
+                "stop": stop,
+                "T1": t1,
+                "T2": t2,
+                "score": round(score, 4),
+            }
+        )
+        debugs["scanned"].append({"symbol": sym, "id": cid, "ok": True})
 
-def btc_regime(mapping: List[Dict[str, Any]]) -> Dict[str, Any]:
-    btc_symbol = None
-    for a in mapping:
-        if a.get("symbol") == "BTC":
-            btc_symbol = a.get("binance") or "BTCUSDT"
-            break
-    if not btc_symbol:
-        btc_symbol = "BTCUSDT"
-    kl = fetch_klines_binance(btc_symbol, INTERVAL, LIMIT)
-    if not kl or len(kl) < 210:
-        return {"ok": False, "reason": "insufficient_bars"}
-    closes = [float(k[4]) for k in kl]
-    sma200 = sma(closes, 200)
-    ok = closes[-2] > sma200[-2]  # last closed bar vs SMA200
-    return {
-        "ok": bool(ok),
-        "trend_ref": "SMA200",
-        "price": closes[-2],
-        "sma200": sma200[-2]
-    }
+    # Sort by score desc, then pct24
+    candidates.sort(key=lambda d: (d.get("score") or 0.0, d.get("pct24") or 0.0), reverse=True)
+    return candidates, debugs
+
+
+def best_breakout(candidates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """
+    Strong breakout if:
+      - near_24h_high True
+      - range_pct >= MIN_RANGE_PCT
+      - pct24 >= (MIN_PCT_24H + 3)
+    Returns the top candidate that meets this, else None.
+    """
+    for c in candidates:
+        if c.get("near_24h_high") and (c.get("range_pct") or 0) >= MIN_RANGE_PCT and (c.get("pct24") or 0) >= (MIN_PCT_24H + 3.0):
+            return c
+    return None
+
+
+def write_json(path: Path, obj: Any) -> None:
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False))
+
 
 def main() -> None:
-    start_ts = int(time.time())
-    ensure_outdir()
+    started = time.time()
+    status = "ok"
+    errors: List[str] = []
+    universe = dict(DEFAULT_UNIVERSE)
 
-    mapping = try_load_mapping()
-
-    # Build universe from mapping (prefer entries that define a Binance symbol)
-    universe: List[Dict[str, str]] = []
-    for a in mapping:
-        sym = str(a.get("symbol", "")).upper()
-        binance = a.get("binance")
-        if not sym or not binance:
-            continue
-        # Avoid obvious duplicates
-        if not any(x["binance"] == binance for x in universe):
-            universe.append({"symbol": sym, "binance": binance})
-
-    # If mapping was empty, universe contains a sane fallback already
-    universe_count = len(universe)
-
-    results: List[Dict[str, Any]] = []
-    skipped = {"low_liquidity": 0, "error": 0, "other": 0}
-
-    for u in universe:
+    # Optional: load an override universe file if present
+    override_path = Path("data/universe.json")
+    if override_path.exists():
         try:
-            r = analyze_one(u["symbol"], u["binance"])
-            if r is None:
-                skipped["other"] += 1
-                continue
-            # Always collect (even skipped w/ reason) for debug visibility
-            results.append(r)
-        except Exception:
-            skipped["error"] += 1
-            results.append({
-                "symbol": u["symbol"],
-                "binance": u["binance"],
-                "skip": "exception",
-                "error": traceback.format_exc(limit=1)
-            })
+            user_map = json.loads(override_path.read_text())
+            if isinstance(user_map, dict):
+                # normalize keys to SYMBOL upper
+                clean: Dict[str, str] = {}
+                for k, v in user_map.items():
+                    if isinstance(k, str) and isinstance(v, str) and v.strip():
+                        clean[k.upper()] = v.strip()
+                if clean:
+                    universe = clean
+        except Exception as e:
+            errors.append(f"universe_override_load_failed: {e!r}")
 
-    # Separate valid metrics
-    valid = [x for x in results if "atr" in x and "entry" in x]
-
-    # Fresh breakouts for signal "B"
-    breakouts = [x for x in valid if x.get("is_breakout") and x["symbol"] not in UNTOUCHABLE]
-
-    # Candidate ranking (no fresh breakout -> "C")
-    candidates_pool = [x for x in valid if x["symbol"] not in UNTOUCHABLE]
-    candidates_pool.sort(key=lambda z: z.get("score", 0.0), reverse=True)
-    candidates = candidates_pool[:MAX_CANDIDATES]
-
-    # Regime
-    regime_info = btc_regime(mapping)
-
-    # Prepare outputs
-    market_snapshot = {
-        "time_unix": start_ts,
-        "universe_count": universe_count,
-        "scanned": len(results),
-        "valid": len(valid),
-        "skipped": skipped
-    }
-
-    swing = {
-        "breakouts": breakouts
-    }
-
-    fast = {
-        "candidates": candidates
-    }
-
-    # Signal selection
-    if breakouts:
-        signal = {"type": "B", "count": len(breakouts)}
-    else:
-        signal = {"type": "C", "count": len(candidates)}
-
-    summary = {
-        "status": "ok",
-        "time_unix": start_ts,
-        "regime": regime_info,
-        "signals": signal,
-        "notes": {
-            "risk_pct_hint": RISK_PCT,
-            "do_not_rotate": sorted(list(DO_NOT_ROTATE)),
-            "untouchable": sorted(list(UNTOUCHABLE)),
-            "interval": INTERVAL,
-            "lookback_breakout": LOOKBACK_BREAKOUT,
-            "atr_len": ATR_LEN,
-            "volume_spike_mult": VOLUME_SPIKE_MULT,
-            "min_quote_vol_24h": MIN_QUOTE_VOL_24H
-        }
-    }
-
-    # Persist files
+    # Run scan
+    candidates: List[Dict[str, Any]] = []
+    debug_info: Dict[str, Any] = {}
     try:
-        with open(os.path.join(OUT_DIR, "summary.json"), "w", encoding="utf-8") as f:
-            json.dump(summary, f, indent=2)
-        with open(os.path.join(OUT_DIR, "run_stats.json"), "w", encoding="utf-8") as f:
-            json.dump(market_snapshot, f, indent=2)
-        with open(os.path.join(OUT_DIR, "market_snapshot.json"), "w", encoding="utf-8") as f:
-            json.dump({"swing": swing, "fast": fast}, f, indent=2)
-        # Full debug dump (so we can inspect why assets got filtered out)
-        with open(os.path.join(OUT_DIR, "debug_scan.json"), "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=2)
-    except Exception:
-        # As a last resort, print to stdout to not fail the job
-        print("[warn] Failed to write outputs:", file=sys.stderr)
-        traceback.print_exc()
+        candidates, debug_info = build_candidates(universe)
+    except Exception as e:
+        status = "degraded"
+        errors.append(f"scan_failed: {e!r}")
+
+    # Build signals object
+    signals: Dict[str, Any] = {"type": "C", "note": "candidates", "count": len(candidates)}
+    pick = best_breakout(candidates)
+    if pick:
+        signals = {
+            "type": "B",
+            "ticker": pick["symbol"],
+            "entry": pick.get("entry"),
+            "stop": pick.get("stop"),
+            "T1": pick.get("T1"),
+            "T2": pick.get("T2"),
+            "atr_proxy": pick.get("atr_proxy"),
+            "reason": "Strong breakout: near 24h high + momentum + range",
+        }
+
+    # Market snapshot (top N for quick view)
+    snapshot = {
+        "ts_utc": _now_iso(),
+        "universe_size": len(universe),
+        "candidates_top5": candidates[:5],
+    }
+
+    # Debug + stats
+    run_stats = {
+        "started_utc": datetime.utcfromtimestamp(started).isoformat() + "Z",
+        "ended_utc": _now_iso(),
+        "duration_sec": round(time.time() - started, 3),
+        "errors": errors,
+    }
+
+    debug_blob = {
+        "params": {
+            "vs_currency": VS_CCY,
+            "NEAR_HIGH_PCT": NEAR_HIGH_PCT,
+            "MIN_RANGE_PCT": MIN_RANGE_PCT,
+            "MIN_PCT_24H": MIN_PCT_24H,
+        },
+        "universe": universe,
+        "debug": debug_info,
+    }
+
+    # Write files
+    try:
+        write_json(OUT_DIR / "market_snapshot.json", snapshot)
+        write_json(OUT_DIR / "debug_scan.json", debug_blob)
+        write_json(OUT_DIR / "run_stats.json", run_stats)
+        write_json(OUT_DIR / "signals.json", signals)
+
+        # Summary: minimal, used by your chat fetcher
+        summary = {
+            "status": status,
+            "ts_utc": _now_iso(),
+            "signals": signals,
+            "candidates": candidates[:10],  # include a short list
+        }
+        write_json(OUT_DIR / "summary.json", summary)
+    except Exception as e:
+        # As a last resort, write a tiny summary so the workflow step still succeeds
+        fallback = {
+            "status": "degraded",
+            "ts_utc": _now_iso(),
+            "error": f"write_failed: {e!r}",
+            "signals": {"type": "C", "count": 0},
+            "candidates": [],
+        }
+        OUT_DIR.joinpath("summary.json").write_text(json.dumps(fallback, indent=2, ensure_ascii=False))
+
 
 if __name__ == "__main__":
     main()
