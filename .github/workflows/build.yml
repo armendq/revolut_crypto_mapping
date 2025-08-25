@@ -29,13 +29,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          set -e
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
       - name: Generate mapping (safe)
         run: |
-          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
@@ -46,13 +44,10 @@ jobs:
         env:
           EQUITY: ${{ vars.EQUITY || '41000' }}
           CASH:   ${{ vars.CASH   || '32000' }}
-        run: |
-          set -e
-          python -m scripts.analyses
+        run: python -m scripts.analyses
 
       - name: Verify outputs exist
         run: |
-          set -e
           test -f artifacts/market_snapshot.json
           test -f artifacts/run_stats.json
           test -f artifacts/debug_scan.json
@@ -60,22 +55,35 @@ jobs:
 
       - name: Prepare public_runs/latest
         run: |
-          set -e
           rm -rf public_runs/latest
           mkdir -p public_runs/latest
-
           cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json
           cp artifacts/run_stats.json       public_runs/latest/run_stats.json
           cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
           cp data/signals.json              public_runs/latest/signals.json
 
-          python -c "import json,datetime,pathlib; latest=pathlib.Path('public_runs/latest'); market=json.load(open('artifacts/market_snapshot.json','r',encoding='utf-8')); run=json.load(open('artifacts/run_stats.json','r',encoding='utf-8')); sig=json.load(open('data/signals.json','r',encoding='utf-8')); out={'generated_at_utc':datetime.datetime.utcnow().replace(microsecond=0).isoformat()+'Z','regime':market.get('regime',{}),'equity':market.get('equity'),'cash':market.get('cash'),'candidates':market.get('candidates',[]),'signals':sig,'run_stats':run}; (latest/'summary.json').write_text(json.dumps(out,indent=2),encoding='utf-8')"
+          python - <<'EOF'
+import json, datetime, pathlib
+latest = pathlib.Path("public_runs/latest")
+market = json.load(open("artifacts/market_snapshot.json", encoding="utf-8"))
+run    = json.load(open("artifacts/run_stats.json", encoding="utf-8"))
+sig    = json.load(open("data/signals.json", encoding="utf-8"))
+out = {
+  "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+  "regime": market.get("regime", {}),
+  "equity": market.get("equity"),
+  "cash": market.get("cash"),
+  "candidates": market.get("candidates", []),
+  "signals": sig,
+  "run_stats": run,
+}
+(latest / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+EOF
 
       - name: Commit changes to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A public_runs artifacts data
@@ -98,10 +106,8 @@ jobs:
 
       - name: Verify Pages endpoint
         run: |
-          set -e
           url="https://armendq.github.io/revolut_crypto_mapping/public_runs/latest/summary.json?ts=$(date +%s)"
           echo "Checking $url"
           code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
           echo "HTTP $code"
           test "$code" = "200"
-```0
