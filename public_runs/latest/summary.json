@@ -1,112 +1,21 @@
 {
-  "generated_at_utc": "2025-08-25T14:06:36+00:00",
+  "generated_at_utc": "2025-08-25T14:41:23Z",
   "regime": {
-    "ok": false,
-    "reason": "btc-below-vwap-or-ema",
-    "last": 111164.62441501375,
-    "vwap": 111341.9138194113,
-    "ema9": 111280.28775145221
+    "ok": true,
+    "reason": "",
+    "last": 111584.06,
+    "vwap": 112902.36290936879,
+    "ema9": 111505.05158688361
   },
-  "equity": 41000.0,
-  "cash": 32000.0,
-  "candidates": [
-    {
-      "symbol": "BTC",
-      "price": 111164.62441501375,
-      "atr": 151.28886634333114,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 51811751310.483635
-    },
-    {
-      "symbol": "ETH",
-      "price": 4632.905454964267,
-      "atr": 10.422043237098999,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 51196704401.81066
-    },
-    {
-      "symbol": "XRP",
-      "price": 2.9443942373276935,
-      "atr": 0.0025371275393658737,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 6819778437.371715
-    },
-    {
-      "symbol": "BNB",
-      "price": 858.4937325308093,
-      "atr": 0.6858601996967683,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 2141158915.6490846
-    },
-    {
-      "symbol": "SOL",
-      "price": 197.20383440833092,
-      "atr": 0.24334101489239604,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 13496626550.224266
-    },
-    {
-      "symbol": "STETH",
-      "price": 4618.027942594454,
-      "atr": 7.5944042988511296,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 65579089.86613045
-    },
-    {
-      "symbol": "TRX",
-      "price": 0.353678778714354,
-      "atr": 0.00020437460008358127,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 1610221893.0860217
-    },
-    {
-      "symbol": "DOGE",
-      "price": 0.21903314799678086,
-      "atr": 0.00031622174518910036,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 3799166424.971535
-    },
-    {
-      "symbol": "ADA",
-      "price": 0.8621983611288853,
-      "atr": 0.0012581592036240827,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 3092025640.6320143
-    },
-    {
-      "symbol": "WSTETH",
-      "price": 5574.482302673687,
-      "atr": 8.943797488114082,
-      "entry": null,
-      "stop": null,
-      "atype": null,
-      "vol24": 67958523.57924075
-    }
-  ],
+  "equity": 41964.0,
+  "cash": 0.0,
+  "candidates": [],
   "signals": {
     "type": "C",
     "text": "Hold and wait."
   },
   "run_stats": {
-    "elapsed_ms": 853677,
-    "time": "2025-08-25T14:06:36+00:00"
+    "elapsed_ms": 408987,
+    "time": "2025-08-25T08:21:48.303557+00:00"
   }
 }
