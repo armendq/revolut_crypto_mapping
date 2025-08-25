@@ -2,10 +2,11 @@ name: Run mapping & analyses (publish to Pages)
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+    branches:
+      - main
+  workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
@@ -27,17 +28,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -e
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
-      # Optional mapping step (skips if scripts/mapping.py is absent)
       - name: Generate mapping (safe)
         run: |
           set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
-            echo "No mapping.py found; skipping mapping generation."
+            echo "No mapping.py found; skipping."
           fi
 
       - name: Run analyses
@@ -60,21 +61,24 @@ jobs:
         run: |
           set -e
           rm -rf public_runs/latest
-          mkdir -p public_runs/latest
-          # copy core files
+          mkdir -p public_runs/latest scripts
+
           cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json
           cp artifacts/run_stats.json       public_runs/latest/run_stats.json
           cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
           cp data/signals.json              public_runs/latest/signals.json
 
-          # build summary.json from the pieces
-          python - <<'PY'
-import json, pathlib, datetime, os
+          cat > scripts/_build_summary_ci.py <<'PY'
+import json, pathlib, datetime
 root = pathlib.Path("public_runs/latest")
-def j(p): return json.load(open(p, "r", encoding="utf-8"))
-market = j("artifacts/market_snapshot.json")
-run    = j("artifacts/run_stats.json")
-sig    = j("data/signals.json")
+def read(p): 
+    with open(p, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+market = read("artifacts/market_snapshot.json")
+run    = read("artifacts/run_stats.json")
+sig    = read("data/signals.json")
+
 out = {
   "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z",
   "regime": market.get("regime", {}),
@@ -84,8 +88,10 @@ out = {
   "signals": sig,
   "run_stats": run
 }
-(root / "summary.json").write_text(json.dumps(out, indent=2))
+
+(root / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 PY
+          python scripts/_build_summary_ci.py
 
       - name: Commit changes to main
         env:
@@ -95,7 +101,6 @@ PY
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A public_runs artifacts data
-          # rebase to avoid non-fast-forward errors when schedule + push collide
           git fetch origin main
           git rebase origin/main || true
           if git diff --cached --quiet; then
