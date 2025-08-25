@@ -1,87 +1,90 @@
 #!/usr/bin/env python3
-# scripts/generate_mapping.py 
+# -*- coding: utf-8 -*-
+
 """
-Generate Revolut ↔ Binance symbol mapping.
-
-Inputs
-------
-- data/revolut_list.json : {"BTC":"Bitcoin", ...}
-
-Outputs
--------
-- data/revolut_binance_mapping.json : [
-    {
-      "revolut_ticker": "BTC",
-      "revolut_name": "Bitcoin",
-      "binance_symbol": "BTCUSDT",
-      "binance_base": "BTC",
-      "binance_quote": "USDT"
-    },
-    ...
-  ]
-- data/revolut_binance_mapping.csv    (same data, CSV)
+Generate Revolut ↔ Binance mapping.
 """
 
-from __future__ import annotations
-
-import csv
-import json
-import logging
-import time
-from dataclasses import dataclass, asdict
+import json, sys, time, requests
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
-import requests
+ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT / "data"
+REV_FILE = DATA_DIR / "revolut_list.json"
+OUT_JSON = DATA_DIR / "revolut_mapping.json"
+OUT_CSV  = DATA_DIR / "revolut_mapping.csv"
 
-# --------------------------- Config ---------------------------
+PREFERRED_QUOTES = ("USDT","USDC","FDUSD","BUSD","TUSD","USD")
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR   = REPO_ROOT / "data"
-
-REV_FILE   = DATA_DIR / "revolut_list.json"
-OUT_JSON   = DATA_DIR / "revolut_binance_mapping.json"
-OUT_CSV    = DATA_DIR / "revolut_binance_mapping.csv"
-
-# Binance Vision mirror avoids 451 from api.binance.com
-BINANCE_BASE = "https://data-api.binance.vision/api/v3"
-BINANCE_EXCHANGEINFO = f"{BINANCE_BASE}/exchangeInfo"
-
-# We prefer quotes in this priority
-QUOTE_PRIORITY = ("USDT", "FDUSD", "USDC")
-
-# Known ticker differences or special choices:
-# key = Revolut ticker, value = preferred Binance base asset (or full symbol with quote)
-EXPLICIT_OVERRIDES: Dict[str, str] = {
-    # Revolut -> Binance
-    # Wrapped Centrifuge: Revolut WCFG, Binance base is CFG
-    "WCFG": "CFG",
-    # Merit Circle → MC (Binance base is still MC)
-    # POKT is not on Binance spot (will be skipped), included here for awareness
-    # ETHW delisted on Binance spot (skip)
-    # Add more here as you hit mismatches:
-    # "MATIC": "MATIC",  # example (identity, not needed)
-}
-
-# HTTP/retry
-TIMEOUT = 20
-MAX_TRIES = 4
-BACKOFF_SECONDS = (1.0, 2.0, 3.5, 5.0)
-
-# --------------------------- Logging ---------------------------
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[generate-mapping] %(message)s",
+BINANCE_URLS = (
+    "https://data-api.binance.vision/api/v3/exchangeInfo",
+    "https://api.binance.com/api/v3/exchangeInfo",
 )
-log = logging.getLogger("generate-mapping")
 
+session = requests.Session()
+session.headers.update({"User-Agent": "revolut-crypto-mapping"})
 
-# --------------------------- Data types ---------------------------
+def log(msg): print(f"[mapping] {msg}", flush=True)
 
-@dataclass
-class MapRow:
-    revolut_ticker: str
-    revolut_name: str
-    binance_symbol: str
-    binance_base: str
+def get_json(urls):
+    last_err=None
+    for u in urls:
+        for i in range(3):
+            try:
+                r=session.get(u,timeout=20)
+                if r.status_code in (429,418,451):
+                    time.sleep(2**i)
+                    continue
+                r.raise_for_status()
+                return r.json()
+            except Exception as e:
+                last_err=e
+                time.sleep(2**i)
+    raise last_err
+
+def load_revolut():
+    with REV_FILE.open() as f: data=json.load(f)
+    if not isinstance(data,dict): raise ValueError("revolut_list.json must be dict")
+    return data
+
+def fetch_binance():
+    data=get_json(BINANCE_URLS)
+    syms=data.get("symbols",[])
+    return [s for s in syms if s.get("status")=="TRADING"]
+
+def choose(cands):
+    if not cands: return None
+    ranked=sorted(cands,key=lambda x:(PREFERRED_QUOTES.index(x[2]) if x[2] in PREFERRED_QUOTES else 99))
+    return ranked[0]
+
+def main():
+    rev=load_revolut()
+    bins=fetch_binance()
+    by_base={}
+    for s in bins:
+        base,quote=s["baseAsset"].upper(),s["quoteAsset"].upper()
+        sym=s["symbol"]
+        by_base.setdefault(base,[]).append((sym,base,quote))
+
+    rows=[]
+    for r_ticker,r_name in rev.items():
+        cands=by_base.get(r_ticker.upper(),[])
+        ch=choose(cands)
+        if not ch: continue
+        sym,_,_=ch
+        rows.append({
+            "revolut_ticker":r_ticker,
+            "binance_symbol":sym
+        })
+
+    rows=sorted(rows,key=lambda d:d["revolut_ticker"])
+    log(f"mapped {len(rows)} / {len(rev)}")
+
+    DATA_DIR.mkdir(exist_ok=True)
+    with OUT_JSON.open("w") as f: json.dump(rows,f,indent=2)
+    with OUT_CSV.open("w") as f:
+        f.write("revolut_ticker,binance_symbol\n")
+        for r in rows: f.write(f"{r['revolut_ticker']},{r['binance_symbol']}\n")
+    return 0
+
+if __name__=="__main__": sys.exit(main())
