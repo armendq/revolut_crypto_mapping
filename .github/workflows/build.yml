@@ -65,7 +65,7 @@ jobs:
           cp data/signals.json              public_runs/latest/signals.json
 
           python - << 'PY'
-import json, datetime, pathlib
+
 latest = pathlib.Path("public_runs/latest")
 market = json.load(open("artifacts/market_snapshot.json", encoding="utf-8"))
 run    = json.load(open("artifacts/run_stats.json",       encoding="utf-8"))
