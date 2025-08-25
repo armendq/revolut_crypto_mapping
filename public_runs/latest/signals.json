@@ -1,6 +1,4 @@
 {
-  "signals": {
-    "type": "C",
-    "text": "Hold and wait."
-  }
+  "type": "C",
+  "text": "Hold and wait."
 }
