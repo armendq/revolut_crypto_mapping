@@ -55,12 +55,12 @@
     "note": "ok"
   },
   {
-    "symbol": "HYPE",
+    "symbol": "WBETH",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "WBETH",
+    "symbol": "HYPE",
     "kept": true,
     "note": "ok"
   },
@@ -135,12 +135,12 @@
     "note": "ok"
   },
   {
-    "symbol": "UNI",
+    "symbol": "CBBTC",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "CBBTC",
+    "symbol": "UNI",
     "kept": true,
     "note": "ok"
   },
