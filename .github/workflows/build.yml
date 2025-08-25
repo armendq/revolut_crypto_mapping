@@ -19,8 +19,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          persist-credentials: true
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -55,6 +55,7 @@ jobs:
 
       - name: Prepare public_runs/latest
         run: |
+          set -e
           rm -rf public_runs/latest
           mkdir -p public_runs/latest
           cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json
@@ -62,12 +63,12 @@ jobs:
           cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
           cp data/signals.json              public_runs/latest/signals.json
 
-          python - <<'EOF'
+          python - <<'PY'
 import json, datetime, pathlib
 latest = pathlib.Path("public_runs/latest")
 market = json.load(open("artifacts/market_snapshot.json", encoding="utf-8"))
-run    = json.load(open("artifacts/run_stats.json", encoding="utf-8"))
-sig    = json.load(open("data/signals.json", encoding="utf-8"))
+run    = json.load(open("artifacts/run_stats.json",       encoding="utf-8"))
+sig    = json.load(open("data/signals.json",              encoding="utf-8"))
 out = {
   "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
   "regime": market.get("regime", {}),
@@ -78,17 +79,16 @@ out = {
   "run_stats": run,
 }
 (latest / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
-EOF
+PY
 
       - name: Commit changes to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A public_runs artifacts data
-          git fetch origin main
-          git rebase origin/main || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -106,6 +106,7 @@ EOF
 
       - name: Verify Pages endpoint
         run: |
+          set -e
           url="https://armendq.github.io/revolut_crypto_mapping/public_runs/latest/summary.json?ts=$(date +%s)"
           echo "Checking $url"
           code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
