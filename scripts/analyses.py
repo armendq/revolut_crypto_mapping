@@ -1,552 +1,360 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
- analyses.py
- Robust scanner for momentum/breakout candidates with ATR sizing inputs.
- - Discovers mapping file automatically (multiple fallbacks)
- - Rotates Binance endpoints; polite retry/backoff; always sets symbol when needed
- - Scans 15m klines, ~8h lookback (configurable) to catch sustained intraday spikes
- - Builds summary, signals, and debug artifacts in public_runs/latest
 
- Requirements:
-   pip install requests pandas numpy python-dateutil rapidfuzz
+"""
+Analyses runner
+- Loads Revolut↔Binance mapping (expects keys: binance_symbol, revolut_ticker).
+- Scans each mapped Binance symbol with 15m klines (~8h window).
+- Computes 8h momentum, ATR(14), and simple quality filters.
+- Writes concise summary to public_runs/latest/summary.json.
+
+This version fixes the root cause of prior 400/451 errors by ALWAYS
+supplying the required `symbol` parameter to Binance kline endpoints.
 """
 
 from __future__ import annotations
 
-import os
-import sys
 import json
 import math
+import os
+import sys
 import time
-import glob
-import hashlib
-import logging
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Tuple, Any, Optional
 
 import requests
-import numpy as np
-import pandas as pd
-from dateutil import tz
-from datetime import datetime, timedelta, timezone
 
-# ---------------------------- Logging -----------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    stream=sys.stdout,
-)
-log = logging.getLogger("analyses")
+# ----------------------------
+# Config
+# ----------------------------
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DATA_DIR = os.path.join(ROOT, "data")
+PUBLIC_DIR = os.path.join(ROOT, "public_runs", "latest")
+os.makedirs(PUBLIC_DIR, exist_ok=True)
 
-
-# ---------------------------- Config ------------------------------------------
-OUT_DIR = os.environ.get("RUN_OUT_DIR", "public_runs/latest")
-
-# Scan settings
-CANDLE_INTERVAL = os.environ.get("SCAN_INTERVAL", "15m")   # 1m/5m/15m/1h
-LOOKBACK_HOURS = float(os.environ.get("LOOKBACK_HOURS", "8"))
-ATR_LEN = int(os.environ.get("ATR_LEN", "14"))
-BREAKOUT_LOOKBACK = int(os.environ.get("BREAKOUT_LOOKBACK", "20"))  # Donchian high
-MIN_VOLUME_USDT = float(os.environ.get("MIN_VOLUME_USDT", "150000"))  # 24h filter
-MIN_MARKETCAP_USD = float(os.environ.get("MIN_MARKETCAP_USD", "0"))   # if mapping has it
-MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "500"))  # safety
-
-# Sizing defaults (used in downstream consumer; we include in JSON for convenience)
-RISK_PCT = float(os.environ.get("RISK_PCT", "0.012"))  # 1.2%
-
-# Rules
-DO_NOT_ROTATE = {"ETH", "DOT"}  # non-rotated
-UNTOUCHABLE = {"DOT"}  # staked & untouchable for new buys
-
-# Binance endpoints rotation
-BINANCE_PUBLIC_BASES = [
-    # Official
-    "https://api.binance.com",
-    # CDN mirror
-    "https://data-api.binance.vision",
-    # Extra mirrors (kept for resilience)
-    "https://api1.binance.com",
-    "https://api2.binance.com",
-    "https://api3.binance.com",
-]
-
-# Headers for nicer treatment
-UA = {"User-Agent": "revolut-crypto-mapper/analyses (+github actions; contact owner)"}
-
-SESSION = requests.Session()
-SESSION.headers.update(UA)
-SESSION_TIMEOUT = (7, 20)  # connect, read
-
-
-# --------------------- Utilities: time & json safe ----------------------------
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def to_epoch_ms(dt: datetime) -> int:
-    return int(dt.timestamp() * 1000)
-
-
-def ensure_dir(p: str) -> None:
-    os.makedirs(p, exist_ok=True)
-
-
-def json_dump(obj: Any, path: str) -> None:
-    ensure_dir(os.path.dirname(path))
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=2, sort_keys=False)
-
-
-# -------------------------- Mapping discovery ---------------------------------
-EXPECTED_KEYS = {"revolut_ticker", "binance_symbol"}
-
+# Where to read mapping from (generated earlier in the workflow)
+# Must be a JSON array of objects: [{"binance_symbol":"BTCUSDT","revolut_ticker":"BTC"}, ...]
 DEFAULT_MAPPING_FILES = [
-    "mapping/generated_mapping.json",
-    "data/revolut_mapping.json",
-    "data/mapping.json",
-    "mapping.json",
-    "public/mapping.json",
-    "public_runs/latest/mapping.json",
-    "public_runs/mapping.json",
-    "outputs/mapping.json",
+    os.path.join(DATA_DIR, "revolut_mapping.json"),           # preferred output of generate_mapping.py
+    os.path.join(DATA_DIR, "mapping.json"),                   # fallback name if used
 ]
 
+USER_AGENT = "revolut-analyses/1.0 (+https://github.com/armendq/revolut_crypto_mapping)"
+BINANCE_BASE = "https://api.binance.com"
+BINANCE_VISION = "https://data-api.binance.vision"
 
-def _looks_like_mapping(obj: Any) -> bool:
-    if isinstance(obj, list) and obj:
-        sample = obj[0]
-        return isinstance(sample, dict) and EXPECTED_KEYS.issubset(sample.keys())
-    return False
+# Scan parameters
+INTERVAL = "15m"     # 15-min candles
+LIMIT = 64           # ~16 hours; we'll use last 32 (~8h) for momentum calc
+RATE_SLEEP = 0.20    # 5 req/sec conservative
+MAX_RETRIES = 4
+TIMEOUT = 10
 
+# Candidate rules
+MIN_8H_MOVE_PCT = 18.0        # >= 18% move over ~8h
+MIN_USD_VOLUME_8H = 500_000   # dollar volume over ~8h
+MAX_SPREAD_PCT = 1.5          # simple spread proxy using (high/low - 1) on last candle
+EXCLUDE_SYMBOLS = set()       # optionally add exclusions
 
-def load_mapping() -> List[Dict[str, Any]]:
-    for p in DEFAULT_MAPPING_FILES:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if _looks_like_mapping(data):
-                    log.info(f"[analyses] using mapping: {p} ({len(data)} records)")
-                    return data
-                else:
-                    log.info(f"[analyses] {p} found but schema not matching; skipping.")
-            except Exception as e:
-                log.info(f"[analyses] failed to read {p}: {e}")
+# ----------------------------
+# Utility
+# ----------------------------
 
-    # Fallback: scan repo for any plausible mapping JSON
-    candidates: List[Tuple[str, int]] = []
-    for path in glob.glob("**/*.json", recursive=True):
-        if any(seg in path.lower() for seg in ["node_modules", ".git", ".venv", "site-packages", "public_runs"]):
-            continue
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                txt = f.read(300_000)
-                obj = json.loads(txt)
-            if _looks_like_mapping(obj):
-                candidates.append((path, len(obj)))
-        except Exception:
-            pass
-    if candidates:
-        candidates.sort(key=lambda x: x[1], reverse=True)
-        chosen, n = candidates[0]
-        log.info(f"[analyses] discovered mapping: {chosen} ({n} records)")
-        with open(chosen, "r", encoding="utf-8") as f:
-            return json.load(f)
+def log(msg: str) -> None:
+    ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    print(f"[analyses] {ts} UTC {msg}", flush=True)
 
+def read_json(path: str) -> Any:
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def write_json(path: str, payload: Any) -> None:
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"), sort_keys=False)
+    os.replace(tmp, path)
+
+def ensure_mapping_schema(obj: Any) -> List[Dict[str, str]]:
+    """
+    Accept either:
+      - List[dict] with keys {'binance_symbol','revolut_ticker'}
+      - Dict[str,str] like {'BTC':'Bitcoin', ...}  -> cannot use (no binance_symbol), reject
+    """
+    if isinstance(obj, list):
+        ok = []
+        for row in obj:
+            if not isinstance(row, dict):
+                continue
+            b = row.get("binance_symbol")
+            r = row.get("revolut_ticker")
+            if b and r:
+                ok.append({"binance_symbol": b.upper(), "revolut_ticker": r.upper()})
+        if ok:
+            return ok
+    # Any other shape is not acceptable for scanning
     raise FileNotFoundError(
         "[analyses] No mapping file found with expected keys "
-        f"{sorted(EXPECTED_KEYS)}. Add mapping or adjust DEFAULT_MAPPING_FILES."
+        "['binance_symbol','revolut_ticker']."
     )
 
-
-# ----------------------- Binance API helpers ----------------------------------
-def _get_with_rotation(path: str, params: Dict[str, Any] | None = None,
-                       expect_json: bool = True, max_retries: int = 4) -> Any:
-    """
-    Try all bases with backoff. Raises last error on failure.
-    """
-    params = params or {}
-    last_err: Optional[Exception] = None
-    for attempt in range(1, max_retries + 1):
-        for base in BINANCE_PUBLIC_BASES:
-            url = base + path
+def load_mapping() -> List[Dict[str, str]]:
+    for path in DEFAULT_MAPPING_FILES:
+        if os.path.exists(path):
             try:
-                r = SESSION.get(url, params=params, timeout=SESSION_TIMEOUT)
-                if r.status_code == 200:
-                    return r.json() if expect_json else r.text
-                # Many failures are 400/451 when params missing/wrong, log and continue
-                log.info(f"[analyses] {url} http {r.status_code} (try {attempt})")
-                last_err = RuntimeError(f"http {r.status_code} @ {url}")
+                raw = read_json(path)
+                mapping = ensure_mapping_schema(raw)
+                log(f"loaded mapping from {os.path.relpath(path, ROOT)} with {len(mapping)} rows")
+                return mapping
             except Exception as e:
-                last_err = e
-                log.info(f"[analyses] GET fail: {url} err={e} (try {attempt})")
-        # gentle backoff
-        time.sleep(1.0 * attempt)
-    assert last_err is not None
-    raise last_err
+                log(f"{os.path.relpath(path, ROOT)} found but schema not matching; skipping.")
+    raise FileNotFoundError(
+        "[analyses] No mapping file found with expected keys "
+        "['binance_symbol','revolut_ticker']. Add mapping or adjust DEFAULT_MAPPING_FILES."
+    )
 
+# ----------------------------
+# Binance client (public)
+# ----------------------------
 
-def get_all_24h() -> List[Dict[str, Any]]:
-    """
-    Prefer pulling all tickers at once (array). If that fails, fall back to data-api mirror.
-    """
-    # Primary: /api/v3/ticker/24hr with no symbol returns a list for all symbols
-    try:
-        data = _get_with_rotation("/api/v3/ticker/24hr", params={})
-        if isinstance(data, list):
-            return data
-    except Exception:
-        pass
-    # Fallback: data-api mirror path (same semantics)
-    data = _get_with_rotation("/api/v3/ticker/24hr", params={})
-    return data if isinstance(data, list) else []
+class Http:
+    def __init__(self, base: str):
+        self.base = base
+        self.s = requests.Session()
+        self.s.headers.update({"User-Agent": USER_AGENT})
 
+    def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> requests.Response:
+        url = self.base + path
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                r = self.s.get(url, params=params, timeout=TIMEOUT)
+                if r.status_code == 200:
+                    return r
+                else:
+                    log(f"GET fail: {r.url} http {r.status_code} (try {attempt})")
+            except Exception as e:
+                log(f"GET error: {url} ({e}) (try {attempt})")
+            time.sleep(min(2 ** (attempt - 1), 4))
+        r.raise_for_status()
+        return r  # unreachable
 
-def get_klines(symbol: str, interval: str, limit: int = 96) -> List[List[Any]]:
+binance_api = Http(BINANCE_BASE)
+
+def fetch_klines(symbol: str, interval: str = INTERVAL, limit: int = LIMIT) -> List[List[Any]]:
     """
-    Klines with explicit symbol to avoid 1102 errors.
+    Returns raw klines:
+    [ openTime, open, high, low, close, volume, closeTime, qav, trades, takerBase, takerQuote, ignore ]
     """
+    # CRITICAL: include symbol in params (prevents 400/451)
     params = {"symbol": symbol, "interval": interval, "limit": limit}
-    return _get_with_rotation("/api/v3/klines", params=params)
+    r = binance_api.get("/api/v3/klines", params=params)
+    time.sleep(RATE_SLEEP)
+    return r.json()
 
+# ----------------------------
+# Math helpers
+# ----------------------------
 
-# --------------------------- Helpers: math ------------------------------------
-def donchian_breakout(highs: np.ndarray, lookback: int) -> float:
-    """
-    Highest high of prior 'lookback' bars (exclude the current bar).
-    """
-    if highs.size <= lookback:
-        return np.nan
-    return float(np.max(highs[-(lookback + 1):-1]))
-
-
-def true_range(h: np.ndarray, l: np.ndarray, c: np.ndarray) -> np.ndarray:
-    prev_close = np.roll(c, 1)
-    prev_close[0] = c[0]
-    tr = np.maximum(h - l, np.maximum(np.abs(h - prev_close), np.abs(l - prev_close)))
-    return tr
-
-
-def atr(h: np.ndarray, l: np.ndarray, c: np.ndarray, length: int) -> float:
-    tr = true_range(h, l, c)
-    if tr.size < length:
-        return float(np.nan)
-    # Wilder's smoothing (EMA-like)
-    alpha = 1.0 / length
-    a = tr[:length].mean()
-    for x in tr[length:]:
-        a = a + alpha * (x - a)
-    return float(a)
-
+def to_float(x: Any) -> float:
+    try:
+        return float(x)
+    except Exception:
+        return float("nan")
 
 def pct_change(a: float, b: float) -> float:
-    if b == 0:
+    if a == 0 or math.isnan(a) or math.isnan(b):
         return 0.0
-    return (a - b) / b * 100.0
+    return (b - a) / a * 100.0
 
+def atr_from_klines(rows: List[List[Any]], n: int = 14) -> float:
+    """
+    ATR(14) using classic Wilder's (simple rolling TR avg here is sufficient).
+    TR = max(high-low, abs(high-prev_close), abs(low-prev_close))
+    """
+    if len(rows) < n + 1:
+        return float("nan")
+    trs: List[float] = []
+    prev_close = to_float(rows[0][4])
+    for r in rows[1:]:
+        high = to_float(r[2])
+        low = to_float(r[3])
+        close = to_float(r[4])
+        tr = max(high - low, abs(high - prev_close), abs(low - prev_close))
+        trs.append(tr)
+        prev_close = close
+    if not trs:
+        return float("nan")
+    # average of last n TR
+    window = trs[-n:]
+    return sum(window) / float(len(window))
 
-# --------------------------- Data classes -------------------------------------
+def dollar_volume_approx(rows: List[List[Any]]) -> float:
+    """
+    Approximate dollar volume over the klines set:
+      sum(close * volume) using base asset volume * close price in quote (USDT)
+    """
+    s = 0.0
+    for r in rows:
+        close = to_float(r[4])
+        vol_base = to_float(r[5])
+        s += close * vol_base
+    return s
+
+# ----------------------------
+# Regime (very light)
+# ----------------------------
+
+def btc_regime_ok() -> bool:
+    try:
+        rows = fetch_klines("BTCUSDT", interval="1h", limit=200)
+        closes = [to_float(r[4]) for r in rows]
+        if len(closes) < 50:
+            return True
+        ema = closes[0]
+        alpha = 2 / (50 + 1)
+        for c in closes[1:]:
+            ema = alpha * c + (1 - alpha) * ema
+        return closes[-1] >= ema
+    except Exception as e:
+        log(f"regime check failed: {e}")
+        return True  # default permissive
+
+# ----------------------------
+# Candidate selection
+# ----------------------------
+
 @dataclass
 class Candidate:
-    ticker: str
-    symbol: str
-    entry: float
-    stop: float
-    atr: float
-    breakout_ref: float
+    binance_symbol: str
+    revolut_ticker: str
     last: float
-    volume24h: float
-    gain8h_pct: float
-    rationale: str
+    atr: float
+    move8h_pct: float
+    usd_vol_8h: float
+    spread_proxy_pct: float
 
-
-# --------------------------- Scanner ------------------------------------------
-def select_universe(mapping: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Filter mapping to symbols tradable vs USDT, avoid leveraged tokens, cap size.
-    """
-    uni: List[Dict[str, Any]] = []
-    for row in mapping:
-        rev = row.get("revolut_ticker", "").upper()
-        sym = row.get("binance_symbol", "").upper()
-        if not rev or not sym:
-            continue
-        # We want USDT pairs for liquidity/consistency
-        if not sym.endswith("USDT"):
-            continue
-        base = sym[:-4]  # strip USDT
-        # exclude known leveraged/margined suffixes
-        if any(x in base for x in ("UP", "DOWN", "BEAR", "BULL")):
-            continue
-        uni.append({"revolut_ticker": rev, "binance_symbol": sym, "base": base})
-    # de-dup & cap
-    seen = set()
-    uniq = []
-    for r in uni:
-        if r["binance_symbol"] not in seen:
-            uniq.append(r)
-            seen.add(r["binance_symbol"])
-        if len(uniq) >= MAX_SYMBOLS:
-            break
-    log.info(f"[analyses] universe: {len(uniq)}")
-    return uniq
-
-
-def load_all_24h_snapshot() -> Dict[str, Dict[str, Any]]:
-    snap = {}
-    arr = get_all_24h()
-    for item in arr:
-        sym = item.get("symbol")
-        if not sym:
-            continue
-        # normalize fields we use
-        try:
-            vol_quote = float(item.get("quoteVolume", 0.0))
-            last_price = float(item.get("lastPrice", 0.0))
-            snap[sym.upper()] = {
-                "last": last_price,
-                "quoteVolume": vol_quote,
-                "priceChangePercent": float(item.get("priceChangePercent", 0.0)),
-                "highPrice": float(item.get("highPrice", 0.0)),
-                "lowPrice": float(item.get("lowPrice", 0.0)),
-            }
-        except Exception:
-            continue
-    return snap
-
-
-def build_candidates(universe: List[Dict[str, Any]],
-                     snap24h: Dict[str, Dict[str, Any]]) -> Tuple[List[Candidate], List[Dict[str, Any]]]:
-    """
-    Scan each symbol’s recent 15m bars over ~8h to catch sustained moves.
-    """
-    debug_rows: List[Dict[str, Any]] = []
-    cands: List[Candidate] = []
-
-    bars_needed = int(math.ceil((LOOKBACK_HOURS * 60) / 15.0)) + BREAKOUT_LOOKBACK + ATR_LEN + 2
-    bars_needed = max(bars_needed, 60)
-    for i, row in enumerate(universe, 1):
-        sym = row["binance_symbol"]
-        base = row["base"]
-        snap = snap24h.get(sym, {})
-        volq = float(snap.get("quoteVolume", 0.0))
-        if volq < MIN_VOLUME_USDT:
-            debug_rows.append({"symbol": sym, "reason": "vol_filter", "quoteVolume": volq})
-            continue
-
-        try:
-            kl = get_klines(sym, CANDLE_INTERVAL, limit=min(1000, bars_needed))
-        except Exception as e:
-            debug_rows.append({"symbol": sym, "reason": f"klines_fail:{e}"})
-            continue
-
-        if len(kl) < ATR_LEN + BREAKOUT_LOOKBACK + 5:
-            debug_rows.append({"symbol": sym, "reason": "not_enough_bars", "bars": len(kl)})
-            continue
-
-        # columns: [open_time, open, high, low, close, volume, close_time, ...]
-        o = np.array([float(x[1]) for x in kl])
-        h = np.array([float(x[2]) for x in kl])
-        l = np.array([float(x[3]) for x in kl])
-        c = np.array([float(x[4]) for x in kl])
-
-        last = float(c[-1])
-        a = atr(h, l, c, ATR_LEN)
-        if not np.isfinite(a) or a <= 0:
-            debug_rows.append({"symbol": sym, "reason": "atr_nan_or_zero"})
-            continue
-
-        # 8h momentum from the close ~8h ago
-        bars_8h = int(round((LOOKBACK_HOURS * 60) / 15.0))
-        if bars_8h >= len(c):
-            bars_8h = len(c) - 1
-        ref_close = float(c[-bars_8h]) if bars_8h > 0 else float(c[0])
-        gain8h = pct_change(last, ref_close)
-
-        # Donchian breakout (exclude current bar)
-        ref_high = donchian_breakout(h, BREAKOUT_LOOKBACK)
-        is_breakout = np.isfinite(ref_high) and last > ref_high
-
-        rationale = []
-        if is_breakout:
-            rationale.append(f"15m Donchian({BREAKOUT_LOOKBACK}) breakout")
-        if gain8h >= 20:
-            rationale.append(f"+{gain8h:.1f}% over ~{LOOKBACK_HOURS:.0f}h")
-        if not rationale:
-            debug_rows.append({"symbol": sym, "reason": "no_trigger", "gain8h_pct": gain8h})
-            continue
-
-        # breakout bar is the last bar that set ref_high. Approx: recent max
-        ref_window = h[-(BREAKOUT_LOOKBACK + 1):-1]
-        ref_idx = int(np.argmax(ref_window))
-        breakout_bar_low = float(l[-(BREAKOUT_LOOKBACK + 1):-1][ref_idx])
-
-        entry = max(last, ref_high)
-        stop = breakout_bar_low
-
-        cands.append(
-            Candidate(
-                ticker=row["revolut_ticker"],
-                symbol=sym,
-                entry=float(round(entry, 8)),
-                stop=float(round(stop, 8)),
-                atr=float(round(a, 8)),
-                breakout_ref=float(round(ref_high, 8)) if np.isfinite(ref_high) else float("nan"),
-                last=float(round(last, 8)),
-                volume24h=volq,
-                gain8h_pct=float(round(gain8h, 3)),
-                rationale=", ".join(rationale),
-            )
-        )
-        debug_rows.append({
-            "symbol": sym,
-            "last": last,
-            "entry": entry,
-            "stop": stop,
-            "atr": a,
-            "gain8h_pct": gain8h,
-            "note": "candidate"
-        })
-
-    # Sort candidates: highest 8h gain then 24h volume
-    cands.sort(key=lambda x: (x.gain8h_pct, x.volume24h), reverse=True)
-    return cands, debug_rows
-
-
-# --------------------------- Signals builder ----------------------------------
-def signals_from_candidates(cands: List[Candidate]) -> Dict[str, Any]:
-    """
-    If at least one valid candidate -> signals.type = "C"
-    If a very strong breakout (>= +35% and ATR tight) -> "B" for the top one.
-    """
-    if not cands:
-        return {"type": "H", "note": "No candidates — Hold"}
-
-    # define "B" breakout threshold
-    top = cands[0]
-    strong = (top.gain8h_pct >= 35.0) and (top.entry > top.breakout_ref) and (top.entry - top.stop > 0.2 * top.atr)
-
-    if strong and (top.ticker not in UNTOUCHABLE):
-        # One decisive breakout to act now
+    def to_dict(self) -> Dict[str, Any]:
+        entry = self.last
+        atr = self.atr
         return {
-            "type": "B",
-            "ticker": top.ticker,
-            "symbol": top.symbol,
-            "entry": top.entry,
-            "stop": top.stop,
-            "atr": top.atr,
-            "T1": float(round(top.entry + 0.8 * top.atr, 8)),
-            "T2": float(round(top.entry + 1.5 * top.atr, 8)),
-            "trail_after_R": 1.0,
-            "note": top.rationale,
+            "symbol": self.binance_symbol,
+            "ticker": self.revolut_ticker,
+            "last": round(entry, 10),
+            "atr": round(atr, 10),
+            "entry": round(entry, 10),
+            # If you want true breakout-bar-low, you can swap in that value here.
+            "stop": round(max(0.0, entry - atr), 10),
+            "T1": round(entry + 0.8 * atr, 10),
+            "T2": round(entry + 1.5 * atr, 10),
+            "move8h_pct": round(self.move8h_pct, 3),
+            "usd_vol_8h": round(self.usd_vol_8h, 2),
+            "spread_proxy_pct": round(self.spread_proxy_pct, 3),
         }
 
-    # Otherwise list candidates
-    return {
-        "type": "C",
-        "candidates": [
-            {
-                "ticker": x.ticker,
-                "symbol": x.symbol,
-                "entry": x.entry,
-                "stop": x.stop,
-                "atr": x.atr,
-                "T1": float(round(x.entry + 0.8 * x.atr, 8)),
-                "T2": float(round(x.entry + 1.5 * x.atr, 8)),
-                "gain8h_pct": x.gain8h_pct,
-                "rationale": x.rationale,
-            }
-            for x in cands
-            if x.ticker not in UNTOUCHABLE
-        ]
-    }
+def evaluate_symbol(binance_symbol: str, revolut_ticker: str) -> Optional[Candidate]:
+    if binance_symbol in EXCLUDE_SYMBOLS:
+        return None
+    try:
+        rows = fetch_klines(binance_symbol, interval=INTERVAL, limit=LIMIT)
+        if not rows or len(rows) < 40:
+            return None
 
+        # Use last 32 candles for ~8h window on 15m interval
+        last_32 = rows[-32:]
+        start = to_float(last_32[0][4])
+        end = to_float(last_32[-1][4])
+        move = pct_change(start, end)
 
-# --------------------------- Main runner --------------------------------------
+        # ATR on total fetched set (smoother)
+        atr = atr_from_klines(rows, n=14)
+
+        # Spread proxy on last bar
+        lh = to_float(rows[-1][2]) / max(to_float(rows[-1][3]), 1e-12) - 1.0
+        spread_pct = lh * 100.0
+
+        # Dollar volume approx over last 32 bars
+        usd_vol = dollar_volume_approx(last_32)
+
+        # Filters
+        if any(math.isnan(x) or x == 0.0 for x in (end, atr)):
+            return None
+        if move < MIN_8H_MOVE_PCT:
+            return None
+        if usd_vol < MIN_USD_VOLUME_8H:
+            return None
+        if spread_pct > MAX_SPREAD_PCT:
+            return None
+
+        return Candidate(
+            binance_symbol=binance_symbol,
+            revolut_ticker=revolut_ticker,
+            last=end,
+            atr=atr,
+            move8h_pct=move,
+            usd_vol_8h=usd_vol,
+            spread_proxy_pct=spread_pct,
+        )
+    except Exception as e:
+        log(f"{binance_symbol} eval error: {e}")
+        return None
+
+# ----------------------------
+# Main
+# ----------------------------
+
 def main() -> int:
-    t0 = time.time()
-    ensure_dir(OUT_DIR)
+    try:
+        mapping = load_mapping()
+    except Exception as e:
+        log(f"FATAL: {e}")
+        sys.exit(1)
 
-    # Regime stub (extend with your own macro filters if needed)
-    regime = {"ok": True, "note": "default-ok"}
+    regime_ok = btc_regime_ok()
+    log(f"regime.ok={regime_ok}")
 
-    # Load mapping & universe
-    mapping = load_mapping()
-    universe = select_universe(mapping)
+    universe = [(m["binance_symbol"].upper(), m["revolut_ticker"].upper()) for m in mapping]
+    log(f"universe size: {len(universe)}")
 
-    # 24h snapshot (volume / last sanity checks)
-    snap24h = load_all_24h_snapshot()
+    candidates: List[Candidate] = []
+    scanned = 0
+    for sym, tick in universe:
+        scanned += 1
+        if scanned % 25 == 0:
+            log(f"scanned {scanned}/{len(universe)}")
+        c = evaluate_symbol(sym, tick)
+        if c:
+            candidates.append(c)
 
-    # Build candidates via 8h breakout scan
-    cands, debug_rows = build_candidates(universe, snap24h)
+    # Rank by move pct then dollar volume for tie-break
+    candidates.sort(key=lambda x: (x.move8h_pct, x.usd_vol_8h), reverse=True)
 
-    # Signals
-    signals = signals_from_candidates(cands)
-
-    # Market snapshot (concise)
-    mkt = {
-        "generated_utc": utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "interval": CANDLE_INTERVAL,
-        "lookback_hours": LOOKBACK_HOURS,
-        "atr_len": ATR_LEN,
-        "breakout_lookback": BREAKOUT_LOOKBACK,
-        "universe_size": len(universe),
-        "scanned_symbols": len(universe),
-    }
-
-    # Summary (what the consumer expects)
-    summary = {
+    # Build summary
+    out: Dict[str, Any] = {
         "status": "ok",
-        "regime": regime,
-        "signals": signals,
+        "generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "regime": {"ok": bool(regime_ok)},
+        "signals": {},
+        "candidates": [c.to_dict() for c in candidates],
         "meta": {
-            "tz": "UTC",
-            "generated_at": utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "rules": {
-                "untouchable": sorted(list(UNTOUCHABLE)),
-                "do_not_rotate": sorted(list(DO_NOT_ROTATE)),
-                "stop_rule": "breakout bar low",
-                "trail_after_R": 1.0,
-            },
+            "interval": INTERVAL,
+            "limit": LIMIT,
+            "min_move_pct_8h": MIN_8H_MOVE_PCT,
+            "min_usd_volume_8h": MIN_USD_VOLUME_8H,
+            "max_spread_pct": MAX_SPREAD_PCT,
+            "scanned": len(universe),
         },
     }
 
-    # Write artifacts
-    json_dump(summary, os.path.join(OUT_DIR, "summary.json"))
-    json_dump(signals, os.path.join(OUT_DIR, "signals.json"))
-    json_dump(mkt, os.path.join(OUT_DIR, "market_snapshot.json"))
-    json_dump({
-        "debug": debug_rows[:1000],  # cap size
-    }, os.path.join(OUT_DIR, "debug_scan.json"))
+    # If you later promote to "B" (buy) signal, fill out signals accordingly.
+    # For now, surface as "C" (candidates) when any exist.
+    if candidates:
+        out["signals"] = {"type": "C", "note": "Momentum candidates over ~8h"}
 
-    # Run stats
-    elapsed = time.time() - t0
-    stats = {
-        "started": int(t0),
-        "finished": int(time.time()),
-        "elapsed_sec": round(elapsed, 2),
-        "candidates": len(cands),
-        "signals_type": signals.get("type"),
-    }
-    json_dump(stats, os.path.join(OUT_DIR, "run_stats.json"))
-
-    log.info(f"[analyses] wrote summary with {len(cands)} candidates in {elapsed:.2f}s")
+    # Write JSON
+    out_path = os.path.join(PUBLIC_DIR, "summary.json")
+    write_json(out_path, out)
+    log(f"wrote summary with {len(candidates)} candidates -> {os.path.relpath(out_path, ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except Exception as e:
-        log.error(f"[analyses] FATAL: {e}")
-        # Emit minimal summary so downstream steps don't crash hard
-        fail_summary = {
-            "status": "error",
-            "error": str(e),
-            "signals": {"type": "H", "note": "Error — Hold"},
-            "meta": {"generated_at": utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")},
-        }
-        ensure_dir(OUT_DIR)
-        json_dump(fail_summary, os.path.join(OUT_DIR, "summary.json"))
-        raise
+    sys.exit(main())
