@@ -53,7 +53,7 @@ CAP_STRONG = 0.60
 CAP_WEAK = 0.30
 
 # Binance
-BINANCE = "https://api.binance.com"
+BINANCE = "https://data-api.binance.vision"
 KLINES = f"{BINANCE}/api/v3/klines"             # ?symbol=BTCUSDT&interval=5m&limit=500
 TICKER24 = f"{BINANCE}/api/v3/ticker/24hr"      # ?symbol=BTCUSDT
 DEPTH = f"{BINANCE}/api/v3/depth"               # ?symbol=BTCUSDT&limit=5
