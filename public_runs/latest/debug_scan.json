@@ -55,12 +55,12 @@
     "note": "ok"
   },
   {
-    "symbol": "HYPE",
+    "symbol": "WBETH",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "WBETH",
+    "symbol": "HYPE",
     "kept": true,
     "note": "ok"
   },
@@ -185,12 +185,12 @@
     "note": "ok"
   },
   {
-    "symbol": "MNT",
+    "symbol": "OKB",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "OKB",
+    "symbol": "MNT",
     "kept": true,
     "note": "ok"
   },
@@ -250,12 +250,12 @@
     "note": "ok"
   },
   {
-    "symbol": "VET",
+    "symbol": "ALGO",
     "kept": true,
     "note": "ok"
   },
   {
-    "symbol": "ALGO",
+    "symbol": "VET",
     "kept": true,
     "note": "ok"
   },
