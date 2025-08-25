@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: {}
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/15 * * * *"  # every 15 minutes
 
 permissions:
   contents: write
@@ -58,29 +58,27 @@ jobs:
           test -f data/signals.json
 
       - name: Prepare public_runs/latest
+        shell: bash
         run: |
           set -e
           rm -rf public_runs/latest
-          mkdir -p public_runs/latest scripts
+          mkdir -p public_runs/latest
 
           cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json
           cp artifacts/run_stats.json       public_runs/latest/run_stats.json
           cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
           cp data/signals.json              public_runs/latest/signals.json
 
-          cat > scripts/_build_summary_ci.py <<'PY'
-import json, pathlib, datetime
-root = pathlib.Path("public_runs/latest")
-def read(p): 
-    with open(p, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-market = read("artifacts/market_snapshot.json")
-run    = read("artifacts/run_stats.json")
-sig    = read("data/signals.json")
+          # Build summary.json directly via stdin Python
+          python - <<'PY'
+import json, datetime, pathlib
+latest = pathlib.Path("public_runs/latest")
+with open("artifacts/market_snapshot.json","r",encoding="utf-8") as f: market = json.load(f)
+with open("artifacts/run_stats.json","r",encoding="utf-8") as f: run = json.load(f)
+with open("data/signals.json","r",encoding="utf-8") as f: sig = json.load(f)
 
 out = {
-  "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z",
+  "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
   "regime": market.get("regime", {}),
   "equity": market.get("equity"),
   "cash": market.get("cash"),
@@ -88,10 +86,8 @@ out = {
   "signals": sig,
   "run_stats": run
 }
-
-(root / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+(latest / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 PY
-          python scripts/_build_summary_ci.py
 
       - name: Commit changes to main
         env:
