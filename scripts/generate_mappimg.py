@@ -1,235 +1,264 @@
 #!/usr/bin/env python3
 """
-Generate a Revolut↔Binance symbol mapping.
+Generate a Revolut ↔ Binance USDT-spot mapping from your provided dict.
 
-Inputs (first one found wins):
-- data/revolut_instruments.json   # [{"ticker":"BTC"}, {"ticker":"ETH"}, ...]
-- data/revolut_tickers.csv        # CSV with column 'ticker'
-- data/revolut_tickers.txt        # one ticker per line
+INPUT (required):
+  data/revolut_list.json    # exactly the dict you pasted: {"BTC":"Bitcoin", ...}
 
-Outputs:
-- mapping/revolut_binance_mapping.json
-- mapping/revolut_binance_unmatched.json     # Revolut tickers we couldn't match
-- mapping/revolut_binance_report.txt         # human summary
+OUTPUTS:
+  mapping/revolut_binance_mapping.json         # [{revolut_ticker, binance_symbol}]
+  mapping/revolut_binance_unmatched.json       # ["TICKER", ...]
+  mapping/revolut_binance_report.txt           # human-readable summary
 
-Matching logic:
-1) exact ticker match → {ticker}USDT exists on Binance
-2) alias table (common exceptions) → e.g., ARBITRUM=ARB
-3) fuzzy (rapidfuzz) on ticker vs Binance baseAsset (safe threshold)
+Matching rules (in order):
+  1) Exact ticker = Binance baseAsset and USDT spot pair exists → BASEUSDT
+  2) Alias table (common differences, long names, renamed tickers)
+  3) Optional fuzzy match (rapidfuzz) on ticker or name vs Binance baseAsset (strict threshold)
+
+Notes:
+  - We only map to USDT spot pairs (clean & most liquid).
+  - Stablecoins / fiat symbols are ignored (USDT/USDC/DAI/...).
 """
 
-import json, csv, sys, os, re, time
+from __future__ import annotations
+import json, sys, re
 from pathlib import Path
 from typing import Dict, List, Tuple, Set
 import requests
 
-# ------------ config ------------
+# ---------- config ----------
+REV_FILE = Path("data/revolut_list.json")
+OUT_DIR = Path("mapping"); OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT_JSON = OUT_DIR / "revolut_binance_mapping.json"
+OUT_UNMATCHED = OUT_DIR / "revolut_binance_unmatched.json"
+OUT_REPORT = OUT_DIR / "revolut_binance_report.txt"
+
 BINANCE_EXCHANGEINFO = "https://api.binance.com/api/v3/exchangeInfo"
-OUT_DIR = Path("mapping")
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-OUT_JSON = OUT_DIR/"revolut_binance_mapping.json"
-OUT_UNMATCHED = OUT_DIR/"revolut_binance_unmatched.json"
-OUT_REPORT = OUT_DIR/"revolut_binance_report.txt"
 
-# Try these Revolut inputs in order
-REV_INPUTS = [
-    Path("data/revolut_instruments.json"),
-    Path("data/revolut_tickers.csv"),
-    Path("data/revolut_tickers.txt"),
-]
-
-# Hand aliases (extend freely)
-ALIASES: Dict[str, str] = {
-    # Revolut -> Binance baseAsset
-    "ARB": "ARB",           # Arbitrum
-    "IMX": "IMX",
-    "RNDR": "RNDR",
-    "FET": "FET",
-    "SUI": "SUI",
-    "PEPE": "PEPE",
-    "OP": "OP",
-    "APT": "APT",
-    "PYTH": "PYTH",
-    "TIA": "TIA",
-    "W": "W",
-    "INJ": "INJ",
-    "ATOM": "ATOM",
-    "AVAX": "AVAX",
-    "ADA": "ADA",
-    "SOL": "SOL",
-    "MATIC": "MATIC",
-    "POL": "POL",           # Polygon 2.0 (if present)
-    "DOGE": "DOGE",
-    "SHIB": "SHIB",
-    "DOT": "DOT",
-    "ETH": "ETH",
-    "BTC": "BTC",
-    "BNB": "BNB",
-    "LINK": "LINK",
-    "NEAR": "NEAR",
-    "APTOS": "APT",         # sometimes Revolut lists full name
-    "ARBITRUM": "ARB",
-    "POLKADOT": "DOT",
-    "BITCOIN": "BTC",
-    "ETHEREUM": "ETH",
-    # add more long-name → ticker here if your Revolut source has names not tickers
-}
-
-# Symbols we should never map
 BLOCKLIST: Set[str] = {
-    "USDT", "BUSD", "FDUSD", "USDC", "DAI", "TUSD",
-    "EUR", "GBP", "TRY", "BRL", "NGN", "RUB",
-    "UST", "LUNA",  # legacy landmines
+    "USDT","USDC","FDUSD","BUSD","TUSD","DAI",
+    "EUR","GBP","TRY","BRL","NGN","RUB"
 }
 
-# Fuzzy matching (only if rapidfuzz is installed)
+# Common divergences (Revolut ticker or name → Binance baseAsset)
+ALIASES: Dict[str, str] = {
+    # Obvious/legacy/name differences
+    "POLYGON": "MATIC",
+    "CELESTIA": "TIA",
+    "AVALANCHE": "AVAX",
+    "COSMOS": "ATOM",
+    "AAVE": "AAVE",
+    "AIOZ NETWORK": "AIOZ",
+    "ARWEAVE": "AR",
+    "AKASH NETWORK": "AKT",
+    "BICONOMY": "BICO",
+    "BIFROST": "BNC",
+    "BRAINTRUST": "BTRST",
+    "CARTESI": "CTSI",
+    "CELER NETWORK": "CELR",
+    "CIVIC": "CVC",
+    "CLOVER FINANCE": "CLV",
+    "CONFLUX": "CFX",
+    "COVALENT": "CQT",
+    "CRONOS": "CRO",
+    "CURVE DAO TOKEN": "CRV",
+    "DENT": "DENT",
+    "DIGIBYTE": "DGB",
+    "DOGECOIN": "DOGE",
+    "ETHEREUM": "ETH",
+    "ETHEREUM CLASSIC": "ETC",
+    "ETHEREUMPOW": "ETHW",
+    "FANTOM": "FTM",
+    "FILECOIN": "FIL",
+    "FLOKI": "FLOKI",
+    "FRAx SHARE": "FXS",
+    "GAINS NETWORK": "GNS",
+    "GODS UNCHAINED": "GODS",
+    "GNOSIS": "GNO",
+    "HEDERA": "HBAR",
+    "ILLUVIUM": "ILV",
+    "IMMUTABLE": "IMX",
+    "INJECTIVE": "INJ",
+    "IEXEC RLC": "RLC",
+    "JASMYCOIN": "JASMY",
+    "KADENA": "KDA",
+    "KYBER NETWORK": "KNC",
+    "KUSAMA": "KSM",
+    "LIDO DAO": "LDO",
+    "LIVEPEER": "LPT",
+    "LOOPRING": "LRC",
+    "MASK NETWORK": "MASK",
+    "MERIT CIRCLE": "MC",
+    "MINA": "MINA",
+    "MOONBEAM": "GLMR",
+    "NEAR PROTOCOL": "NEAR",
+    "OASIS NETWORK": "ROSE",
+    "OCEAN PROTOCOL": "OCEAN",
+    "OND0": "ONDO",  # common OCR mistake
+    "ONTOLOGY": "ONT",
+    "ONTOLOGY GAS": "ONG",
+    "OPTIMISM": "OP",
+    "PAX GOLD": "PAXG",
+    "PENDLE": "PENDLE",
+    "PIXELS": "PIXEL",
+    "POLYMESH": "POLYX",
+    "POCKET NETWORK": "POKT",
+    "POWERLEDGER": "POWR",
+    "PUNDI X": "PUNDIX",
+    "RAYDIUM": "RAY",
+    "RENDER": "RNDR",
+    "RESERVE RIGHTS": "RSR",
+    "ROCKET POOL": "RPL",
+    "SHIBA INU": "SHIB",
+    "SKALE NETWORK": "SKL",
+    "SMOOTH LOVE POTION": "SLP",
+    "SOLANA": "SOL",
+    "STARGATE FINANCE": "STG",
+    "STARKNET": "STRK",
+    "STORJ": "STORJ",
+    "SUI": "SUI",
+    "SUSHISWAP": "SUSHI",
+    "SYNAPSE": "SYN",
+    "TELLOR": "TRB",
+    "THE GRAPH": "GRT",
+    "THE SANDBOX": "SAND",
+    "THRESHOLD": "T",
+    "TONCOIN": "TON",
+    "TRON": "TRX",
+    "UNISWAP": "UNI",
+    "VECHAIN": "VET",
+    "VETHOR TOKEN": "VTHO",
+    "VOXIES": "VOXEL",
+    "WORLDCOIN": "WLD",
+    "WOO NETWORK": "WOO",
+    "WRAPPED BITCOIN": "WBTC",
+    "WRAPPED CENTRIFUGE": "WCFG",
+    "YIELD GUILD GAMES": "YGG",
+    "0X": "ZRX",
+
+    # Ticker-level special cases (Revolut → Binance)
+    "WBTC": "WBTC",
+    "WAXP": "WAXP",
+    "WCFG": "WCFG",
+    "SYNTH": "SYN",
+}
+
+# ---------- optional fuzzy ----------
 try:
-    from rapidfuzz import fuzz, process
+    from rapidfuzz import process, fuzz
     HAVE_FUZZ = True
+    FUZZ_THRESHOLD = 92
 except Exception:
     HAVE_FUZZ = False
 
-FUZZ_THRESHOLD = 92  # require high confidence; adjust if needed
+def load_revolut() -> Dict[str, str]:
+    if not REV_FILE.exists():
+        raise FileNotFoundError(f"Missing {REV_FILE} with Revolut dict.")
+    data = json.loads(REV_FILE.read_text())
+    # normalize to UPPER keys, UPPER names for matching
+    out = {}
+    for k, v in data.items():
+        k2 = str(k).strip().upper()
+        if not k2 or k2 in BLOCKLIST:
+            continue
+        out[k2] = str(v).strip()
+    return out
 
-# ------------ helpers ------------
-def load_revolut_tickers() -> List[str]:
-    for p in REV_INPUTS:
-        if p.exists():
-            if p.suffix == ".json":
-                with p.open() as f:
-                    data = json.load(f)
-                # Accept [{ticker:..}, or plain ["BTC",..]]
-                if isinstance(data, list) and data and isinstance(data[0], dict) and "ticker" in data[0]:
-                    tickers = [str(x["ticker"]).strip().upper() for x in data]
-                else:
-                    tickers = [str(x).strip().upper() for x in data]
-                return [t for t in tickers if t and t not in BLOCKLIST]
-            elif p.suffix == ".csv":
-                out = []
-                with p.open(newline="") as f:
-                    r = csv.DictReader(f)
-                    col = None
-                    # find a suitable column
-                    for c in r.fieldnames or []:
-                        if c.lower() in ("ticker", "symbol", "revolut_ticker"):
-                            col = c
-                            break
-                    if not col:
-                        raise RuntimeError("CSV must have a 'ticker'/'symbol' column")
-                    for row in r:
-                        t = str(row[col]).strip().upper()
-                        if t and t not in BLOCKLIST:
-                            out.append(t)
-                return out
-            else:  # .txt
-                out = []
-                with p.open() as f:
-                    for line in f:
-                        t = line.strip().upper()
-                        if t and t not in BLOCKLIST:
-                            out.append(t)
-                return out
-    raise FileNotFoundError(
-        "[generate_mapping] No Revolut tickers found. Provide one of: "
-        "data/revolut_instruments.json, data/revolut_tickers.csv, data/revolut_tickers.txt"
-    )
-
-def fetch_binance_universe() -> Tuple[Set[str], Dict[str,str]]:
-    """Return (baseAssets set, base->USDT symbol dict for spot)."""
+def fetch_binance() -> Tuple[Set[str], Dict[str, str]]:
+    """Return (baseAssets set, base->USDT symbol mapping)."""
     r = requests.get(BINANCE_EXCHANGEINFO, timeout=30)
     r.raise_for_status()
     info = r.json()
     bases: Set[str] = set()
-    base_to_usdt: Dict[str, str] = {}
+    base2usdt: Dict[str, str] = {}
     for s in info.get("symbols", []):
         if s.get("status") != "TRADING":
             continue
         base = s.get("baseAsset", "").upper()
         quote = s.get("quoteAsset", "").upper()
-        # Prefer USDT spot pairs as primary
+        if not base or base in BLOCKLIST:
+            continue
+        bases.add(base)
         if quote == "USDT":
-            base_to_usdt[base] = f"{base}{quote}"
-        if base and base not in BLOCKLIST:
-            bases.add(base)
-    return bases, base_to_usdt
+            base2usdt[base] = f"{base}{quote}"
+    return bases, base2usdt
 
-def try_exact(t: str, bases: Set[str], base_to_usdt: Dict[str,str]) -> Tuple[bool, str]:
-    if t in bases and t in base_to_usdt:
-        return True, base_to_usdt[t]
-    return False, ""
+def clean(s: str) -> str:
+    return re.sub(r"[^A-Z0-9]+", "", s.upper())
 
-def try_alias(t: str, bases: Set[str], base_to_usdt: Dict[str,str]) -> Tuple[bool, str]:
-    a = ALIASES.get(t) or ALIASES.get(t.upper())
-    if a and a in bases and a in base_to_usdt:
-        return True, base_to_usdt[a]
-    # If Revolut provided full name instead of ticker
-    upper = re.sub(r"[^A-Z0-9]", "", t.upper())
-    if upper in ALIASES:
-        a2 = ALIASES[upper]
-        if a2 in bases and a2 in base_to_usdt:
-            return True, base_to_usdt[a2]
-    return False, ""
+def try_exact(t: str, bases: Set[str], base2usdt: Dict[str,str]) -> str | None:
+    if t in bases and t in base2usdt:
+        return base2usdt[t]
+    return None
 
-def try_fuzzy(t: str, bases: Set[str], base_to_usdt: Dict[str,str]) -> Tuple[bool, str, int, str]:
+def try_alias(t: str, name: str, bases: Set[str], base2usdt: Dict[str,str]) -> str | None:
+    # ticker alias
+    a = ALIASES.get(t) or ALIASES.get(clean(t))
+    if a and a in base2usdt:
+        return base2usdt[a]
+    # name alias
+    nm = ALIASES.get(name.upper()) or ALIASES.get(clean(name))
+    if nm and nm in base2usdt:
+        return base2usdt[nm]
+    return None
+
+def try_fuzzy(t: str, name: str, bases: Set[str], base2usdt: Dict[str,str]) -> Tuple[str | None, int, str]:
     if not HAVE_FUZZ:
-        return False, "", 0, ""
+        return None, 0, ""
     choices = list(bases)
-    match, score, idx = process.extractOne(t, choices, scorer=fuzz.WRatio)
-    if score >= FUZZ_THRESHOLD and match in base_to_usdt:
-        return True, base_to_usdt[match], score, match
-    return False, "", score, match if 'match' in locals() else ""
+    # try ticker first, then name
+    cand1 = process.extractOne(t, choices, scorer=fuzz.WRatio)
+    cand2 = process.extractOne(clean(name), choices, scorer=fuzz.WRatio) if name else None
+    best = None
+    if cand1 and (not cand2 or cand1[1] >= cand2[1]): best = cand1
+    elif cand2: best = cand2
+    if best and best[1] >= FUZZ_THRESHOLD and best[0] in base2usdt:
+        return base2usdt[best[0]], best[1], best[0]
+    return None, 0, ""
 
 def main() -> int:
-    revolut = load_revolut_tickers()
-    bases, base2usdt = fetch_binance_universe()
+    rev = load_revolut()                   # {"BTC":"Bitcoin", ...}
+    bases, base2usdt = fetch_binance()     # Binance spot
 
     mapping = []
     unmatched = []
-    report_lines = []
-    seen_revolut = set()
+    report = []
 
-    for t in revolut:
-        if t in seen_revolut:
+    for tkr, nm in sorted(rev.items()):
+        # 1) exact
+        sym = try_exact(tkr, bases, base2usdt)
+        if sym:
+            mapping.append({"revolut_ticker": tkr, "binance_symbol": sym})
             continue
-        seen_revolut.add(t)
-
-        ok, sym = try_exact(t, bases, base2usdt)
-        if ok:
-            mapping.append({"revolut_ticker": t, "binance_symbol": sym})
+        # 2) alias
+        sym = try_alias(tkr, nm, bases, base2usdt)
+        if sym:
+            mapping.append({"revolut_ticker": tkr, "binance_symbol": sym})
             continue
-
-        ok, sym = try_alias(t, bases, base2usdt)
-        if ok:
-            mapping.append({"revolut_ticker": t, "binance_symbol": sym})
+        # 3) fuzzy (strict)
+        sym, score, guess = try_fuzzy(tkr, nm, bases, base2usdt)
+        if sym:
+            mapping.append({"revolut_ticker": tkr, "binance_symbol": sym})
+            report.append(f"[FUZZY] {tkr} / {nm} → {guess} ({sym}) score={score}")
             continue
+        # no luck
+        unmatched.append(tkr)
 
-        ok, sym, sc, guess = try_fuzzy(t, bases, base2usdt)
-        if ok:
-            mapping.append({"revolut_ticker": t, "binance_symbol": sym})
-            report_lines.append(f"[FUZZY] {t} → {guess} ({sym}) score={sc}")
-        else:
-            unmatched.append(t)
-
-    # Sort deterministically
+    # write outputs
     mapping.sort(key=lambda x: x["revolut_ticker"])
-    with OUT_JSON.open("w") as f:
-        json.dump(mapping, f, indent=2)
+    OUT_JSON.write_text(json.dumps(mapping, indent=2))
+    OUT_UNMATCHED.write_text(json.dumps(unmatched, indent=2))
 
-    with OUT_UNMATCHED.open("w") as f:
-        json.dump(unmatched, f, indent=2)
-
-    report_lines.insert(0, f"Revolut tickers: {len(revolut)}")
-    report_lines.insert(1, f"Matched: {len(mapping)}")
-    report_lines.insert(2, f"Unmatched: {len(unmatched)}")
+    report.insert(0, f"Revolut tickers: {len(rev)}")
+    report.insert(1, f"Matched: {len(mapping)}")
+    report.insert(2, f"Unmatched: {len(unmatched)}")
     if unmatched:
-        report_lines.append("\nUnmatched:")
-        report_lines += sorted(unmatched)
+        report.append("\nUnmatched:")
+        report += unmatched
+    OUT_REPORT.write_text("\n".join(report) + "\n")
 
-    with OUT_REPORT.open("w") as f:
-        f.write("\n".join(report_lines) + "\n")
-
-    print(f"[generate_mapping] matched {len(mapping)} / {len(revolut)}; "
-          f"unmatched {len(unmatched)} → see {OUT_UNMATCHED}")
+    print(f"[generate_mapping] matched {len(mapping)} / {len(rev)}; "
+          f"unmatched {len(unmatched)} (see {OUT_UNMATCHED})")
     return 0
 
 if __name__ == "__main__":
