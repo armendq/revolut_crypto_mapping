@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: {}
+  workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"  # every 15 minutes
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -58,7 +59,6 @@ jobs:
           test -f data/signals.json
 
       - name: Prepare public_runs/latest
-        shell: bash
         run: |
           set -e
           rm -rf public_runs/latest
@@ -69,25 +69,7 @@ jobs:
           cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
           cp data/signals.json              public_runs/latest/signals.json
 
-          # Build summary.json directly via stdin Python
-          python - <<'PY'
-import json, datetime, pathlib
-latest = pathlib.Path("public_runs/latest")
-with open("artifacts/market_snapshot.json","r",encoding="utf-8") as f: market = json.load(f)
-with open("artifacts/run_stats.json","r",encoding="utf-8") as f: run = json.load(f)
-with open("data/signals.json","r",encoding="utf-8") as f: sig = json.load(f)
-
-out = {
-  "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
-  "regime": market.get("regime", {}),
-  "equity": market.get("equity"),
-  "cash": market.get("cash"),
-  "candidates": market.get("candidates", []),
-  "signals": sig,
-  "run_stats": run
-}
-(latest / "summary.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
-PY
+          python -c "import json,datetime,pathlib; latest=pathlib.Path('public_runs/latest'); market=json.load(open('artifacts/market_snapshot.json','r',encoding='utf-8')); run=json.load(open('artifacts/run_stats.json','r',encoding='utf-8')); sig=json.load(open('data/signals.json','r',encoding='utf-8')); out={'generated_at_utc':datetime.datetime.utcnow().replace(microsecond=0).isoformat()+'Z','regime':market.get('regime',{}),'equity':market.get('equity'),'cash':market.get('cash'),'candidates':market.get('candidates',[]),'signals':sig,'run_stats':run}; (latest/'summary.json').write_text(json.dumps(out,indent=2),encoding='utf-8')"
 
       - name: Commit changes to main
         env:
