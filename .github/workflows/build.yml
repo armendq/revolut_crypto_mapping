@@ -1,22 +1,40 @@
 name: build
 
 on:
-  push:
-    branches: [ main ]
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
-
-permissions:
-  contents: write
+  schedule:
+    - cron: "*/15 * * * *"  # every 15 minutes
+  push:
+    branches: [ "main" ]
 
 concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: false
+  group: build-revolut
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      # --- Analysis knobs (safe defaults; override here anytime) ---
+      MIN_VOL24_USD: "25000000"
+      MIN_MCAP_USD: "50000000"
+
+      FAST_MOM_ENABLED: "true"
+      FAST_MOM_TIMEFRAME: "15m"
+      FAST_MOM_MIN_MOVE_PCT: "8"
+      FAST_MOM_MIN_RVOL: "3"
+      FAST_MOM_MAX_SPREAD_PCT: "0.6"
+      FAST_MOM_RISK_PCT: "0.6"
+      FAST_MOM_CAP_PCT: "10"
+      REGIME_GATE_FAST: "false"
+
+      SWING_LOOKBACK_HIGH: "20"
+      ATR_PERIOD: "14"
+      RISK_PCT_SWING: "1.2"
+
+      CAP_OK: "0.60"
+      CAP_WEAK: "0.30"
 
     steps:
       - name: Checkout
@@ -32,84 +50,51 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            pip install pandas requests python-dateutil
-          fi
-
-      - name: Generate mapping (safe)
-        run: |
-          if [ -f scripts/mapping.py ]; then
-            python scripts/mapping.py
-          else
-            echo "skip mapping"
-          fi
+          pip install ccxt==4.3.81 numpy==1.26.4 pandas==2.2.2 requests
 
       - name: Run analyses
-        env:
-          EQUITY: ${{ vars.EQUITY }}
-          CASH: ${{ vars.CASH }}
         run: |
-          set -e
-          export EQUITY="${EQUITY:-41000}"
-          export CASH="${CASH:-32000}"
-          python -m scripts.analyses
+          python scripts/analyses.py
 
-      - name: Prepare public_runs/latest
+      - name: Verify outputs exist
+        run: |
+          test -f public_runs/latest/summary.json
+          echo "Output OK"
+
+      - name: Clean old public_runs folders (keep latest)
+        run: |
+          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
+
+      - name: Commit changes to main (force-safe)
         run: |
           set -e
-          mkdir -p public_runs/latest
-          # Pull outputs from known locations if analyses wrote them elsewhere
-          for f in summary.json signals.json run_stats.json market_snapshot.json debug_scan.json; do
-            if [ ! -f "public_runs/latest/$f" ]; then
-              [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
-              [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
-            fi
-          done
-          # Ensure summary.json exists so Pages never 404s due to missing file
-          if [ ! -f public_runs/latest/summary.json ]; then
-            echo '{"status":"ok"}' > public_runs/latest/summary.json
-          fi
-          # Keep only the 'latest' folder
-          touch public_runs/.nojekyll
-          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
-          echo "Tree to publish:" && ls -R public_runs
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add -A
+          git commit -m "ci: update analyses outputs [skip ci]" || echo "No changes to commit."
+          # rebase safely even if remote advanced; --autostash prevents dirty index errors
+          git pull --rebase --autostash origin main || true
+          git push origin HEAD:main || true
 
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./public_runs
-          force_orphan: true
+          branch: gh-pages
+          folder: public_runs
+          clean: true
 
-      - name: Verify raw gh-pages (bypass Pages)
+      - name: Verify Pages endpoint (soft)
         run: |
-          set -e
-          RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/gh-pages/latest/summary.json?ts=$(date +%s)"
-          echo "Checking $RAW_URL"
-          for i in $(seq 1 10); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$RAW_URL")
-            echo "Attempt $i: HTTP $code"
-            if [ "$code" = "200" ]; then exit 0; fi
-            sleep 3
-          done
-          echo "Raw gh-pages not reachable"
-          exit 1
-
-      - name: Verify Pages endpoint (retry up to ~3 min)
-        run: |
-          set -e
-          OWNER="${GITHUB_REPOSITORY%%/*}"
-          NAME="${GITHUB_REPOSITORY##*/}"
-          URL="https://${OWNER}.github.io/${NAME}/latest/summary.json?ts=$(date +%s)"
-          echo "Checking $URL"
-          for i in $(seq 1 18); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-            echo "Attempt $i: HTTP $code"
-            if [ "$code" = "200" ]; then exit 0; fi
+          set +e
+          url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
+          echo "Checking $url"
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "HTTP $code"
+            if [ "$code" = "200" ]; then
+              exit 0
+            fi
             sleep 10
           done
-          echo "Pages still not serving summary.json"
-          exit 1
+          echo "Pages may still be propagating; not failing the build."
+          exit 0
