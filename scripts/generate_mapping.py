@@ -3,7 +3,7 @@
 Generate a Revolut ↔ Binance USDT-spot mapping from your provided dict.
 
 INPUT (required):
-  data/revolut_list.json    # exactly the dict you pasted: {"BTC":"Bitcoin", ...}
+  data/revolut_mapping.json    # exactly the dict you pasted: {"BTC":"Bitcoin", ...}
 
 OUTPUTS:
   mapping/revolut_binance_mapping.json         # [{revolut_ticker, binance_symbol}]
@@ -27,7 +27,7 @@ from typing import Dict, List, Tuple, Set
 import requests
 
 # ---------- config ----------
-REV_FILE = Path("data/revolut_list.json")
+REV_FILE = Path("data/revolut_mapping.json")
 OUT_DIR = Path("mapping"); OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT_JSON = OUT_DIR / "revolut_binance_mapping.json"
 OUT_UNMATCHED = OUT_DIR / "revolut_binance_unmatched.json"
