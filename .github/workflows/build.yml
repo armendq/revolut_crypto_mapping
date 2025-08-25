@@ -1,15 +1,11 @@
-name: Run mapping & analyses (publish to Pages only)
+name: Run mapping & analyses (publish to Pages)
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
+  workflow_dispatch: {}
   schedule:
-    - cron: "*/15 * * * *"
-  workflow_dispatch:
-
-concurrency:
-  group: publish-to-pages
-  cancel-in-progress: true
+    - cron: "*/15 * * * *"   # every 15 minutes
 
 permissions:
   contents: write
@@ -23,7 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,42 +30,82 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests python-dateutil
 
+      # Optional mapping step (skips if scripts/mapping.py is absent)
       - name: Generate mapping (safe)
         run: |
+          set -e
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
-            echo "No mapping.py found; skipping."
+            echo "No mapping.py found; skipping mapping generation."
           fi
 
       - name: Run analyses
         env:
-          EQUITY: ${{ vars.EQUITY || '41964' }}
-          CASH: ${{ vars.CASH || '0' }}
-          EQUITY_FLOOR: ${{ vars.EQUITY_FLOOR || '40000' }}
-        run: python -m scripts.analyses
+          EQUITY: ${{ vars.EQUITY || '41000' }}
+          CASH:   ${{ vars.CASH   || '32000' }}
+        run: |
+          set -e
+          python -m scripts.analyses
 
       - name: Verify outputs exist
         run: |
           set -e
           test -f artifacts/market_snapshot.json
-          test -f data/signals.json
           test -f artifacts/run_stats.json
           test -f artifacts/debug_scan.json
+          test -f data/signals.json
 
-      - name: Prepare public_runs (latest only)
+      - name: Prepare public_runs/latest
         run: |
           set -e
-          rm -rf public_runs
+          rm -rf public_runs/latest
           mkdir -p public_runs/latest
-          cp artifacts/market_snapshot.json public_runs/latest/summary.json
-          cp data/signals.json            public_runs/latest/signals.json
-          cp artifacts/run_stats.json     public_runs/latest/run_stats.json
-          cp artifacts/debug_scan.json    public_runs/latest/debug_scan.json
-          # add a small meta file to ensure fresh content every run
-          date -u +"%Y-%m-%dT%H:%M:%SZ" > public_runs/latest/build_utc.txt
+          # copy core files
+          cp artifacts/market_snapshot.json public_runs/latest/market_snapshot.json
+          cp artifacts/run_stats.json       public_runs/latest/run_stats.json
+          cp artifacts/debug_scan.json      public_runs/latest/debug_scan.json
+          cp data/signals.json              public_runs/latest/signals.json
 
-      - name: Deploy to gh-pages (Pages only)
+          # build summary.json from the pieces
+          python - <<'PY'
+import json, pathlib, datetime, os
+root = pathlib.Path("public_runs/latest")
+def j(p): return json.load(open(p, "r", encoding="utf-8"))
+market = j("artifacts/market_snapshot.json")
+run    = j("artifacts/run_stats.json")
+sig    = j("data/signals.json")
+out = {
+  "generated_at_utc": datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z",
+  "regime": market.get("regime", {}),
+  "equity": market.get("equity"),
+  "cash": market.get("cash"),
+  "candidates": market.get("candidates", []),
+  "signals": sig,
+  "run_stats": run
+}
+(root / "summary.json").write_text(json.dumps(out, indent=2))
+PY
+
+      - name: Commit changes to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public_runs artifacts data
+          # rebase to avoid non-fast-forward errors when schedule + push collide
+          git fetch origin main
+          git rebase origin/main || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "ci: update analyses outputs [skip ci]"
+            git push
+          fi
+
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,8 +116,9 @@ jobs:
       - name: Verify Pages endpoint
         run: |
           set -e
-          url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
+          url="https://armendq.github.io/revolut_crypto_mapping/public_runs/latest/summary.json?ts=$(date +%s)"
           echo "Checking $url"
           code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
           echo "HTTP $code"
           test "$code" = "200"
+```0
