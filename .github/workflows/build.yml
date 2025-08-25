@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: build-${{ github.ref }}
@@ -34,90 +32,65 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install pandas requests python-dateutil; fi
 
-      # ---- Your project steps (safe to keep as-is) ----
+      # Optional; safe no-op if script missing
       - name: Generate mapping (safe)
         run: |
-          set -e
-          if [ -f scripts/generate_mapping.py ]; then
-            python scripts/generate_mapping.py
-          else
-            echo "scripts/generate_mapping.py not found; skipping"
-          fi
+          if [ -f scripts/mapping.py ]; then python scripts/mapping.py; else echo "skip mapping"; fi
 
       - name: Run analyses
+        env:
+          EQUITY: ${{ vars.EQUITY || '41000' }}
+          CASH:   ${{ vars.CASH   || '32000' }}
         run: |
-          set -e
-          if [ -f scripts/analyses.py ] || python -c "import importlib; importlib.import_module('scripts.analyses')" 2>/dev/null; then
-            python -m scripts.analyses
-          else
-            echo "scripts/analyses module not found; skipping"
-          fi
+          python -m scripts.analyses
 
       - name: Prepare public_runs/latest
         run: |
           set -e
           mkdir -p public_runs/latest
-
-      - name: Build summary.json
-        run: |
-          set -e
-          if [ -f scripts/build_summary.py ]; then
-            python scripts/build_summary.py
-          else
+          # If analyses already wrote there, fine. Otherwise copy from common dirs.
+          for f in summary.json signals.json run_stats.json market_snapshot.json debug_scan.json; do
+            [ -f "public_runs/latest/$f" ] && continue
+            [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
+            [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
+          done
+          # Hard guarantee summary.json exists to avoid 404s
+          if [ ! -f public_runs/latest/summary.json ]; then
             echo '{"status":"ok"}' > public_runs/latest/summary.json
-            echo "scripts/build_summary.py not found; wrote placeholder summary.json"
           fi
-
-      - name: Verify outputs exist
-        run: |
-          set -e
-          test -f public_runs/latest/summary.json
 
       - name: Clean old public_runs folders (keep latest)
         run: |
-          set -e
-          if [ -d public_runs ]; then
-            find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} +
-          fi
+          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
 
-      # ---- FIXED: no rebase, just commit & force-push safely ----
-      - name: Commit changes to main (force-safe)
+      - name: Commit to main (force-safe, no rebase)
         run: |
           set -e
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add -A public_runs data artifacts || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "ci: update analyses outputs [skip ci]"
+          git commit -m "ci: publish public_runs/latest/summary.json [skip ci]"
           git push origin HEAD:main --force
 
-      # ---- Publish to gh-pages ----
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: public_runs
-          force_orphan: true
-
-      # ---- Non-fatal verification of the Pages endpoint ----
-      - name: Verify Pages endpoint
+      - name: Verify raw summary.json on main (retry)
         run: |
           set -e
-          url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
+          url="https://raw.githubusercontent.com/${{ github.repository }}/main/public_runs/latest/summary.json?ts=$(date +%s)"
           echo "Checking $url"
-          for i in 1 2 3 4 5; do
+          for i in 1 2 3 4 5 6; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            echo "HTTP $code"
+            echo "Attempt $i -> HTTP $code"
             if [ "$code" = "200" ]; then
+              echo "OK"
               exit 0
             fi
             sleep 5
           done
-          echo "Pages may still be propagating; not failing the build."
-          exit 0
+          echo "Raw URL not reachable yet"
+          exit 1
