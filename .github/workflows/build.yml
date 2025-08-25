@@ -1,4 +1,4 @@
-name: Run mapping & analyses
+name: Run mapping & analyses (publish to Pages only)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: publish-public-runs
+  group: publish-to-pages
   cancel-in-progress: true
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
           if [ -f scripts/mapping.py ]; then
             python scripts/mapping.py
           else
-            echo "No mapping.py found; skipping mapping generation."
+            echo "No mapping.py found; skipping."
           fi
 
       - name: Run analyses
@@ -52,34 +52,37 @@ jobs:
 
       - name: Verify outputs exist
         run: |
+          set -e
           test -f artifacts/market_snapshot.json
           test -f data/signals.json
           test -f artifacts/run_stats.json
           test -f artifacts/debug_scan.json
-          ls -l artifacts || true
-          ls -l data || true
 
-      - name: Publish public runs
-        run: python scripts/publish_latest.py
-
-      - name: Commit changes to main
+      - name: Prepare public_runs (latest only)
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git pull --rebase origin main || true
-          git add -A data artifacts public_runs || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "ci: publish signals & summary $(date -u +'%Y-%m-%dT%H:%M:%SZ') [skip ci]" || true
-            git push origin HEAD:main || true
-          fi
+          set -e
+          rm -rf public_runs
+          mkdir -p public_runs/latest
+          cp artifacts/market_snapshot.json public_runs/latest/summary.json
+          cp data/signals.json            public_runs/latest/signals.json
+          cp artifacts/run_stats.json     public_runs/latest/run_stats.json
+          cp artifacts/debug_scan.json    public_runs/latest/debug_scan.json
+          # add a small meta file to ensure fresh content every run
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > public_runs/latest/build_utc.txt
 
-      - name: Deploy to gh-pages
+      - name: Deploy to gh-pages (Pages only)
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: public_runs
           force_orphan: true
+
+      - name: Verify Pages endpoint
+        run: |
+          set -e
+          url="https://armendq.github.io/revolut_crypto_mapping/latest/summary.json?ts=$(date +%s)"
+          echo "Checking $url"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          echo "HTTP $code"
+          test "$code" = "200"
