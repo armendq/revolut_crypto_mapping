@@ -33,7 +33,7 @@ OUT_JSON = OUT_DIR / "revolut_binance_mapping.json"
 OUT_UNMATCHED = OUT_DIR / "revolut_binance_unmatched.json"
 OUT_REPORT = OUT_DIR / "revolut_binance_report.txt"
 
-BINANCE_EXCHANGEINFO = "https://api.binance.com/api/v3/exchangeInfo"
+BINANCE_EXCHANGEINFO = "url = "url = "https://data-api.binance.vision/api/v3/exchangeInfo"
 
 BLOCKLIST: Set[str] = {
     "USDT","USDC","FDUSD","BUSD","TUSD","DAI",
