@@ -48,23 +48,30 @@ jobs:
 
       - name: Run analyses
         env:
-          EQUITY: ${{ vars.EQUITY || '41000' }}
-          CASH:   ${{ vars.CASH   || '32000' }}
+          EQUITY: ${{ vars.EQUITY }}
+          CASH: ${{ vars.CASH }}
         run: |
+          set -e
+          export EQUITY="${EQUITY:-41000}"
+          export CASH="${CASH:-32000}"
           python -m scripts.analyses
 
       - name: Prepare public_runs/latest
         run: |
           set -e
           mkdir -p public_runs/latest
+          # Pull outputs from known locations if analyses wrote them elsewhere
           for f in summary.json signals.json run_stats.json market_snapshot.json debug_scan.json; do
-            [ -f "public_runs/latest/$f" ] && continue
-            [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
-            [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
+            if [ ! -f "public_runs/latest/$f" ]; then
+              [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
+              [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
+            fi
           done
+          # Ensure summary.json exists so Pages never 404s due to missing file
           if [ ! -f public_runs/latest/summary.json ]; then
             echo '{"status":"ok"}' > public_runs/latest/summary.json
           fi
+          # Keep only the 'latest' folder
           touch public_runs/.nojekyll
           find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
           echo "Tree to publish:" && ls -R public_runs
@@ -80,12 +87,12 @@ jobs:
       - name: Verify raw gh-pages (bypass Pages)
         run: |
           set -e
-          RAW_URL="https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/latest/summary.json?ts=$(date +%s)"
+          RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/gh-pages/latest/summary.json?ts=$(date +%s)"
           echo "Checking $RAW_URL"
           for i in $(seq 1 10); do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$RAW_URL")
             echo "Attempt $i: HTTP $code"
-            [ "$code" = "200" ] && exit 0
+            if [ "$code" = "200" ]; then exit 0; fi
             sleep 3
           done
           echo "Raw gh-pages not reachable"
@@ -94,14 +101,15 @@ jobs:
       - name: Verify Pages endpoint (retry up to ~3 min)
         run: |
           set -e
-          URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/summary.json?ts=$(date +%s)"
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          NAME="${GITHUB_REPOSITORY##*/}"
+          URL="https://${OWNER}.github.io/${NAME}/latest/summary.json?ts=$(date +%s)"
           echo "Checking $URL"
           for i in $(seq 1 18); do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
             echo "Attempt $i: HTTP $code"
-            [ "$code" = "200" ] && exit 0
+            if [ "$code" = "200" ]; then exit 0; fi
             sleep 10
           done
           echo "Pages still not serving summary.json"
           exit 1
-```0
