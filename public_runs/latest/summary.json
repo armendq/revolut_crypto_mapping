@@ -1,21 +1,26 @@
 {
-  "generated_at_utc": "2025-08-26T10:36:31Z",
+  "generated_at": "2025-08-26 10:58:56 UTC",
   "regime": {
-    "ok": true,
-    "reason": "",
-    "last": 110365.47,
-    "vwap": 110084.96599249267,
-    "ema9": 110319.87380344812
+    "ok": true
   },
-  "equity": 41000.0,
-  "cash": 32000.0,
-  "candidates": [],
+  "equity": null,
+  "cash": null,
   "signals": {
     "type": "C",
-    "text": "Hold and wait."
+    "text": "Candidates found"
   },
-  "run_stats": {
-    "elapsed_ms": 464,
-    "time": "2025-08-26T10:36:31.143107+00:00"
-  }
+  "candidates": [
+    {
+      "ticker": "FIL",
+      "binance_symbol": "FILUSDT",
+      "entry": 2.3,
+      "stop": 2.294,
+      "atr": 0.0107857143,
+      "t1": 2.3086285714,
+      "t2": 2.3161785714,
+      "vol_usd_24h": 29263278.46967,
+      "spread": 0.0004350663476179639,
+      "r_over_atr": 0.556291390728459
+    }
+  ]
 }

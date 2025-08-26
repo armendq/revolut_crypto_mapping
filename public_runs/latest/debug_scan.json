@@ -1,267 +1,61 @@
-[
-  {
-    "symbol": "BTC",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "XRP",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "BNB",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "SOL",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "STETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "TRX",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "DOGE",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ADA",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WSTETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "LINK",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WBETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "HYPE",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WBTC",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WEETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "XLM",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "SUI",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "BCH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "AVAX",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "HBAR",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WETH",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "LTC",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "TON",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "USDS",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "SHIB",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "BSC-USD",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "WBT",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "CBBTC",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "UNI",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "DOT",
-    "kept": true,
-    "note": "dot-staked"
-  },
-  {
-    "symbol": "SUSDE",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "CRO",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "BGB",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "XMR",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "AAVE",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ENA",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "PEPE",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "OKB",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "MNT",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ETC",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "TAO",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "NEAR",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "APT",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "JITOSOL",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ONDO",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ARB",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "PI",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ICP",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "USD1",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "KAS",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "ALGO",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "POL",
-    "kept": true,
-    "note": "ok"
-  },
-  {
-    "symbol": "VET",
-    "kept": true,
-    "note": "ok"
+{
+  "rejected": [
+    {
+      "symbol": "BNTUSDT",
+      "revolut": "BNT",
+      "reason": "vol",
+      "vol_usd": 306829.72567
+    },
+    {
+      "symbol": "DAIJPY",
+      "revolut": "DAI",
+      "reason": "non-USDT"
+    },
+    {
+      "symbol": "GNOUSDT",
+      "revolut": "GNO",
+      "reason": "vol",
+      "vol_usd": 311095.68887
+    },
+    {
+      "symbol": "GNSUSDT",
+      "revolut": "GNS",
+      "reason": "vol",
+      "vol_usd": 336658.1803
+    },
+    {
+      "symbol": "QIUSDT",
+      "revolut": "QI",
+      "reason": "vol",
+      "vol_usd": 444988.93219
+    },
+    {
+      "symbol": "REQUSDT",
+      "revolut": "REQ",
+      "reason": "vol",
+      "vol_usd": 498231.2943
+    },
+    {
+      "symbol": "USDTTRY",
+      "revolut": "USDT",
+      "reason": "non-USDT"
+    }
+  ],
+  "accepted": [
+    {
+      "symbol": "FILUSDT",
+      "revolut": "FIL",
+      "reason": "breakout"
+    }
+  ],
+  "meta": {
+    "VOL_USD_MIN_24H": 500000.0,
+    "MAX_SPREAD": 0.02,
+    "interval": "15m",
+    "kline_limit": 64,
+    "lookback_8h": 32,
+    "atr_len": 14,
+    "breakout_pad": 0.001,
+    "binance_base": "https://data-api.binance.vision"
   }
-]
+}
