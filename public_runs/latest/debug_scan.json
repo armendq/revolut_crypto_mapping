@@ -4,43 +4,43 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 295739.00018
+      "vol_usd": 287606.69803
     },
     {
       "symbol": "GTCUSDT",
       "revolut": "GTC",
       "reason": "vol",
-      "vol_usd": 458931.4351
+      "vol_usd": 465910.026
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 488258.145
+      "vol_usd": 483614.1176
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 443417.879052
+      "vol_usd": 435239.494633
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 410752.7651
+      "vol_usd": 405600.2871
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 431531.40172
+      "vol_usd": 431329.90651
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 468769.5843
+      "vol_usd": 470897.5423
     },
     {
       "symbol": "USDTTRY",
@@ -51,13 +51,18 @@
       "symbol": "VOXELUSDT",
       "revolut": "VOXEL",
       "reason": "vol",
-      "vol_usd": 463797.42969
+      "vol_usd": 459014.77275
     }
   ],
   "accepted": [
     {
-      "symbol": "HFTUSDT",
-      "revolut": "HFT",
+      "symbol": "NMRUSDT",
+      "revolut": "NMR",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "STRKUSDT",
+      "revolut": "STRK",
       "reason": "breakout"
     }
   ],

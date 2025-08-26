@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-08-26 21:40:03 UTC",
+  "generated_at": "2025-08-26 21:52:36 UTC",
   "regime": {
     "ok": true
   },
@@ -11,16 +11,28 @@
   },
   "candidates": [
     {
-      "ticker": "HFT",
-      "binance_symbol": "HFTUSDT",
-      "entry": 0.0797,
-      "stop": 0.0794,
-      "atr": 0.0005071429,
-      "t1": 0.0801057143,
-      "t2": 0.0804607143,
-      "vol_usd_24h": 2555225.52503,
-      "spread": 0.0012523481527865104,
-      "r_over_atr": 0.591549295774639
+      "ticker": "NMR",
+      "binance_symbol": "NMRUSDT",
+      "entry": 12.95,
+      "stop": 12.25,
+      "atr": 0.425,
+      "t1": 13.29,
+      "t2": 13.5875,
+      "vol_usd_24h": 29934056.1433,
+      "spread": 0.00155159038013961,
+      "r_over_atr": 1.6470588235294088
+    },
+    {
+      "ticker": "STRK",
+      "binance_symbol": "STRKUSDT",
+      "entry": 0.1313,
+      "stop": 0.1305,
+      "atr": 0.0007928571,
+      "t1": 0.1319342857,
+      "t2": 0.1324892857,
+      "vol_usd_24h": 5176013.417762,
+      "spread": 0.0007648183556404511,
+      "r_over_atr": 1.009009009009008
     }
   ]
 }
