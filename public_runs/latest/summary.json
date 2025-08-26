@@ -1,1 +1,1 @@
-{"status":"ok","generated_at_utc":"2025-08-26T07:13:43Z","regime":{"ok":false},"signals":{},"candidates":[],"meta":{"interval":"15m","limit":64,"min_move_pct_8h":18.0,"min_usd_volume_8h":500000,"max_spread_pct":1.5,"scanned":171}}
+{"status":"ok","generated_at_utc":"2025-08-26T07:31:06Z","regime":{"ok":false},"signals":{},"candidates":[],"meta":{"interval":"15m","limit":64,"min_move_pct_8h":18.0,"min_usd_volume_8h":500000,"max_spread_pct":1.5,"scanned":171}}
