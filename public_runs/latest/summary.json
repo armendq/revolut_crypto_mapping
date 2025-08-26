@@ -1,13 +1,26 @@
 {
-  "generated_at": "2025-08-26 14:15:59 UTC",
+  "generated_at": "2025-08-26 14:31:46 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "FIS",
+      "binance_symbol": "FISUSDT",
+      "entry": 0.1241,
+      "stop": 0.1235,
+      "atr": 0.0016,
+      "t1": 0.12538,
+      "t2": 0.1265,
+      "vol_usd_24h": 1992436.2406,
+      "spread": 0.0016299918500407963,
+      "r_over_atr": 0.37500000000000244
+    }
+  ]
 }

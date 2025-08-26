@@ -8,8 +8,12 @@
     "binance_symbol": "AAVEUSDT"
   },
   {
-    "revolut_ticker": "ACA",
-    "binance_symbol": "ACAUSDT"
+    "revolut_ticker": "ACH",
+    "binance_symbol": "ACHUSDT"
+  },
+  {
+    "revolut_ticker": "ACX",
+    "binance_symbol": "ACXUSDT"
   },
   {
     "revolut_ticker": "ADA",
@@ -18,6 +22,10 @@
   {
     "revolut_ticker": "AGLD",
     "binance_symbol": "AGLDUSDT"
+  },
+  {
+    "revolut_ticker": "ALCX",
+    "binance_symbol": "ALCXUSDT"
   },
   {
     "revolut_ticker": "ALGO",
@@ -48,10 +56,6 @@
     "binance_symbol": "APTUSDT"
   },
   {
-    "revolut_ticker": "AR",
-    "binance_symbol": "ARUSDT"
-  },
-  {
     "revolut_ticker": "ARB",
     "binance_symbol": "ARBUSDT"
   },
@@ -64,12 +68,12 @@
     "binance_symbol": "ARPAUSDT"
   },
   {
-    "revolut_ticker": "ASTR",
-    "binance_symbol": "ASTRUSDT"
-  },
-  {
     "revolut_ticker": "ATOM",
     "binance_symbol": "ATOMUSDT"
+  },
+  {
+    "revolut_ticker": "AUCTION",
+    "binance_symbol": "AUCTIONUSDT"
   },
   {
     "revolut_ticker": "AUDIO",
@@ -96,12 +100,24 @@
     "binance_symbol": "BCHUSDT"
   },
   {
+    "revolut_ticker": "BERA",
+    "binance_symbol": "BERAUSDT"
+  },
+  {
     "revolut_ticker": "BICO",
     "binance_symbol": "BICOUSDT"
   },
   {
+    "revolut_ticker": "BIGTIME",
+    "binance_symbol": "BIGTIMEUSDT"
+  },
+  {
     "revolut_ticker": "BLUR",
     "binance_symbol": "BLURUSDT"
+  },
+  {
+    "revolut_ticker": "BNB",
+    "binance_symbol": "BNBUSDT"
   },
   {
     "revolut_ticker": "BNT",
@@ -116,20 +132,12 @@
     "binance_symbol": "BTCUSDT"
   },
   {
+    "revolut_ticker": "C98",
+    "binance_symbol": "C98USDT"
+  },
+  {
     "revolut_ticker": "CELO",
     "binance_symbol": "CELOUSDT"
-  },
-  {
-    "revolut_ticker": "CELR",
-    "binance_symbol": "CELRUSDT"
-  },
-  {
-    "revolut_ticker": "CFX",
-    "binance_symbol": "CFXUSDT"
-  },
-  {
-    "revolut_ticker": "CHR",
-    "binance_symbol": "CHRUSDT"
   },
   {
     "revolut_ticker": "CHZ",
@@ -140,8 +148,16 @@
     "binance_symbol": "COMPUSDT"
   },
   {
+    "revolut_ticker": "COOKIE",
+    "binance_symbol": "COOKIEUSDT"
+  },
+  {
     "revolut_ticker": "COTI",
     "binance_symbol": "COTIUSDT"
+  },
+  {
+    "revolut_ticker": "COW",
+    "binance_symbol": "COWUSDT"
   },
   {
     "revolut_ticker": "CRV",
@@ -160,20 +176,12 @@
     "binance_symbol": "CVXUSDT"
   },
   {
-    "revolut_ticker": "DAI",
-    "binance_symbol": "DAIJPY"
-  },
-  {
     "revolut_ticker": "DASH",
     "binance_symbol": "DASHUSDT"
   },
   {
-    "revolut_ticker": "DENT",
-    "binance_symbol": "DENTUSDT"
-  },
-  {
-    "revolut_ticker": "DGB",
-    "binance_symbol": "DGBUSDT"
+    "revolut_ticker": "DIA",
+    "binance_symbol": "DIAUSDT"
   },
   {
     "revolut_ticker": "DOGE",
@@ -192,12 +200,12 @@
     "binance_symbol": "EGLDUSDT"
   },
   {
-    "revolut_ticker": "ENA",
-    "binance_symbol": "ENAUSDT"
+    "revolut_ticker": "EIGEN",
+    "binance_symbol": "EIGENUSDT"
   },
   {
-    "revolut_ticker": "ENJ",
-    "binance_symbol": "ENJUSDT"
+    "revolut_ticker": "ENA",
+    "binance_symbol": "ENAUSDT"
   },
   {
     "revolut_ticker": "ENS",
@@ -212,6 +220,10 @@
     "binance_symbol": "ETHUSDT"
   },
   {
+    "revolut_ticker": "FARM",
+    "binance_symbol": "FARMUSDT"
+  },
+  {
     "revolut_ticker": "FET",
     "binance_symbol": "FETUSDT"
   },
@@ -222,6 +234,10 @@
   {
     "revolut_ticker": "FIL",
     "binance_symbol": "FILUSDT"
+  },
+  {
+    "revolut_ticker": "FIS",
+    "binance_symbol": "FISUSDT"
   },
   {
     "revolut_ticker": "FLOKI",
@@ -236,10 +252,6 @@
     "binance_symbol": "FORTHUSDT"
   },
   {
-    "revolut_ticker": "FXS",
-    "binance_symbol": "FXSUSDT"
-  },
-  {
     "revolut_ticker": "GALA",
     "binance_symbol": "GALAUSDT"
   },
@@ -252,28 +264,16 @@
     "binance_symbol": "GLMUSDT"
   },
   {
-    "revolut_ticker": "GLMR",
-    "binance_symbol": "GLMRUSDT"
-  },
-  {
     "revolut_ticker": "GMT",
     "binance_symbol": "GMTUSDT"
   },
   {
-    "revolut_ticker": "GMX",
-    "binance_symbol": "GMXUSDT"
-  },
-  {
-    "revolut_ticker": "GNO",
-    "binance_symbol": "GNOUSDT"
-  },
-  {
-    "revolut_ticker": "GNS",
-    "binance_symbol": "GNSUSDT"
-  },
-  {
     "revolut_ticker": "GRT",
     "binance_symbol": "GRTUSDT"
+  },
+  {
+    "revolut_ticker": "GTC",
+    "binance_symbol": "GTCUSDT"
   },
   {
     "revolut_ticker": "HBAR",
@@ -286,10 +286,6 @@
   {
     "revolut_ticker": "HIGH",
     "binance_symbol": "HIGHUSDT"
-  },
-  {
-    "revolut_ticker": "HOT",
-    "binance_symbol": "HOTUSDT"
   },
   {
     "revolut_ticker": "ICP",
@@ -312,6 +308,10 @@
     "binance_symbol": "INJUSDT"
   },
   {
+    "revolut_ticker": "IO",
+    "binance_symbol": "IOUSDT"
+  },
+  {
     "revolut_ticker": "IOTX",
     "binance_symbol": "IOTXUSDT"
   },
@@ -328,12 +328,12 @@
     "binance_symbol": "JUPUSDT"
   },
   {
-    "revolut_ticker": "KAVA",
-    "binance_symbol": "KAVAUSDT"
+    "revolut_ticker": "KAITO",
+    "binance_symbol": "KAITOUSDT"
   },
   {
-    "revolut_ticker": "KDA",
-    "binance_symbol": "KDAUSDT"
+    "revolut_ticker": "KAVA",
+    "binance_symbol": "KAVAUSDT"
   },
   {
     "revolut_ticker": "KNC",
@@ -356,16 +356,8 @@
     "binance_symbol": "LPTUSDT"
   },
   {
-    "revolut_ticker": "LQTY",
-    "binance_symbol": "LQTYUSDT"
-  },
-  {
     "revolut_ticker": "LRC",
     "binance_symbol": "LRCUSDT"
-  },
-  {
-    "revolut_ticker": "LSK",
-    "binance_symbol": "LSKUSDT"
   },
   {
     "revolut_ticker": "LTC",
@@ -388,6 +380,14 @@
     "binance_symbol": "MDTUSDT"
   },
   {
+    "revolut_ticker": "ME",
+    "binance_symbol": "MEUSDT"
+  },
+  {
+    "revolut_ticker": "METIS",
+    "binance_symbol": "METISUSDT"
+  },
+  {
     "revolut_ticker": "MINA",
     "binance_symbol": "MINAUSDT"
   },
@@ -404,28 +404,28 @@
     "binance_symbol": "NEARUSDT"
   },
   {
-    "revolut_ticker": "NEXO",
-    "binance_symbol": "NEXOUSDT"
+    "revolut_ticker": "NEIRO",
+    "binance_symbol": "NEIROUSDT"
   },
   {
     "revolut_ticker": "NKN",
     "binance_symbol": "NKNUSDT"
   },
   {
+    "revolut_ticker": "NMR",
+    "binance_symbol": "NMRUSDT"
+  },
+  {
     "revolut_ticker": "OGN",
     "binance_symbol": "OGNUSDT"
   },
   {
+    "revolut_ticker": "OMNI",
+    "binance_symbol": "OMNIUSDT"
+  },
+  {
     "revolut_ticker": "ONDO",
     "binance_symbol": "ONDOUSDT"
-  },
-  {
-    "revolut_ticker": "ONG",
-    "binance_symbol": "ONGUSDT"
-  },
-  {
-    "revolut_ticker": "ONT",
-    "binance_symbol": "ONTUSDT"
   },
   {
     "revolut_ticker": "OP",
@@ -436,16 +436,16 @@
     "binance_symbol": "ORCAUSDT"
   },
   {
+    "revolut_ticker": "OSMO",
+    "binance_symbol": "OSMOUSDT"
+  },
+  {
     "revolut_ticker": "OXT",
     "binance_symbol": "OXTUSDT"
   },
   {
-    "revolut_ticker": "PAXG",
-    "binance_symbol": "PAXGUSDT"
-  },
-  {
-    "revolut_ticker": "PENDLE",
-    "binance_symbol": "PENDLEUSDT"
+    "revolut_ticker": "PENGU",
+    "binance_symbol": "PENGUUSDT"
   },
   {
     "revolut_ticker": "PEPE",
@@ -456,12 +456,12 @@
     "binance_symbol": "PERPUSDT"
   },
   {
-    "revolut_ticker": "PIXEL",
-    "binance_symbol": "PIXELUSDT"
+    "revolut_ticker": "PNUT",
+    "binance_symbol": "PNUTUSDT"
   },
   {
-    "revolut_ticker": "POLYX",
-    "binance_symbol": "POLYXUSDT"
+    "revolut_ticker": "POL",
+    "binance_symbol": "POLUSDT"
   },
   {
     "revolut_ticker": "POND",
@@ -474,6 +474,14 @@
   {
     "revolut_ticker": "PUNDIX",
     "binance_symbol": "PUNDIXUSDT"
+  },
+  {
+    "revolut_ticker": "PYR",
+    "binance_symbol": "PYRUSDT"
+  },
+  {
+    "revolut_ticker": "PYTH",
+    "binance_symbol": "PYTHUSDT"
   },
   {
     "revolut_ticker": "QI",
@@ -492,12 +500,16 @@
     "binance_symbol": "RAREUSDT"
   },
   {
-    "revolut_ticker": "RAY",
-    "binance_symbol": "RAYUSDT"
+    "revolut_ticker": "RENDER",
+    "binance_symbol": "RENDERUSDT"
   },
   {
     "revolut_ticker": "REQ",
     "binance_symbol": "REQUSDT"
+  },
+  {
+    "revolut_ticker": "REZ",
+    "binance_symbol": "REZUSDT"
   },
   {
     "revolut_ticker": "RLC",
@@ -520,8 +532,8 @@
     "binance_symbol": "SANDUSDT"
   },
   {
-    "revolut_ticker": "SC",
-    "binance_symbol": "SCUSDT"
+    "revolut_ticker": "SEI",
+    "binance_symbol": "SEIUSDT"
   },
   {
     "revolut_ticker": "SHIB",
@@ -530,10 +542,6 @@
   {
     "revolut_ticker": "SKL",
     "binance_symbol": "SKLUSDT"
-  },
-  {
-    "revolut_ticker": "SLP",
-    "binance_symbol": "SLPUSDT"
   },
   {
     "revolut_ticker": "SNX",
@@ -546,10 +554,6 @@
   {
     "revolut_ticker": "SPELL",
     "binance_symbol": "SPELLUSDT"
-  },
-  {
-    "revolut_ticker": "STG",
-    "binance_symbol": "STGUSDT"
   },
   {
     "revolut_ticker": "STORJ",
@@ -568,12 +572,12 @@
     "binance_symbol": "SUIUSDT"
   },
   {
-    "revolut_ticker": "SUSHI",
-    "binance_symbol": "SUSHIUSDT"
+    "revolut_ticker": "SUPER",
+    "binance_symbol": "SUPERUSDT"
   },
   {
-    "revolut_ticker": "SYN",
-    "binance_symbol": "SYNUSDT"
+    "revolut_ticker": "SUSHI",
+    "binance_symbol": "SUSHIUSDT"
   },
   {
     "revolut_ticker": "T",
@@ -582,6 +586,10 @@
   {
     "revolut_ticker": "TIA",
     "binance_symbol": "TIAUSDT"
+  },
+  {
+    "revolut_ticker": "TNSR",
+    "binance_symbol": "TNSRUSDT"
   },
   {
     "revolut_ticker": "TON",
@@ -596,8 +604,16 @@
     "binance_symbol": "TRUUSDT"
   },
   {
+    "revolut_ticker": "TRUMP",
+    "binance_symbol": "TRUMPUSDT"
+  },
+  {
     "revolut_ticker": "TRX",
     "binance_symbol": "TRXUSDT"
+  },
+  {
+    "revolut_ticker": "TURBO",
+    "binance_symbol": "TURBOUSDT"
   },
   {
     "revolut_ticker": "UMA",
@@ -628,16 +644,12 @@
     "binance_symbol": "VTHOUSDT"
   },
   {
-    "revolut_ticker": "WAXP",
-    "binance_symbol": "WAXPUSDT"
+    "revolut_ticker": "W",
+    "binance_symbol": "WUSDT"
   },
   {
-    "revolut_ticker": "WBTC",
-    "binance_symbol": "WBTCUSDT"
-  },
-  {
-    "revolut_ticker": "WLD",
-    "binance_symbol": "WLDUSDT"
+    "revolut_ticker": "WIF",
+    "binance_symbol": "WIFUSDT"
   },
   {
     "revolut_ticker": "WOO",
@@ -656,24 +668,12 @@
     "binance_symbol": "XTZUSDT"
   },
   {
-    "revolut_ticker": "XVS",
-    "binance_symbol": "XVSUSDT"
-  },
-  {
     "revolut_ticker": "YFI",
     "binance_symbol": "YFIUSDT"
   },
   {
-    "revolut_ticker": "YGG",
-    "binance_symbol": "YGGUSDT"
-  },
-  {
-    "revolut_ticker": "ZEC",
-    "binance_symbol": "ZECUSDT"
-  },
-  {
-    "revolut_ticker": "ZIL",
-    "binance_symbol": "ZILUSDT"
+    "revolut_ticker": "ZRO",
+    "binance_symbol": "ZROUSDT"
   },
   {
     "revolut_ticker": "ZRX",
