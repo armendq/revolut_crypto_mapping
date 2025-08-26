@@ -1,13 +1,26 @@
 {
-  "generated_at": "2025-08-26 17:46:51 UTC",
+  "generated_at": "2025-08-26 17:55:56 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "SKL",
+      "binance_symbol": "SKLUSDT",
+      "entry": 0.03031,
+      "stop": 0.02935,
+      "atr": 0.0002578571,
+      "t1": 0.0305162857,
+      "t2": 0.0306967857,
+      "vol_usd_24h": 4172807.66931,
+      "spread": 0.0009915716410510255,
+      "r_over_atr": 3.722991689750694
+    }
+  ]
 }
