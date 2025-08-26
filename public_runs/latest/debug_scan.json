@@ -4,25 +4,25 @@
       "symbol": "ALCXUSDT",
       "revolut": "ALCX",
       "reason": "vol",
-      "vol_usd": 480218.631461
+      "vol_usd": 482169.160884
     },
     {
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 391902.12422
+      "vol_usd": 392859.66064
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 471835.029462
+      "vol_usd": 470420.59104
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 455542.19026
+      "vol_usd": 458054.4168
     },
     {
       "symbol": "USDTTRY",
@@ -30,7 +30,18 @@
       "reason": "non-USDT"
     }
   ],
-  "accepted": [],
+  "accepted": [
+    {
+      "symbol": "MAGICUSDT",
+      "revolut": "MAGIC",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "PONDUSDT",
+      "revolut": "POND",
+      "reason": "breakout"
+    }
+  ],
   "meta": {
     "VOL_USD_MIN_24H": 500000.0,
     "MAX_SPREAD": 0.02,

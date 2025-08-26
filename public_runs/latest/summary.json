@@ -1,13 +1,38 @@
 {
-  "generated_at": "2025-08-26 15:18:03 UTC",
+  "generated_at": "2025-08-26 15:38:00 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "MAGIC",
+      "binance_symbol": "MAGICUSDT",
+      "entry": 0.2241,
+      "stop": 0.2198,
+      "atr": 0.0032857143,
+      "t1": 0.2267285714,
+      "t2": 0.2290285714,
+      "vol_usd_24h": 6701235.31626,
+      "spread": 0.00044913541432749487,
+      "r_over_atr": 1.3086956521739115
+    },
+    {
+      "ticker": "POND",
+      "binance_symbol": "PONDUSDT",
+      "entry": 0.00895,
+      "stop": 0.00882,
+      "atr": 5.92857e-05,
+      "t1": 0.0089974286,
+      "t2": 0.0090389286,
+      "vol_usd_24h": 812299.86796,
+      "spread": 0.002234636871508289,
+      "r_over_atr": 2.192771084337341
+    }
+  ]
 }
