@@ -1,28 +1,22 @@
 {
   "rejected": [
     {
-      "symbol": "ALCXUSDT",
-      "revolut": "ALCX",
-      "reason": "vol",
-      "vol_usd": 479536.979023
-    },
-    {
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 393635.62546
+      "vol_usd": 394631.80917
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 486005.570116
+      "vol_usd": 484574.836783
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 464156.86738
+      "vol_usd": 463961.60274
     },
     {
       "symbol": "USDTTRY",
@@ -32,8 +26,28 @@
   ],
   "accepted": [
     {
-      "symbol": "LPTUSDT",
-      "revolut": "LPT",
+      "symbol": "AUCTIONUSDT",
+      "revolut": "AUCTION",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "IOTXUSDT",
+      "revolut": "IOTX",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "revolut": "LTC",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "MLNUSDT",
+      "revolut": "MLN",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "PONDUSDT",
+      "revolut": "POND",
       "reason": "breakout"
     },
     {
@@ -42,8 +56,18 @@
       "reason": "breakout"
     },
     {
-      "symbol": "VOXELUSDT",
-      "revolut": "VOXEL",
+      "symbol": "SOLUSDT",
+      "revolut": "SOL",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "TNSRUSDT",
+      "revolut": "TNSR",
+      "reason": "breakout"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "revolut": "XRP",
       "reason": "breakout"
     }
   ],
