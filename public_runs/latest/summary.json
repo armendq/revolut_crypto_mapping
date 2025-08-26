@@ -1,13 +1,26 @@
 {
-  "generated_at": "2025-08-26 20:36:24 UTC",
+  "generated_at": "2025-08-26 20:53:28 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "OGN",
+      "binance_symbol": "OGNUSDT",
+      "entry": 0.0709,
+      "stop": 0.0705,
+      "atr": 0.0004571429,
+      "t1": 0.0712657143,
+      "t2": 0.0715857143,
+      "vol_usd_24h": 4657378.8605,
+      "spread": 0.001413427561837496,
+      "r_over_atr": 0.8750000000000228
+    }
+  ]
 }
