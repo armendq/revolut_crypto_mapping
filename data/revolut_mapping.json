@@ -1,221 +1,686 @@
-{
-  "1INCH": "1INCH",
-  "AAVE": "Aave",
-  "ACA": "Acala Token",
-  "ADA": "Cardano",
-  "AERGO": "Aergo",
-  "AGLD": "Adventure Gold",
-  "AIOZ": "AIOZ Network",
-  "AKT": "Akash Network",
-  "ALGO": "Algorand",
-  "ALICE": "MyNeighborAlice",
-  "ALPHA": "Alpha Venture DAO",
-  "AMP": "AMP",
-  "ANKR": "Ankr",
-  "APE": "ApeCoin",
-  "API3": "API3",
-  "APT": "Aptos",
-  "AR": "Arweave",
-  "ARB": "Arbitrum",
-  "ARKM": "Arkham",
-  "ARPA": "ARPA",
-  "ASTR": "Astar",
-  "ATOM": "Cosmos",
-  "AUDIO": "Audius",
-  "AVAX": "Avalanche",
-  "AXS": "Axie Infinity",
-  "BAL": "Balancer",
-  "BAND": "Band Protocol",
-  "BAT": "Basic Attention Token",
-  "BCH": "Bitcoin Cash",
-  "BICO": "Biconomy",
-  "BLUR": "Blur",
-  "BLZ": "Bluzelle",
-  "BNC": "Bifrost",
-  "BNT": "Bancor",
-  "BONK": "Bonk",
-  "BOND": "BarnBridge",
-  "BTC": "Bitcoin",
-  "BTG": "Bitcoin Gold",
-  "BTRST": "Braintrust",
-  "BTT": "BitTorrent",
-  "CELO": "Celo",
-  "CELR": "Celer Network",
-  "CFX": "Conflux",
-  "CHZ": "Chiliz",
-  "CHR": "Chromia",
-  "CLV": "Clover Finance",
-  "COMP": "Compound",
-  "COTI": "COTI",
-  "CQT": "Covalent",
-  "CRO": "Cronos",
-  "CRV": "Curve DAO Token",
-  "CTSI": "Cartesi",
-  "CVC": "Civic",
-  "CVX": "Convex Finance",
-  "DAI": "Dai",
-  "DAR": "Mines of Dalarnia",
-  "DASH": "Dash",
-  "DENT": "Dent",
-  "DGB": "DigiByte",
-  "DIMO": "DIMO",
-  "DNT": "district0x",
-  "DOGE": "Dogecoin",
-  "DOT": "Polkadot",
-  "DREP": "DREP",
-  "DYDX": "dYdX",
-  "EGLD": "MultiversX",
-  "ENA": "Ethena",
-  "ENJ": "Enjin Coin",
-  "ENS": "Ethereum Name Service",
-  "EOS": "EOS",
-  "ETC": "Ethereum Classic",
-  "ETH": "Ethereum",
-  "ETHW": "EthereumPoW",
-  "EUL": "Euler",
-  "FET": "Fetch.ai",
-  "FIDA": "Bonfida",
-  "FIL": "Filecoin",
-  "FLOKI": "FLOKI",
-  "FLOW": "Flow",
-  "FLR": "Flare",
-  "FORTH": "Ampleforth Governance Token",
-  "FTM": "Fantom",
-  "FXS": "Frax Share",
-  "GALA": "Gala",
-  "GFI": "Goldfinch",
-  "GHST": "Aavegotchi",
-  "GLM": "Golem",
-  "GLMR": "Moonbeam",
-  "GMT": "STEPN",
-  "GMX": "GMX",
-  "GNO": "Gnosis",
-  "GNS": "Gains Network",
-  "GODS": "Gods Unchained",
-  "GRT": "The Graph",
-  "HBAR": "Hedera",
-  "HFT": "Hashflow",
-  "HIGH": "Highstreet",
-  "HOPR": "HOPR",
-  "HOT": "Holo",
-  "ICP": "Internet Computer",
-  "IDEX": "IDEX",
-  "ILV": "Illuvium",
-  "IMX": "Immutable",
-  "INJ": "Injective",
-  "IOTX": "IoTeX",
-  "JASMY": "JasmyCoin",
-  "JTO": "Jito",
-  "JUP": "Jupiter",
-  "KAVA": "Kava",
-  "KDA": "Kadena",
-  "KNC": "Kyber Network",
-  "KSM": "Kusama",
-  "LDO": "Lido DAO",
-  "LINK": "Chainlink",
-  "LPT": "Livepeer",
-  "LQTY": "Liquity",
-  "LRC": "Loopring",
-  "LSK": "Lisk",
-  "LTC": "Litecoin",
-  "MAGIC": "MAGIC",
-  "MANA": "Decentraland",
-  "MASK": "Mask Network",
-  "MATIC": "Polygon",
-  "MC": "Merit Circle",
-  "MDT": "Measurable Data Token",
-  "MINA": "Mina",
-  "MKR": "Maker",
-  "MLN": "Enzyme",
-  "MPL": "Maple",
-  "MTRG": "Meter Governance",
-  "NEAR": "NEAR Protocol",
-  "NEXO": "Nexo",
-  "NKN": "NKN",
-  "OCEAN": "Ocean Protocol",
-  "OGN": "Origin Protocol",
-  "OMG": "OMG Network",
-  "ONDO": "Ondo",
-  "ONG": "Ontology Gas",
-  "ONT": "Ontology",
-  "OP": "Optimism",
-  "ORCA": "Orca",
-  "OXT": "Orchid",
-  "PAXG": "PAX Gold",
-  "PENDLE": "Pendle",
-  "PEPE": "PEPE",
-  "PERP": "Perpetual Protocol",
-  "PIXEL": "Pixels",
-  "PLA": "PlayDapp",
-  "POKT": "Pocket Network",
-  "POLS": "Polkastarter",
-  "POLYX": "Polymesh",
-  "POND": "Marlin",
-  "POWR": "Powerledger",
-  "PUNDIX": "Pundi X",
-  "QI": "BENQI",
-  "QNT": "Quant",
-  "QTUM": "Qtum",
-  "RAD": "Radicle",
-  "RARE": "SuperRare",
-  "RARI": "Rarible",
-  "RAY": "Raydium",
-  "REN": "Ren",
-  "REQ": "Request",
-  "RLC": "iExec RLC",
-  "RLY": "Rally",
-  "RNDR": "Render",
-  "RON": "Ronin",
-  "ROSE": "Oasis Network",
-  "RPL": "Rocket Pool",
-  "RSR": "Reserve Rights",
-  "SAND": "The Sandbox",
-  "SC": "Siacoin",
-  "SGB": "Songbird",
-  "SHIB": "Shiba Inu",
-  "SKL": "SKALE Network",
-  "SLP": "Smooth Love Potion",
-  "SNT": "Status",
-  "SNX": "Synthetix",
-  "SOL": "Solana",
-  "SPELL": "Spell Token",
-  "STG": "Stargate Finance",
-  "STORJ": "Storj",
-  "STRK": "Starknet",
-  "STX": "Stacks",
-  "SUI": "Sui",
-  "SUSHI": "SushiSwap",
-  "SYN": "Synapse",
-  "SYNTH": "SYNTH",
-  "T": "Threshold",
-  "TEL": "Telcoin",
-  "TIA": "Celestia",
-  "TON": "Toncoin",
-  "TRB": "Tellor",
-  "TRU": "TrueFi",
-  "TRX": "TRON",
-  "UMA": "UMA",
-  "UNI": "Uniswap",
-  "USDC": "USD Coin",
-  "USDT": "Tether",
-  "VET": "VeChain",
-  "VOXEL": "Voxies",
-  "VTHO": "VeThor Token",
-  "WAVES": "Waves",
-  "WAXP": "WAX",
-  "WBTC": "Wrapped Bitcoin",
-  "WCFG": "Wrapped Centrifuge",
-  "WLD": "Worldcoin",
-  "WOO": "WOO Network",
-  "XLM": "Stellar",
-  "XMR": "Monero",
-  "XRP": "XRP",
-  "XTZ": "Tezos",
-  "XVS": "Venus",
-  "YFI": "yearn.finance",
-  "YGG": "Yield Guild Games",
-  "ZEC": "Zcash",
-  "ZETA": "ZetaChain",
-  "ZIL": "Zilliqa",
-  "ZRX": "0x"
-}
+[
+  {
+    "revolut_ticker": "1INCH",
+    "binance_symbol": "1INCHUSDT"
+  },
+  {
+    "revolut_ticker": "AAVE",
+    "binance_symbol": "AAVEUSDT"
+  },
+  {
+    "revolut_ticker": "ACA",
+    "binance_symbol": "ACAUSDT"
+  },
+  {
+    "revolut_ticker": "ADA",
+    "binance_symbol": "ADAUSDT"
+  },
+  {
+    "revolut_ticker": "AGLD",
+    "binance_symbol": "AGLDUSDT"
+  },
+  {
+    "revolut_ticker": "ALGO",
+    "binance_symbol": "ALGOUSDT"
+  },
+  {
+    "revolut_ticker": "ALICE",
+    "binance_symbol": "ALICEUSDT"
+  },
+  {
+    "revolut_ticker": "AMP",
+    "binance_symbol": "AMPUSDT"
+  },
+  {
+    "revolut_ticker": "ANKR",
+    "binance_symbol": "ANKRUSDT"
+  },
+  {
+    "revolut_ticker": "APE",
+    "binance_symbol": "APEUSDT"
+  },
+  {
+    "revolut_ticker": "API3",
+    "binance_symbol": "API3USDT"
+  },
+  {
+    "revolut_ticker": "APT",
+    "binance_symbol": "APTUSDT"
+  },
+  {
+    "revolut_ticker": "AR",
+    "binance_symbol": "ARUSDT"
+  },
+  {
+    "revolut_ticker": "ARB",
+    "binance_symbol": "ARBUSDT"
+  },
+  {
+    "revolut_ticker": "ARKM",
+    "binance_symbol": "ARKMUSDT"
+  },
+  {
+    "revolut_ticker": "ARPA",
+    "binance_symbol": "ARPAUSDT"
+  },
+  {
+    "revolut_ticker": "ASTR",
+    "binance_symbol": "ASTRUSDT"
+  },
+  {
+    "revolut_ticker": "ATOM",
+    "binance_symbol": "ATOMUSDT"
+  },
+  {
+    "revolut_ticker": "AUDIO",
+    "binance_symbol": "AUDIOUSDT"
+  },
+  {
+    "revolut_ticker": "AVAX",
+    "binance_symbol": "AVAXUSDT"
+  },
+  {
+    "revolut_ticker": "AXS",
+    "binance_symbol": "AXSUSDT"
+  },
+  {
+    "revolut_ticker": "BAND",
+    "binance_symbol": "BANDUSDT"
+  },
+  {
+    "revolut_ticker": "BAT",
+    "binance_symbol": "BATUSDT"
+  },
+  {
+    "revolut_ticker": "BCH",
+    "binance_symbol": "BCHUSDT"
+  },
+  {
+    "revolut_ticker": "BICO",
+    "binance_symbol": "BICOUSDT"
+  },
+  {
+    "revolut_ticker": "BLUR",
+    "binance_symbol": "BLURUSDT"
+  },
+  {
+    "revolut_ticker": "BNT",
+    "binance_symbol": "BNTUSDT"
+  },
+  {
+    "revolut_ticker": "BONK",
+    "binance_symbol": "BONKUSDT"
+  },
+  {
+    "revolut_ticker": "BTC",
+    "binance_symbol": "BTCUSDT"
+  },
+  {
+    "revolut_ticker": "CELO",
+    "binance_symbol": "CELOUSDT"
+  },
+  {
+    "revolut_ticker": "CELR",
+    "binance_symbol": "CELRUSDT"
+  },
+  {
+    "revolut_ticker": "CFX",
+    "binance_symbol": "CFXUSDT"
+  },
+  {
+    "revolut_ticker": "CHR",
+    "binance_symbol": "CHRUSDT"
+  },
+  {
+    "revolut_ticker": "CHZ",
+    "binance_symbol": "CHZUSDT"
+  },
+  {
+    "revolut_ticker": "COMP",
+    "binance_symbol": "COMPUSDT"
+  },
+  {
+    "revolut_ticker": "COTI",
+    "binance_symbol": "COTIUSDT"
+  },
+  {
+    "revolut_ticker": "CRV",
+    "binance_symbol": "CRVUSDT"
+  },
+  {
+    "revolut_ticker": "CTSI",
+    "binance_symbol": "CTSIUSDT"
+  },
+  {
+    "revolut_ticker": "CVC",
+    "binance_symbol": "CVCUSDT"
+  },
+  {
+    "revolut_ticker": "CVX",
+    "binance_symbol": "CVXUSDT"
+  },
+  {
+    "revolut_ticker": "DAI",
+    "binance_symbol": "DAIJPY"
+  },
+  {
+    "revolut_ticker": "DASH",
+    "binance_symbol": "DASHUSDT"
+  },
+  {
+    "revolut_ticker": "DENT",
+    "binance_symbol": "DENTUSDT"
+  },
+  {
+    "revolut_ticker": "DGB",
+    "binance_symbol": "DGBUSDT"
+  },
+  {
+    "revolut_ticker": "DOGE",
+    "binance_symbol": "DOGEUSDT"
+  },
+  {
+    "revolut_ticker": "DOT",
+    "binance_symbol": "DOTUSDT"
+  },
+  {
+    "revolut_ticker": "DYDX",
+    "binance_symbol": "DYDXUSDT"
+  },
+  {
+    "revolut_ticker": "EGLD",
+    "binance_symbol": "EGLDUSDT"
+  },
+  {
+    "revolut_ticker": "ENA",
+    "binance_symbol": "ENAUSDT"
+  },
+  {
+    "revolut_ticker": "ENJ",
+    "binance_symbol": "ENJUSDT"
+  },
+  {
+    "revolut_ticker": "ENS",
+    "binance_symbol": "ENSUSDT"
+  },
+  {
+    "revolut_ticker": "ETC",
+    "binance_symbol": "ETCUSDT"
+  },
+  {
+    "revolut_ticker": "ETH",
+    "binance_symbol": "ETHUSDT"
+  },
+  {
+    "revolut_ticker": "FET",
+    "binance_symbol": "FETUSDT"
+  },
+  {
+    "revolut_ticker": "FIDA",
+    "binance_symbol": "FIDAUSDT"
+  },
+  {
+    "revolut_ticker": "FIL",
+    "binance_symbol": "FILUSDT"
+  },
+  {
+    "revolut_ticker": "FLOKI",
+    "binance_symbol": "FLOKIUSDT"
+  },
+  {
+    "revolut_ticker": "FLOW",
+    "binance_symbol": "FLOWUSDT"
+  },
+  {
+    "revolut_ticker": "FORTH",
+    "binance_symbol": "FORTHUSDT"
+  },
+  {
+    "revolut_ticker": "FXS",
+    "binance_symbol": "FXSUSDT"
+  },
+  {
+    "revolut_ticker": "GALA",
+    "binance_symbol": "GALAUSDT"
+  },
+  {
+    "revolut_ticker": "GHST",
+    "binance_symbol": "GHSTUSDT"
+  },
+  {
+    "revolut_ticker": "GLM",
+    "binance_symbol": "GLMUSDT"
+  },
+  {
+    "revolut_ticker": "GLMR",
+    "binance_symbol": "GLMRUSDT"
+  },
+  {
+    "revolut_ticker": "GMT",
+    "binance_symbol": "GMTUSDT"
+  },
+  {
+    "revolut_ticker": "GMX",
+    "binance_symbol": "GMXUSDT"
+  },
+  {
+    "revolut_ticker": "GNO",
+    "binance_symbol": "GNOUSDT"
+  },
+  {
+    "revolut_ticker": "GNS",
+    "binance_symbol": "GNSUSDT"
+  },
+  {
+    "revolut_ticker": "GRT",
+    "binance_symbol": "GRTUSDT"
+  },
+  {
+    "revolut_ticker": "HBAR",
+    "binance_symbol": "HBARUSDT"
+  },
+  {
+    "revolut_ticker": "HFT",
+    "binance_symbol": "HFTUSDT"
+  },
+  {
+    "revolut_ticker": "HIGH",
+    "binance_symbol": "HIGHUSDT"
+  },
+  {
+    "revolut_ticker": "HOT",
+    "binance_symbol": "HOTUSDT"
+  },
+  {
+    "revolut_ticker": "ICP",
+    "binance_symbol": "ICPUSDT"
+  },
+  {
+    "revolut_ticker": "IDEX",
+    "binance_symbol": "IDEXUSDT"
+  },
+  {
+    "revolut_ticker": "ILV",
+    "binance_symbol": "ILVUSDT"
+  },
+  {
+    "revolut_ticker": "IMX",
+    "binance_symbol": "IMXUSDT"
+  },
+  {
+    "revolut_ticker": "INJ",
+    "binance_symbol": "INJUSDT"
+  },
+  {
+    "revolut_ticker": "IOTX",
+    "binance_symbol": "IOTXUSDT"
+  },
+  {
+    "revolut_ticker": "JASMY",
+    "binance_symbol": "JASMYUSDT"
+  },
+  {
+    "revolut_ticker": "JTO",
+    "binance_symbol": "JTOUSDT"
+  },
+  {
+    "revolut_ticker": "JUP",
+    "binance_symbol": "JUPUSDT"
+  },
+  {
+    "revolut_ticker": "KAVA",
+    "binance_symbol": "KAVAUSDT"
+  },
+  {
+    "revolut_ticker": "KDA",
+    "binance_symbol": "KDAUSDT"
+  },
+  {
+    "revolut_ticker": "KNC",
+    "binance_symbol": "KNCUSDT"
+  },
+  {
+    "revolut_ticker": "KSM",
+    "binance_symbol": "KSMUSDT"
+  },
+  {
+    "revolut_ticker": "LDO",
+    "binance_symbol": "LDOUSDT"
+  },
+  {
+    "revolut_ticker": "LINK",
+    "binance_symbol": "LINKUSDT"
+  },
+  {
+    "revolut_ticker": "LPT",
+    "binance_symbol": "LPTUSDT"
+  },
+  {
+    "revolut_ticker": "LQTY",
+    "binance_symbol": "LQTYUSDT"
+  },
+  {
+    "revolut_ticker": "LRC",
+    "binance_symbol": "LRCUSDT"
+  },
+  {
+    "revolut_ticker": "LSK",
+    "binance_symbol": "LSKUSDT"
+  },
+  {
+    "revolut_ticker": "LTC",
+    "binance_symbol": "LTCUSDT"
+  },
+  {
+    "revolut_ticker": "MAGIC",
+    "binance_symbol": "MAGICUSDT"
+  },
+  {
+    "revolut_ticker": "MANA",
+    "binance_symbol": "MANAUSDT"
+  },
+  {
+    "revolut_ticker": "MASK",
+    "binance_symbol": "MASKUSDT"
+  },
+  {
+    "revolut_ticker": "MDT",
+    "binance_symbol": "MDTUSDT"
+  },
+  {
+    "revolut_ticker": "MINA",
+    "binance_symbol": "MINAUSDT"
+  },
+  {
+    "revolut_ticker": "MKR",
+    "binance_symbol": "MKRUSDT"
+  },
+  {
+    "revolut_ticker": "MLN",
+    "binance_symbol": "MLNUSDT"
+  },
+  {
+    "revolut_ticker": "NEAR",
+    "binance_symbol": "NEARUSDT"
+  },
+  {
+    "revolut_ticker": "NEXO",
+    "binance_symbol": "NEXOUSDT"
+  },
+  {
+    "revolut_ticker": "NKN",
+    "binance_symbol": "NKNUSDT"
+  },
+  {
+    "revolut_ticker": "OGN",
+    "binance_symbol": "OGNUSDT"
+  },
+  {
+    "revolut_ticker": "ONDO",
+    "binance_symbol": "ONDOUSDT"
+  },
+  {
+    "revolut_ticker": "ONG",
+    "binance_symbol": "ONGUSDT"
+  },
+  {
+    "revolut_ticker": "ONT",
+    "binance_symbol": "ONTUSDT"
+  },
+  {
+    "revolut_ticker": "OP",
+    "binance_symbol": "OPUSDT"
+  },
+  {
+    "revolut_ticker": "ORCA",
+    "binance_symbol": "ORCAUSDT"
+  },
+  {
+    "revolut_ticker": "OXT",
+    "binance_symbol": "OXTUSDT"
+  },
+  {
+    "revolut_ticker": "PAXG",
+    "binance_symbol": "PAXGUSDT"
+  },
+  {
+    "revolut_ticker": "PENDLE",
+    "binance_symbol": "PENDLEUSDT"
+  },
+  {
+    "revolut_ticker": "PEPE",
+    "binance_symbol": "PEPEUSDT"
+  },
+  {
+    "revolut_ticker": "PERP",
+    "binance_symbol": "PERPUSDT"
+  },
+  {
+    "revolut_ticker": "PIXEL",
+    "binance_symbol": "PIXELUSDT"
+  },
+  {
+    "revolut_ticker": "POLYX",
+    "binance_symbol": "POLYXUSDT"
+  },
+  {
+    "revolut_ticker": "POND",
+    "binance_symbol": "PONDUSDT"
+  },
+  {
+    "revolut_ticker": "POWR",
+    "binance_symbol": "POWRUSDT"
+  },
+  {
+    "revolut_ticker": "PUNDIX",
+    "binance_symbol": "PUNDIXUSDT"
+  },
+  {
+    "revolut_ticker": "QI",
+    "binance_symbol": "QIUSDT"
+  },
+  {
+    "revolut_ticker": "QNT",
+    "binance_symbol": "QNTUSDT"
+  },
+  {
+    "revolut_ticker": "QTUM",
+    "binance_symbol": "QTUMUSDT"
+  },
+  {
+    "revolut_ticker": "RAD",
+    "binance_symbol": "RADUSDT"
+  },
+  {
+    "revolut_ticker": "RARE",
+    "binance_symbol": "RAREUSDT"
+  },
+  {
+    "revolut_ticker": "RAY",
+    "binance_symbol": "RAYUSDT"
+  },
+  {
+    "revolut_ticker": "REQ",
+    "binance_symbol": "REQUSDT"
+  },
+  {
+    "revolut_ticker": "RLC",
+    "binance_symbol": "RLCUSDT"
+  },
+  {
+    "revolut_ticker": "ROSE",
+    "binance_symbol": "ROSEUSDT"
+  },
+  {
+    "revolut_ticker": "RPL",
+    "binance_symbol": "RPLUSDT"
+  },
+  {
+    "revolut_ticker": "RSR",
+    "binance_symbol": "RSRUSDT"
+  },
+  {
+    "revolut_ticker": "SAND",
+    "binance_symbol": "SANDUSDT"
+  },
+  {
+    "revolut_ticker": "SC",
+    "binance_symbol": "SCUSDT"
+  },
+  {
+    "revolut_ticker": "SHIB",
+    "binance_symbol": "SHIBUSDT"
+  },
+  {
+    "revolut_ticker": "SKL",
+    "binance_symbol": "SKLUSDT"
+  },
+  {
+    "revolut_ticker": "SLP",
+    "binance_symbol": "SLPUSDT"
+  },
+  {
+    "revolut_ticker": "SNX",
+    "binance_symbol": "SNXUSDT"
+  },
+  {
+    "revolut_ticker": "SOL",
+    "binance_symbol": "SOLUSDT"
+  },
+  {
+    "revolut_ticker": "SPELL",
+    "binance_symbol": "SPELLUSDT"
+  },
+  {
+    "revolut_ticker": "STG",
+    "binance_symbol": "STGUSDT"
+  },
+  {
+    "revolut_ticker": "STORJ",
+    "binance_symbol": "STORJUSDT"
+  },
+  {
+    "revolut_ticker": "STRK",
+    "binance_symbol": "STRKUSDT"
+  },
+  {
+    "revolut_ticker": "STX",
+    "binance_symbol": "STXUSDT"
+  },
+  {
+    "revolut_ticker": "SUI",
+    "binance_symbol": "SUIUSDT"
+  },
+  {
+    "revolut_ticker": "SUSHI",
+    "binance_symbol": "SUSHIUSDT"
+  },
+  {
+    "revolut_ticker": "SYN",
+    "binance_symbol": "SYNUSDT"
+  },
+  {
+    "revolut_ticker": "T",
+    "binance_symbol": "TUSDT"
+  },
+  {
+    "revolut_ticker": "TIA",
+    "binance_symbol": "TIAUSDT"
+  },
+  {
+    "revolut_ticker": "TON",
+    "binance_symbol": "TONUSDT"
+  },
+  {
+    "revolut_ticker": "TRB",
+    "binance_symbol": "TRBUSDT"
+  },
+  {
+    "revolut_ticker": "TRU",
+    "binance_symbol": "TRUUSDT"
+  },
+  {
+    "revolut_ticker": "TRX",
+    "binance_symbol": "TRXUSDT"
+  },
+  {
+    "revolut_ticker": "UMA",
+    "binance_symbol": "UMAUSDT"
+  },
+  {
+    "revolut_ticker": "UNI",
+    "binance_symbol": "UNIUSDT"
+  },
+  {
+    "revolut_ticker": "USDC",
+    "binance_symbol": "USDCUSDT"
+  },
+  {
+    "revolut_ticker": "USDT",
+    "binance_symbol": "USDTTRY"
+  },
+  {
+    "revolut_ticker": "VET",
+    "binance_symbol": "VETUSDT"
+  },
+  {
+    "revolut_ticker": "VOXEL",
+    "binance_symbol": "VOXELUSDT"
+  },
+  {
+    "revolut_ticker": "VTHO",
+    "binance_symbol": "VTHOUSDT"
+  },
+  {
+    "revolut_ticker": "WAXP",
+    "binance_symbol": "WAXPUSDT"
+  },
+  {
+    "revolut_ticker": "WBTC",
+    "binance_symbol": "WBTCUSDT"
+  },
+  {
+    "revolut_ticker": "WLD",
+    "binance_symbol": "WLDUSDT"
+  },
+  {
+    "revolut_ticker": "WOO",
+    "binance_symbol": "WOOUSDT"
+  },
+  {
+    "revolut_ticker": "XLM",
+    "binance_symbol": "XLMUSDT"
+  },
+  {
+    "revolut_ticker": "XRP",
+    "binance_symbol": "XRPUSDT"
+  },
+  {
+    "revolut_ticker": "XTZ",
+    "binance_symbol": "XTZUSDT"
+  },
+  {
+    "revolut_ticker": "XVS",
+    "binance_symbol": "XVSUSDT"
+  },
+  {
+    "revolut_ticker": "YFI",
+    "binance_symbol": "YFIUSDT"
+  },
+  {
+    "revolut_ticker": "YGG",
+    "binance_symbol": "YGGUSDT"
+  },
+  {
+    "revolut_ticker": "ZEC",
+    "binance_symbol": "ZECUSDT"
+  },
+  {
+    "revolut_ticker": "ZIL",
+    "binance_symbol": "ZILUSDT"
+  },
+  {
+    "revolut_ticker": "ZRX",
+    "binance_symbol": "ZRXUSDT"
+  }
+]
