@@ -4,19 +4,19 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 394417.38003
+      "vol_usd": 384922.3937
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 487737.9219
+      "vol_usd": 483424.86176
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 464387.8709
+      "vol_usd": 463296.33503
     },
     {
       "symbol": "USDTTRY",
@@ -26,138 +26,13 @@
   ],
   "accepted": [
     {
-      "symbol": "AGLDUSDT",
-      "revolut": "AGLD",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "AUCTIONUSDT",
-      "revolut": "AUCTION",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "AXSUSDT",
-      "revolut": "AXS",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "BATUSDT",
-      "revolut": "BAT",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "BNBUSDT",
-      "revolut": "BNB",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "CVCUSDT",
-      "revolut": "CVC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "GHSTUSDT",
-      "revolut": "GHST",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "GTCUSDT",
-      "revolut": "GTC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "HIGHUSDT",
-      "revolut": "HIGH",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "ILVUSDT",
-      "revolut": "ILV",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "LRCUSDT",
-      "revolut": "LRC",
-      "reason": "breakout"
-    },
-    {
       "symbol": "LTCUSDT",
       "revolut": "LTC",
       "reason": "breakout"
     },
     {
-      "symbol": "MASKUSDT",
-      "revolut": "MASK",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "MINAUSDT",
-      "revolut": "MINA",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "NEARUSDT",
-      "revolut": "NEAR",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "NKNUSDT",
-      "revolut": "NKN",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "OXTUSDT",
-      "revolut": "OXT",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "PYRUSDT",
-      "revolut": "PYR",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "RLCUSDT",
-      "revolut": "RLC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "SNXUSDT",
-      "revolut": "SNX",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "SOLUSDT",
-      "revolut": "SOL",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "SUSHIUSDT",
-      "revolut": "SUSHI",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "TUSDT",
-      "revolut": "T",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "TIAUSDT",
-      "revolut": "TIA",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "TNSRUSDT",
-      "revolut": "TNSR",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "WOOUSDT",
-      "revolut": "WOO",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "XLMUSDT",
-      "revolut": "XLM",
+      "symbol": "PERPUSDT",
+      "revolut": "PERP",
       "reason": "breakout"
     }
   ],
