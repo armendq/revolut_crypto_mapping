@@ -4,19 +4,25 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 377118.21547
+      "vol_usd": 369917.62835
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 475729.134589
+      "vol_usd": 473124.920731
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 461141.49411
+      "vol_usd": 461140.70389
+    },
+    {
+      "symbol": "REQUSDT",
+      "revolut": "REQ",
+      "reason": "vol",
+      "vol_usd": 496895.7321
     },
     {
       "symbol": "USDTTRY",
@@ -24,13 +30,7 @@
       "reason": "non-USDT"
     }
   ],
-  "accepted": [
-    {
-      "symbol": "SKLUSDT",
-      "revolut": "SKL",
-      "reason": "breakout"
-    }
-  ],
+  "accepted": [],
   "meta": {
     "VOL_USD_MIN_24H": 500000.0,
     "MAX_SPREAD": 0.02,
