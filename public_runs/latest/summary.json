@@ -1,13 +1,50 @@
 {
-  "generated_at": "2025-08-26 15:54:23 UTC",
+  "generated_at": "2025-08-26 16:19:31 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "LPT",
+      "binance_symbol": "LPTUSDT",
+      "entry": 6.294,
+      "stop": 6.206,
+      "atr": 0.0634285714,
+      "t1": 6.3447428571,
+      "t2": 6.3891428571,
+      "vol_usd_24h": 4698603.029,
+      "spread": 0.00032216494845357273,
+      "r_over_atr": 1.387387387387372
+    },
+    {
+      "ticker": "SNX",
+      "binance_symbol": "SNXUSDT",
+      "entry": 0.671,
+      "stop": 0.663,
+      "atr": 0.0063571429,
+      "t1": 0.6760857143,
+      "t2": 0.6805357143,
+      "vol_usd_24h": 2504354.6032,
+      "spread": 0.0014958863126402404,
+      "r_over_atr": 1.2584269662921348
+    },
+    {
+      "ticker": "VOXEL",
+      "binance_symbol": "VOXELUSDT",
+      "entry": 0.0566,
+      "stop": 0.056,
+      "atr": 0.0004357143,
+      "t1": 0.0569485714,
+      "t2": 0.0572535714,
+      "vol_usd_24h": 616821.04535,
+      "spread": 0.0017652250661959906,
+      "r_over_atr": 1.3770491803278617
+    }
+  ]
 }
