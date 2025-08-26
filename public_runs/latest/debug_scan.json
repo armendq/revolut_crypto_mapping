@@ -4,7 +4,7 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 321632.95478
+      "vol_usd": 331058.88536
     },
     {
       "symbol": "DAIJPY",
@@ -15,19 +15,25 @@
       "symbol": "GNOUSDT",
       "revolut": "GNO",
       "reason": "vol",
-      "vol_usd": 305944.62847
+      "vol_usd": 306229.58316
     },
     {
       "symbol": "GNSUSDT",
       "revolut": "GNS",
       "reason": "vol",
-      "vol_usd": 331364.69339
+      "vol_usd": 329767.76516
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 435745.61992
+      "vol_usd": 434194.67263
+    },
+    {
+      "symbol": "REQUSDT",
+      "revolut": "REQ",
+      "reason": "vol",
+      "vol_usd": 499274.6577
     },
     {
       "symbol": "USDTTRY",
