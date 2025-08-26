@@ -4,37 +4,43 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 313419.05129
+      "vol_usd": 295739.00018
     },
     {
       "symbol": "GTCUSDT",
       "revolut": "GTC",
       "reason": "vol",
-      "vol_usd": 452762.104
+      "vol_usd": 458931.4351
+    },
+    {
+      "symbol": "NKNUSDT",
+      "revolut": "NKN",
+      "reason": "vol",
+      "vol_usd": 488258.145
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 453460.000474
+      "vol_usd": 443417.879052
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 418511.4024
+      "vol_usd": 410752.7651
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 431303.01074
+      "vol_usd": 431531.40172
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 468073.016
+      "vol_usd": 468769.5843
     },
     {
       "symbol": "USDTTRY",
@@ -45,7 +51,7 @@
       "symbol": "VOXELUSDT",
       "revolut": "VOXEL",
       "reason": "vol",
-      "vol_usd": 472054.90443
+      "vol_usd": 463797.42969
     }
   ],
   "accepted": [
