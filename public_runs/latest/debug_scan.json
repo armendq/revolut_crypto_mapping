@@ -4,19 +4,19 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 378034.68707
+      "vol_usd": 377666.19766
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 481547.44986
+      "vol_usd": 477513.974127
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 463189.06594
+      "vol_usd": 461025.33788
     },
     {
       "symbol": "USDTTRY",
