@@ -1,26 +1,13 @@
 {
-  "generated_at": "2025-08-26 23:17:03 UTC",
+  "generated_at": "2025-08-26 23:31:20 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "ACH",
-      "binance_symbol": "ACHUSDT",
-      "entry": 0.02092,
-      "stop": 0.02085,
-      "atr": 9.85714e-05,
-      "t1": 0.0209988571,
-      "t2": 0.0210678571,
-      "vol_usd_24h": 2572617.75381,
-      "spread": 0.000477213075638253,
-      "r_over_atr": 0.7101449275362349
-    }
-  ]
+  "candidates": []
 }
