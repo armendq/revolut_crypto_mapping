@@ -1,38 +1,13 @@
 {
-  "generated_at": "2025-08-26 17:18:26 UTC",
+  "generated_at": "2025-08-26 17:35:20 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "LTC",
-      "binance_symbol": "LTCUSDT",
-      "entry": 113.72,
-      "stop": 113.42,
-      "atr": 0.5542857143,
-      "t1": 114.1634285714,
-      "t2": 114.5514285714,
-      "vol_usd_24h": 68898578.97691,
-      "spread": 8.822621200750722e-05,
-      "r_over_atr": 0.5412371134020584
-    },
-    {
-      "ticker": "PERP",
-      "binance_symbol": "PERPUSDT",
-      "entry": 0.267,
-      "stop": 0.2666,
-      "atr": 0.0014071429,
-      "t1": 0.2681257143,
-      "t2": 0.2691107143,
-      "vol_usd_24h": 827358.200439,
-      "spread": 0.00037544584193746763,
-      "r_over_atr": 0.28426395939087035
-    }
-  ]
+  "candidates": []
 }
