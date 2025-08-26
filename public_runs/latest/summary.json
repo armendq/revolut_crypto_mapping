@@ -1,13 +1,26 @@
 {
-  "generated_at": "2025-08-26 23:31:20 UTC",
+  "generated_at": "2025-08-26 23:40:15 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "NMR",
+      "binance_symbol": "NMRUSDT",
+      "entry": 14.62,
+      "stop": 13.84,
+      "atr": 0.6864285714,
+      "t1": 15.1691428571,
+      "t2": 15.6496428571,
+      "vol_usd_24h": 40644077.5401,
+      "spread": 0.0014084507042254472,
+      "r_over_atr": 1.1363163371488023
+    }
+  ]
 }
