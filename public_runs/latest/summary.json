@@ -1,1 +1,22 @@
-{"status":"ok","generated_at_utc":"2025-08-26T08:47:15Z","regime":{"ok":false},"signals":{},"candidates":[],"meta":{"interval":"15m","limit":64,"min_move_pct_8h":18.0,"min_usd_volume_8h":500000,"max_spread_pct":1.5,"scanned":171}}
+{
+  "status": "ok",
+  "generated_at_utc": "2025-08-26T09:24:45Z",
+  "universe": 170,
+  "scanned": 170,
+  "params": {
+    "interval": "1h",
+    "window_hours": 8,
+    "min_pct_rise": 0.2,
+    "vol_mult": 1.8,
+    "atr_len": 14
+  },
+  "regime": {
+    "ok": true,
+    "note": "placeholder"
+  },
+  "signals": {
+    "type": "H",
+    "text": "Hold and wait."
+  },
+  "candidates": []
+}
