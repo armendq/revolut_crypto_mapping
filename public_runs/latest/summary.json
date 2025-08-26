@@ -1,26 +1,13 @@
 {
-  "generated_at": "2025-08-26 12:29:35 UTC",
+  "generated_at": "2025-08-26 13:11:56 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "QTUM",
-      "binance_symbol": "QTUMUSDT",
-      "entry": 2.975,
-      "stop": 2.869,
-      "atr": 0.0286428571,
-      "t1": 2.9979142857,
-      "t2": 3.0179642857,
-      "vol_usd_24h": 17954487.6821,
-      "spread": 0.00033755274261599655,
-      "r_over_atr": 3.7007481296758
-    }
-  ]
+  "candidates": []
 }
