@@ -1,13 +1,62 @@
 {
-  "generated_at": "2025-08-26 18:21:15 UTC",
+  "generated_at": "2025-08-26 18:51:07 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "ARKM",
+      "binance_symbol": "ARKMUSDT",
+      "entry": 0.505,
+      "stop": 0.502,
+      "atr": 0.004,
+      "t1": 0.5082,
+      "t2": 0.511,
+      "vol_usd_24h": 11237734.9256,
+      "spread": 0.001990049751243783,
+      "r_over_atr": 0.75
+    },
+    {
+      "ticker": "KAITO",
+      "binance_symbol": "KAITOUSDT",
+      "entry": 1.0539,
+      "stop": 1.0491,
+      "atr": 0.0059142857,
+      "t1": 1.0586314286,
+      "t2": 1.0627714286,
+      "vol_usd_24h": 3704288.39373,
+      "spread": 9.515200532850184e-05,
+      "r_over_atr": 0.8115942028985741
+    },
+    {
+      "ticker": "DASH",
+      "binance_symbol": "DASHUSDT",
+      "entry": 22.84,
+      "stop": 22.78,
+      "atr": 0.1378571429,
+      "t1": 22.9502857143,
+      "t2": 23.0467857143,
+      "vol_usd_24h": 2516138.69488,
+      "spread": 0.00043830813061589147,
+      "r_over_atr": 0.4352331606217541
+    },
+    {
+      "ticker": "FIDA",
+      "binance_symbol": "FIDAUSDT",
+      "entry": 0.0927,
+      "stop": 0.0923,
+      "atr": 0.0005785714,
+      "t1": 0.0931628571,
+      "t2": 0.0935678571,
+      "vol_usd_24h": 1980521.77152,
+      "spread": 0.0010804970286332023,
+      "r_over_atr": 0.6913580246913793
+    }
+  ]
 }
