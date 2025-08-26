@@ -858,3 +858,13 @@
 [analyses] 2025-08-26 09:24:45 UTC symbol_fail {'sym': 'ZRXUSDT', 'err': 'GET failed for https://api.binance.com/api/v3/klines : http 451'}
 [analyses] 2025-08-26 09:24:45 UTC progress {'scanned': 170, 'total': 170}
 [analyses] 2025-08-26 09:24:45 UTC done {'took_s': 1422.2, 'candidates': 0}
+[analyses] 2025-08-26 09:47:38 UTC mapping_loaded {'count': 171}
+[analyses] 2025-08-26 09:47:38 UTC universe {'count': 167}
+[analyses] 2025-08-26 09:47:55 UTC progress {'scanned': 25, 'total': 167}
+[analyses] 2025-08-26 09:48:07 UTC progress {'scanned': 50, 'total': 167}
+[analyses] 2025-08-26 09:48:20 UTC progress {'scanned': 75, 'total': 167}
+[analyses] 2025-08-26 09:48:33 UTC progress {'scanned': 100, 'total': 167}
+[analyses] 2025-08-26 09:48:46 UTC progress {'scanned': 125, 'total': 167}
+[analyses] 2025-08-26 09:48:59 UTC progress {'scanned': 150, 'total': 167}
+[analyses] 2025-08-26 09:49:08 UTC progress {'scanned': 167, 'total': 167}
+[analyses] 2025-08-26 09:49:08 UTC done {'took_s': 89.46, 'candidates': 0}

@@ -1,8 +1,8 @@
 {
   "status": "ok",
-  "generated_at_utc": "2025-08-26T09:24:45Z",
-  "universe": 170,
-  "scanned": 170,
+  "generated_at_utc": "2025-08-26T09:49:08Z",
+  "universe": 167,
+  "scanned": 167,
   "params": {
     "interval": "1h",
     "window_hours": 8,
@@ -10,12 +10,8 @@
     "vol_mult": 1.8,
     "atr_len": 14
   },
-  "regime": {
-    "ok": true,
-    "note": "placeholder"
-  },
   "signals": {
-    "type": "H",
+    "type": "C",
     "text": "Hold and wait."
   },
   "candidates": []
