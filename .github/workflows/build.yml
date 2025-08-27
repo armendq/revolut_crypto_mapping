@@ -2,14 +2,23 @@ name: run
 
 on:
   schedule:
-    # Fire every 5 minutes; the script below does mode selection with tolerance.
-    - cron: '*/5 * * * *'
+    # Trigger every 5 minutes; the router below decides which mode to run.
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       force_mode:
-        description: 'Override mode: deep | light-hourly | light-fast | skip | auto'
+        description: "Override mode: deep | light-hourly | light-fast | skip | auto"
         required: false
-        default: 'auto'
+        default: "auto"
+
+# needed for commit + Pages deploy
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  PYTHONUNBUFFERED: "1"
 
 jobs:
   run:
@@ -19,13 +28,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Post Cache pip
+      - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -36,11 +47,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Ensure output tree
+        run: |
+          mkdir -p public_runs/latest
+          mkdir -p mapping
+          echo "Tree OK"
+
+      # (optional) mapping generation — keep if your repo uses it
+      - name: Generate Revolut ↔ Binance mapping
+        run: |
+          set -e
+          if [ -f scripts/generate_mapping.py ]; then
+            echo "[mapping] generating…"
+            python scripts/generate_mapping.py
+          else
+            echo "[mapping] no generator found; skipping."
           fi
 
-      # ---------- DECIDE MODE WITH TOLERANCE ----------
+      # -------- DECIDE MODE with ±1 minute tolerance --------
       - name: Decide run mode (deep / light-fast / light-hourly)
         id: decide
         shell: bash
@@ -48,63 +74,40 @@ jobs:
           set -euo pipefail
 
           FORCE="${{ github.event.inputs.force_mode || '' }}"
-
-          # Manual override
           if [[ -n "${FORCE}" && "${FORCE}" != "auto" ]]; then
             echo "mode=${FORCE}" >> "$GITHUB_OUTPUT"
             echo "Override -> ${FORCE}"
             exit 0
           fi
 
-          # Current UTC minute (00..59) as integer (no octal)
           M=$(date -u +%M); M=$((10#$M))
-
-          within() { # within <minute> <target> [tol]
-            local m=$1 t=$2 tol=${3:-1}
-            local diff=$(( (m - t + 60) % 60 ))
-            # close either direction (wraparound aware)
-            [[ $diff -le $tol || $((60 - diff)) -le $tol ]]
-          }
+          within() { local m=$1 t=$2 tol=${3:-1}; local d=$(( (m - t + 60) % 60 )); [[ $d -le $tol || $((60-d)) -le $tol ]]; }
 
           MODE=""
-
-          # Priority 1: DEEP every 15 minutes at :00/:15/:30/:45  (±1 min)
-          for t in 0 15 30 45; do
-            if within "$M" "$t" 1; then MODE="deep"; break; fi
-          done
-
-          # Priority 2: HOURLY light at :02 (±1 min)
-          if [[ -z "$MODE" ]]; then
-            if within "$M" 2 1; then MODE="light-hourly"; fi
-          fi
-
-          # Priority 3: FAST every 5 min boundaries (±1 min)
+          for t in 0 15 30 45; do if within "$M" "$t" 1; then MODE="deep"; break; fi; done
+          if [[ -z "$MODE" ]] && within "$M" 2 1; then MODE="light-hourly"; fi
           if [[ -z "$MODE" ]]; then
             for t in 0 5 10 15 20 25 30 35 40 45 50 55; do
               if within "$M" "$t" 1; then MODE="light-fast"; break; fi
             done
           fi
-
-          if [[ -z "$MODE" ]]; then
-            MODE="skip"
-          fi
+          [[ -z "$MODE" ]] && MODE="skip"
 
           echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
           echo "Selected mode: ${MODE} (UTC minute=${M})"
 
       - name: Skip if no matching cadence
         if: steps.decide.outputs.mode == 'skip'
-        run: echo "No matching cadence (outside ±1 min windows); exiting."
+        run: echo "No matching cadence window now; exiting."
 
-      # ---------- YOUR ANALYSES CALLS ----------
-      # Replace the commands below with your repo's actual entrypoints if different.
+      # -------- ANALYSES --------
       - name: Run analyses (deep)
         if: steps.decide.outputs.mode == 'deep'
         run: |
           echo "[router] Running DEEP analyses"
           python -m scripts.analyses --mode deep
 
-      - name: Run analyses (light-fast, every ~5m)
+      - name: Run analyses (light-fast, ~every 5m)
         if: steps.decide.outputs.mode == 'light-fast'
         run: |
           echo "[router] Running LIGHT-FAST analyses"
@@ -116,12 +119,49 @@ jobs:
           echo "[router] Running LIGHT-HOURLY analyses"
           python -m scripts.analyses --mode light-hourly
 
-      # ---------- (optional) commit/deploy steps ----------
-      # Keep whatever you already have; shown here as placeholders:
-      # - name: Commit public_runs to main
-      #   if: steps.decide.outputs.mode != 'skip'
-      #   run: ./scripts/commit_public_runs.sh
-      #
-      # - name: Deploy to gh-pages
-      #   if: steps.decide.outputs.mode != 'skip'
-      #   run: ./scripts/deploy_pages.sh
+      # -------- COMMIT ARTIFACTS TO MAIN --------
+      - name: Commit public_runs to main
+        if: steps.decide.outputs.mode != 'skip'
+        shell: bash
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Add only what we expect; avoid pathspec errors if a dir is missing.
+          ADD_LIST=()
+          [ -d public_runs ] && ADD_LIST+=("public_runs")
+          [ -d mapping ] && ADD_LIST+=("mapping")
+          if [ ${#ADD_LIST[@]} -eq 0 ]; then
+            echo "Nothing to add."
+            exit 0
+          fi
+          git add "${ADD_LIST[@]}" || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(run): update artifacts for $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
+            git push
+          fi
+
+      # -------- DEPLOY TO GH-PAGES --------
+      - name: Upload Pages artifact
+        if: steps.decide.outputs.mode != 'skip'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public_runs
+
+      - name: Deploy to gh-pages
+        if: steps.decide.outputs.mode != 'skip'
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      # -------- VERIFY PAGES ENDPOINT (non-blocking) --------
+      - name: Verify Pages endpoint (non-blocking)
+        if: always() && steps.decide.outputs.mode != 'skip'
+        continue-on-error: true
+        env:
+          PAGES_URL: ${{ steps.deploy.outputs.page_url }}
+        run: |
+          URL="${PAGES_URL:-https://armendq.github.io/revolut_crypto_mapping/}"
+          echo "Checking ${URL}"
+          curl -I --max-time 15 --retry 2 --retry-delay 2 "$URL" || true
