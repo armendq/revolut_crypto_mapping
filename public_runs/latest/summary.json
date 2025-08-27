@@ -1,50 +1,13 @@
 {
-  "generated_at": "2025-08-27 02:28:09 UTC",
+  "generated_at": "2025-08-27 03:19:21 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "SOL",
-      "binance_symbol": "SOLUSDT",
-      "entry": 198.86,
-      "stop": 196.14,
-      "atr": 1.2335714286,
-      "t1": 199.8468571429,
-      "t2": 200.7103571429,
-      "vol_usd_24h": 840332169.62072,
-      "spread": 5.0219711236614717e-05,
-      "r_over_atr": 2.2049797336421824
-    },
-    {
-      "ticker": "WIF",
-      "binance_symbol": "WIFUSDT",
-      "entry": 0.819,
-      "stop": 0.813,
-      "atr": 0.0052142857,
-      "t1": 0.8231714286,
-      "t2": 0.8268214286,
-      "vol_usd_24h": 24686927.52888,
-      "spread": 0.0012187690432663022,
-      "r_over_atr": 1.1506849315068686
-    },
-    {
-      "ticker": "TON",
-      "binance_symbol": "TONUSDT",
-      "entry": 3.191,
-      "stop": 3.177,
-      "atr": 0.0103571429,
-      "t1": 3.1992857143,
-      "t2": 3.2065357143,
-      "vol_usd_24h": 14513038.20619,
-      "spread": 0.000313332288892475,
-      "r_over_atr": 1.351724137931018
-    }
-  ]
+  "candidates": []
 }
