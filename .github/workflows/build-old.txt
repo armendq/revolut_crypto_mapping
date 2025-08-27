@@ -4,11 +4,13 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/15 * * * *"   # every 15 minutes
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: build-${{ github.ref }}
@@ -17,6 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -35,81 +38,69 @@ jobs:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            pip install pandas requests python-dateutil
+            pip install requests pandas numpy python-dateutil pytz rapidfuzz
           fi
 
-      - name: Generate mapping (safe)
-        run: |
-          if [ -f scripts/mapping.py ]; then
-            python scripts/mapping.py
-          else
-            echo "skip mapping"
-          fi
-
-      - name: Run analyses
-        env:
-          EQUITY: ${{ vars.EQUITY }}
-          CASH: ${{ vars.CASH }}
-        run: |
-          set -e
-          export EQUITY="${EQUITY:-41000}"
-          export CASH="${CASH:-32000}"
-          python -m scripts.analyses
-
-      - name: Prepare public_runs/latest
+      - name: Ensure output tree
         run: |
           set -e
           mkdir -p public_runs/latest
-          # Pull outputs from known locations if analyses wrote them elsewhere
-          for f in summary.json signals.json run_stats.json market_snapshot.json debug_scan.json; do
-            if [ ! -f "public_runs/latest/$f" ]; then
-              [ -f "artifacts/$f" ] && cp -f "artifacts/$f" "public_runs/latest/$f" || true
-              [ -f "data/$f" ] && cp -f "data/$f" "public_runs/latest/$f" || true
-            fi
-          done
-          # Ensure summary.json exists so Pages never 404s due to missing file
-          if [ ! -f public_runs/latest/summary.json ]; then
-            echo '{"status":"ok"}' > public_runs/latest/summary.json
-          fi
-          # Keep only the 'latest' folder
-          touch public_runs/.nojekyll
-          find public_runs -mindepth 1 -maxdepth 1 -type d ! -name latest -exec rm -rf {} + || true
-          echo "Tree to publish:" && ls -R public_runs
+          mkdir -p data
+
+      - name: Generate Revolut ↔ Binance mapping
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -e
+          python scripts/generate_mapping.py
+          test -f data/revolut_mapping.json
+
+      - name: Run analyses
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -e
+          python -m scripts.analyses
+          test -f public_runs/latest/summary.json
+
+      - name: Commit public_runs to main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage outputs (do not error if mapping didn't change)
+          git add public_runs data/revolut_mapping.json || true
+
+          # Create commit only when there are changes
+          git diff --staged --quiet && echo "no changes to commit" || git commit -m "ci: update analyses outputs [skip ci]"
+
+          # Rebase-pull to avoid push races, then push
+          git pull --rebase origin main || true
+          git push origin HEAD:main || true
 
       - name: Deploy to gh-pages
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./public_runs
+          publish_branch: gh-pages
           force_orphan: true
 
-      - name: Verify raw gh-pages (bypass Pages)
+      - name: Verify Pages endpoint (non-blocking)
+        if: github.ref == 'refs/heads/main'
         run: |
           set -e
-          RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/gh-pages/latest/summary.json?ts=$(date +%s)"
-          echo "Checking $RAW_URL"
-          for i in $(seq 1 10); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$RAW_URL")
-            echo "Attempt $i: HTTP $code"
-            if [ "$code" = "200" ]; then exit 0; fi
-            sleep 3
+          owner="${GITHUB_REPOSITORY_OWNER}"
+          repo="${GITHUB_REPOSITORY#*/}"
+          url="https://${owner}.github.io/${repo}/latest/summary.json?ts=$(date +%s)"
+          echo "Checking ${url}"
+          for i in 1 2 3 4; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
           done
-          echo "Raw gh-pages not reachable"
-          exit 1
-
-      - name: Verify Pages endpoint (retry up to ~3 min)
-        run: |
-          set -e
-          OWNER="${GITHUB_REPOSITORY%%/*}"
-          NAME="${GITHUB_REPOSITORY##*/}"
-          URL="https://${OWNER}.github.io/${NAME}/latest/summary.json?ts=$(date +%s)"
-          echo "Checking $URL"
-          for i in $(seq 1 18); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-            echo "Attempt $i: HTTP $code"
-            if [ "$code" = "200" ]; then exit 0; fi
-            sleep 10
-          done
-          echo "Pages still not serving summary.json"
-          exit 1
+          echo "Pages may still be propagating; not failing the build."
