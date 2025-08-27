@@ -1,26 +1,13 @@
 {
-  "generated_at": "2025-08-27 07:17:19 UTC",
+  "generated_at": "2025-08-27 07:33:03 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "LPT",
-      "binance_symbol": "LPTUSDT",
-      "entry": 8.516,
-      "stop": 8.219,
-      "atr": 0.2062142857,
-      "t1": 8.6809714286,
-      "t2": 8.8253214286,
-      "vol_usd_24h": 35747219.79902,
-      "spread": 0.0007326901941629293,
-      "r_over_atr": 1.4402493938344334
-    }
-  ]
+  "candidates": []
 }
