@@ -1,13 +1,26 @@
 {
-  "generated_at": "2025-08-27 07:44:45 UTC",
+  "generated_at": "2025-08-27 07:54:06 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "H",
-    "text": "Hold"
+    "type": "C",
+    "text": "Candidates found"
   },
-  "candidates": []
+  "candidates": [
+    {
+      "ticker": "POND",
+      "binance_symbol": "PONDUSDT",
+      "entry": 0.00962,
+      "stop": 0.00909,
+      "atr": 7.35714e-05,
+      "t1": 0.0096788571,
+      "t2": 0.0097303571,
+      "vol_usd_24h": 1376528.77572,
+      "spread": 0.002107481559536268,
+      "r_over_atr": 7.20388349514566
+    }
+  ]
 }

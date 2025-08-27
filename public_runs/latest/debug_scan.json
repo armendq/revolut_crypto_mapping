@@ -1,46 +1,52 @@
 {
   "rejected": [
     {
+      "symbol": "AGLDUSDT",
+      "revolut": "AGLD",
+      "reason": "vol",
+      "vol_usd": 499642.5667
+    },
+    {
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 284195.0219
+      "vol_usd": 283396.89676
     },
     {
       "symbol": "CVCUSDT",
       "revolut": "CVC",
       "reason": "vol",
-      "vol_usd": 482544.86
+      "vol_usd": 484333.8981
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 478434.2748
+      "vol_usd": 495862.3634
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 454931.586366
+      "vol_usd": 454612.320221
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 317049.1041
+      "vol_usd": 319945.1472
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 437649.65403
+      "vol_usd": 430015.96772
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 412193.9714
+      "vol_usd": 407155.8736
     },
     {
       "symbol": "USDTTRY",
@@ -48,7 +54,13 @@
       "reason": "non-USDT"
     }
   ],
-  "accepted": [],
+  "accepted": [
+    {
+      "symbol": "PONDUSDT",
+      "revolut": "POND",
+      "reason": "breakout"
+    }
+  ],
   "meta": {
     "VOL_USD_MIN_24H": 500000.0,
     "MAX_SPREAD": 0.02,
