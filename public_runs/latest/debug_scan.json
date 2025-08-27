@@ -4,37 +4,37 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 278106.6765
+      "vol_usd": 283136.39616
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 449886.7843
+      "vol_usd": 452387.166
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 445940.091905
+      "vol_usd": 447120.642
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 308944.9453
+      "vol_usd": 317667.1961
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 448259.92816
+      "vol_usd": 450443.75767
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 427538.5461
+      "vol_usd": 431072.9112
     },
     {
       "symbol": "USDTTRY",
@@ -45,83 +45,28 @@
       "symbol": "VOXELUSDT",
       "revolut": "VOXEL",
       "reason": "vol",
-      "vol_usd": 485026.54405
+      "vol_usd": 494411.96616
     }
   ],
   "accepted": [
     {
-      "symbol": "AUDIOUSDT",
-      "revolut": "AUDIO",
+      "symbol": "BONKUSDT",
+      "revolut": "BONK",
       "reason": "breakout"
     },
     {
-      "symbol": "AVAXUSDT",
-      "revolut": "AVAX",
+      "symbol": "NEARUSDT",
+      "revolut": "NEAR",
       "reason": "breakout"
     },
     {
-      "symbol": "DIAUSDT",
-      "revolut": "DIA",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "DOGEUSDT",
-      "revolut": "DOGE",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "ETCUSDT",
-      "revolut": "ETC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "FIDAUSDT",
-      "revolut": "FIDA",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "JTOUSDT",
-      "revolut": "JTO",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "JUPUSDT",
-      "revolut": "JUP",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "KSMUSDT",
-      "revolut": "KSM",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "MEUSDT",
-      "revolut": "ME",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "METISUSDT",
-      "revolut": "METIS",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "PEPEUSDT",
-      "revolut": "PEPE",
+      "symbol": "PERPUSDT",
+      "revolut": "PERP",
       "reason": "breakout"
     },
     {
       "symbol": "RAREUSDT",
       "revolut": "RARE",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "SOLUSDT",
-      "revolut": "SOL",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "WUSDT",
-      "revolut": "W",
       "reason": "breakout"
     },
     {
