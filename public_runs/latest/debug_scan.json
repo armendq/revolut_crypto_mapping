@@ -4,37 +4,37 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 281873.85235
+      "vol_usd": 283913.09874
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 462538.8894
+      "vol_usd": 473056.2002
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 447640.380059
+      "vol_usd": 448611.426527
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 319127.8744
+      "vol_usd": 319780.8238
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 451568.21666
+      "vol_usd": 453749.29404
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 428793.3874
+      "vol_usd": 430953.1442
     },
     {
       "symbol": "USDTTRY",
@@ -42,73 +42,7 @@
       "reason": "non-USDT"
     }
   ],
-  "accepted": [
-    {
-      "symbol": "BCHUSDT",
-      "revolut": "BCH",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "CRVUSDT",
-      "revolut": "CRV",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "CVCUSDT",
-      "revolut": "CVC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "FETUSDT",
-      "revolut": "FET",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "GTCUSDT",
-      "revolut": "GTC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "ICPUSDT",
-      "revolut": "ICP",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "LTCUSDT",
-      "revolut": "LTC",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "METISUSDT",
-      "revolut": "METIS",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "ORCAUSDT",
-      "revolut": "ORCA",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "OXTUSDT",
-      "revolut": "OXT",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "TRUUSDT",
-      "revolut": "TRU",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "WUSDT",
-      "revolut": "W",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "ZRXUSDT",
-      "revolut": "ZRX",
-      "reason": "breakout"
-    }
-  ],
+  "accepted": [],
   "meta": {
     "VOL_USD_MIN_24H": 500000.0,
     "MAX_SPREAD": 0.02,
