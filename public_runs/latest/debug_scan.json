@@ -4,37 +4,37 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 282361.80214
+      "vol_usd": 285856.25216
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 476068.4888
+      "vol_usd": 477560.3986
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 450701.636603
+      "vol_usd": 455188.701696
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 321567.3577
+      "vol_usd": 322852.0872
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 452590.5867
+      "vol_usd": 453097.27193
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 427839.7003
+      "vol_usd": 428807.3112
     },
     {
       "symbol": "USDTTRY",
