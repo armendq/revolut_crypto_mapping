@@ -1,106 +1,111 @@
-name: build
+name: analyses
 
 on:
-  push:
-    branches: [ main ]
-  schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes
   workflow_dispatch:
+    inputs:
+      run_type:
+        description: "Override mode: deep | light-fast | light-hourly"
+        required: false
+        default: ""
+  schedule:
+    # Deep scan every 15 minutes
+    - cron: "*/15 * * * *"
+    # Fast light scan every 5 minutes
+    - cron: "*/5 * * * *"
+    # Hourly light scan at minute 2 to avoid collisions
+    - cron: "2 * * * *"
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
-  group: build-${{ github.ref }}
+  group: analyses-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 25
+
+    env:
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            pip install requests pandas numpy python-dateutil pytz rapidfuzz
+            pip install requests pandas numpy ta python-dateutil pytz
           fi
 
-      - name: Ensure output tree
+      - name: Decide run mode (deep / light-fast / light-hourly)
+        id: decide
+        shell: bash
         run: |
-          set -e
-          mkdir -p public_runs/latest
-          mkdir -p data
+          # Priority: manual override -> time-based routing
+          MODE="${{ github.event.inputs.run_type }}"
+          if [ -n "$MODE" ]; then
+            echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-      - name: Generate Revolut ↔ Binance mapping
-        env:
-          PYTHONUNBUFFERED: "1"
+          MINUTE=$(date +%M)
+          # Deep scan wins on 0/15/30/45 to avoid duplicate work
+          if [ $((10#$MINUTE % 15)) -eq 0 ]; then
+            echo "mode=deep" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Hourly light at :02 only (no collision with */5)
+          if [ "$MINUTE" = "02" ]; then
+            echo "mode=light-hourly" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Otherwise, if we’re on a */5 minute mark, do light-fast
+          if [ $((10#$MINUTE % 5)) -eq 0 ]; then
+            echo "mode=light-fast" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Fallback (shouldn’t normally happen): no-op
+          echo "mode=skip" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if no matching cadence
+        if: steps.decide.outputs.mode == 'skip'
+        run: echo "No matching cadence for this trigger; exiting."
+
+      - name: Run analyses (deep)
+        if: steps.decide.outputs.mode == 'deep'
         run: |
-          set -e
-          python scripts/generate_mapping.py
-          test -f data/revolut_mapping.json
+          echo "Running DEEP scan…"
+          python analyses.py --save --publish
 
-      - name: Run analyses
-        env:
-          PYTHONUNBUFFERED: "1"
+      - name: Run analyses (light-fast, every 5m)
+        if: steps.decide.outputs.mode == 'light-fast'
         run: |
-          set -e
-          python -m scripts.analyses
-          test -f public_runs/latest/summary.json
+          echo "Running LIGHT-FAST scan…"
+          python analyses.py --light --quick --save --publish
 
-      - name: Commit public_runs to main
-        if: github.ref == 'refs/heads/main'
+      - name: Run analyses (light-hourly at :02)
+        if: steps.decide.outputs.mode == 'light-hourly'
         run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Stage outputs (do not error if mapping didn't change)
-          git add public_runs data/revolut_mapping.json || true
-
-          # Create commit only when there are changes
-          git diff --staged --quiet && echo "no changes to commit" || git commit -m "ci: update analyses outputs [skip ci]"
-
-          # Rebase-pull to avoid push races, then push
-          git pull --rebase origin main || true
-          git push origin HEAD:main || true
-
-      - name: Deploy to gh-pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public_runs
-          publish_branch: gh-pages
-          force_orphan: true
-
-      - name: Verify Pages endpoint (non-blocking)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -e
-          owner="${GITHUB_REPOSITORY_OWNER}"
-          repo="${GITHUB_REPOSITORY#*/}"
-          url="https://${owner}.github.io/${repo}/latest/summary.json?ts=$(date +%s)"
-          echo "Checking ${url}"
-          for i in 1 2 3 4; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            echo "HTTP $code"
-            [ "$code" = "200" ] && exit 0
-            sleep 5
-          done
-          echo "Pages may still be propagating; not failing the build."
+          echo "Running LIGHT-HOURLY scan…"
+          python analyses.py --light --save --publish
