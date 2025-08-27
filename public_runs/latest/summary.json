@@ -1,74 +1,13 @@
 {
-  "generated_at": "2025-08-27 04:19:05 UTC",
+  "generated_at": "2025-08-27 04:40:49 UTC",
   "regime": {
     "ok": true
   },
   "equity": null,
   "cash": null,
   "signals": {
-    "type": "C",
-    "text": "Candidates found"
+    "type": "H",
+    "text": "Hold"
   },
-  "candidates": [
-    {
-      "ticker": "NEAR",
-      "binance_symbol": "NEARUSDT",
-      "entry": 2.564,
-      "stop": 2.555,
-      "atr": 0.0138571429,
-      "t1": 2.5750857143,
-      "t2": 2.5847857143,
-      "vol_usd_24h": 24493508.1019,
-      "spread": 0.00039009167154276954,
-      "r_over_atr": 0.6494845360824655
-    },
-    {
-      "ticker": "WIF",
-      "binance_symbol": "WIFUSDT",
-      "entry": 0.838,
-      "stop": 0.836,
-      "atr": 0.0061428571,
-      "t1": 0.8429142857,
-      "t2": 0.8472142857,
-      "vol_usd_24h": 24355740.98786,
-      "spread": 0.0011911852293031578,
-      "r_over_atr": 0.32558139534883845
-    },
-    {
-      "ticker": "BONK",
-      "binance_symbol": "BONKUSDT",
-      "entry": 2.179e-05,
-      "stop": 2.167e-05,
-      "atr": 1.579e-07,
-      "t1": 2.19163e-05,
-      "t2": 2.20268e-05,
-      "vol_usd_24h": 23774710.89786725,
-      "spread": 0.00046114825916539535,
-      "r_over_atr": 0.7601809954751044
-    },
-    {
-      "ticker": "RARE",
-      "binance_symbol": "RAREUSDT",
-      "entry": 0.0557,
-      "stop": 0.0555,
-      "atr": 0.0003214286,
-      "t1": 0.0559571429,
-      "t2": 0.0561821429,
-      "vol_usd_24h": 1568453.8645,
-      "spread": 0.0017969451931716598,
-      "r_over_atr": 0.6222222222222179
-    },
-    {
-      "ticker": "PERP",
-      "binance_symbol": "PERPUSDT",
-      "entry": 0.2751,
-      "stop": 0.274,
-      "atr": 0.0015642857,
-      "t1": 0.2763514286,
-      "t2": 0.2774464286,
-      "vol_usd_24h": 607161.453455,
-      "spread": 0.00036423238025856485,
-      "r_over_atr": 0.7031963470319595
-    }
-  ]
+  "candidates": []
 }

@@ -4,37 +4,37 @@
       "symbol": "BNTUSDT",
       "revolut": "BNT",
       "reason": "vol",
-      "vol_usd": 283136.39616
+      "vol_usd": 283035.59936
     },
     {
       "symbol": "NKNUSDT",
       "revolut": "NKN",
       "reason": "vol",
-      "vol_usd": 452387.166
+      "vol_usd": 460294.2673
     },
     {
       "symbol": "OSMOUSDT",
       "revolut": "OSMO",
       "reason": "vol",
-      "vol_usd": 447120.642
+      "vol_usd": 446327.262596
     },
     {
       "symbol": "POWRUSDT",
       "revolut": "POWR",
       "reason": "vol",
-      "vol_usd": 317667.1961
+      "vol_usd": 315892.1664
     },
     {
       "symbol": "QIUSDT",
       "revolut": "QI",
       "reason": "vol",
-      "vol_usd": 450443.75767
+      "vol_usd": 451452.72016
     },
     {
       "symbol": "REQUSDT",
       "revolut": "REQ",
       "reason": "vol",
-      "vol_usd": 431072.9112
+      "vol_usd": 431723.6787
     },
     {
       "symbol": "USDTTRY",
@@ -45,36 +45,10 @@
       "symbol": "VOXELUSDT",
       "revolut": "VOXEL",
       "reason": "vol",
-      "vol_usd": 494411.96616
+      "vol_usd": 499055.49481
     }
   ],
-  "accepted": [
-    {
-      "symbol": "BONKUSDT",
-      "revolut": "BONK",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "NEARUSDT",
-      "revolut": "NEAR",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "PERPUSDT",
-      "revolut": "PERP",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "RAREUSDT",
-      "revolut": "RARE",
-      "reason": "breakout"
-    },
-    {
-      "symbol": "WIFUSDT",
-      "revolut": "WIF",
-      "reason": "breakout"
-    }
-  ],
+  "accepted": [],
   "meta": {
     "VOL_USD_MIN_24H": 500000.0,
     "MAX_SPREAD": 0.02,
