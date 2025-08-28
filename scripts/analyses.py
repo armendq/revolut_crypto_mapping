@@ -2,264 +2,240 @@
 # -*- coding: utf-8 -*-
 
 """
-analyses.py
-- Fetches latest summary.json (2 attempts, 60s wait between).
-- Accepts --mode (deep / light-fast / light-hourly) to stay compatible with the workflow, but ignores it.
-- Emits concise trading instructions based on signals:
-    * If signals.type == "B": print exact trade plan (ticker, entry, stop, T1, T2, USD size).
-    * If signals.type == "C": list candidates with entry/stop/sizing; else say Hold and wait.
-    * Fallback: "Hold and wait." on fetch/parse problems or no actionable signals.
-
-Business rules:
-- Use Europe/Prague time in the output.
-- If position size is provided in JSON, use it. Otherwise compute:
-    size_cap = 0.60 if regime.ok else 0.30
-    RISK_PCT = 0.012 (1.2% of equity)
-    risk_dollars = equity * RISK_PCT
-    unit_risk = abs(entry - stop)
-    position_usd = min(risk_dollars / unit_risk * entry, (equity + cash) * size_cap)
-- Targets: T1 = entry + 0.8 * ATR; T2 = entry + 1.5 * ATR (when ATR provided).
-- Stop = breakout bar low (when provided; otherwise 'stop' if present).
-- ETH and DOT are not rotated; DOT is staked/untouchable: skip DOT trades.
-- Trail after +1R (echoed in text).
-
-Output is intentionally concise/actionable.
+Analyses runner:
+- Modes: deep | light-hourly  (both run the same fetch/format logic)
+- Fetches summary.json from the repo (retry once after 60s on non-200/invalid JSON)
+- Emits concise trade instructions per requirements
+- Writes timestamped + latest copies under public_runs/
 """
-
-from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import sys
 import time
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from pathlib import Path
 
 try:
     from zoneinfo import ZoneInfo  # py3.9+
-except Exception:  # pragma: no cover
-    ZoneInfo = None  # type: ignore
+except Exception:
+    ZoneInfo = None  # Fallback
 
 import urllib.request
 import urllib.error
 
-DEFAULT_URL = "https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
-RISK_PCT = 0.012  # 1.2%
+
+SUMMARY_URL = "https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
+
+# ---------- utils
+
+def prague_now_str():
+    if ZoneInfo:
+        tz = ZoneInfo("Europe/Prague")
+        return datetime.now(tz).strftime("%Y-%m-%d %H:%M")
+    # Fallback to UTC label if zoneinfo missing
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
-def now_prague_str() -> str:
-    tz = ZoneInfo("Europe/Prague") if ZoneInfo else None
-    dt = datetime.utcnow() if tz is None else datetime.now(tz)
-    if tz is None:
-        # Mark as UTC if zoneinfo is unavailable
-        return dt.strftime("%Y-%m-%d %H:%M UTC")
-    return dt.strftime("%Y-%m-%d %H:%M %Z")
-
-
-def fetch_json(url: str, attempts: int = 2, wait_seconds: int = 60) -> Optional[Dict[str, Any]]:
-    last_err: Optional[str] = None
-    for i in range(attempts):
+def fetch_json_with_retry(url: str, wait_seconds: int = 60, max_attempts: int = 2):
+    last_err = None
+    for attempt in range(1, max_attempts + 1):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "analyses-bot/1.0"})
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                if resp.status != 200:
-                    last_err = f"HTTP {resp.status}"
-                    raise urllib.error.HTTPError(url, resp.status, "non-200", resp.headers, None)
-                data = resp.read()
-            return json.loads(data.decode("utf-8"))
-        except Exception as e:
-            last_err = str(e)
-            if i + 1 < attempts:
+            with urllib.request.urlopen(url, timeout=30) as resp:
+                code = resp.getcode()
+                if code != 200:
+                    raise urllib.error.HTTPError(url, code, f"HTTP {code}", hdrs=None, fp=None)
+                raw = resp.read()
+                data = json.loads(raw.decode("utf-8"))
+                return data
+        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as e:
+            last_err = e
+            if attempt < max_attempts:
+                # explicit wait only inside the script; workflow logs will show the pause
                 time.sleep(wait_seconds)
-    # Final failure
-    print("Hold and wait. Fetch failed twice.", flush=True)
-    if last_err:
-        print(f"# debug: fetch error -> {last_err}", file=sys.stderr)
     return None
 
 
-def _get_float(x: Any) -> Optional[float]:
+def ensure_dirs():
+    Path("public_runs/latest").mkdir(parents=True, exist_ok=True)
+
+
+def write_json_files(payload: dict):
+    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    base = Path("public_runs")
+    ts_dir = base / ts
+    ts_dir.mkdir(parents=True, exist_ok=True)
+    latest = base / "latest"
+    latest.mkdir(parents=True, exist_ok=True)
+    (ts_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (latest / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+# ---------- sizing
+
+def _num(x, default=None):
     try:
         if x is None:
-            return None
-        v = float(x)
-        if math.isnan(v) or math.isinf(v):
-            return None
-        return v
+            return default
+        return float(x)
     except Exception:
+        return default
+
+
+def cap_pct(regime_ok: bool):
+    return 0.60 if regime_ok else 0.30
+
+
+def compute_position_usd(entry: float, stop: float, equity: float, cash: float, regime_ok: bool, risk_pct: float = 0.012):
+    if entry is None or stop is None or entry <= 0:
+        return None
+    risk_dollars = max(equity * risk_pct, 0.0)
+    stop_dist = max(entry - stop, 0.0)
+    if stop_dist <= 0:
         return None
 
-
-def first_nonempty(*keys: str, obj: Dict[str, Any]) -> Any:
-    for k in keys:
-        if k in obj and obj[k] not in (None, "", []):
-            return obj[k]
-    return None
-
-
-@dataclass
-class Account:
-    equity: float
-    cash: float
-    regime_ok: bool
+    # theoretical position to risk 1.2% per trade
+    theoretical_size = risk_dollars / stop_dist * entry  # convert units→USD by multiplying by entry
+    # cap by regime & cash
+    abs_cap = equity * cap_pct(regime_ok)
+    size_cap = min(abs_cap, cash if cash is not None else abs_cap)
+    final_size = min(theoretical_size, size_cap)
+    return max(round(final_size, 2), 0.0)
 
 
-def read_account(root: Dict[str, Any]) -> Account:
-    meta = root.get("meta") or root.get("account") or {}
-    equity = _get_float(first_nonempty("equity", "balance", obj=meta)) or 0.0
-    cash = _get_float(meta.get("cash")) or 0.0
-    regime = root.get("regime") or meta.get("regime") or {}
-    regime_ok = bool(regime.get("ok", True))
-    return Account(equity=equity, cash=cash, regime_ok=regime_ok)
+# ---------- formatting
+
+def print_hold_failed_twice():
+    print('Hold and wait. Fetch failed twice.')
 
 
-def compute_position_usd(entry: Optional[float], stop: Optional[float], acc: Account,
-                         provided: Optional[float]) -> Optional[float]:
-    if provided is not None:
-        return max(0.0, provided)
-    if entry is None or stop is None or acc.equity <= 0:
-        return None
-    unit_risk = abs(entry - stop)
-    if unit_risk <= 0:
-        return None
-    risk_dollars = acc.equity * RISK_PCT
-    raw_units = risk_dollars / unit_risk
-    raw_usd = raw_units * entry
-    cap = 0.60 if acc.regime_ok else 0.30
-    max_usd = (acc.equity + acc.cash) * cap
-    return max(0.0, min(raw_usd, max_usd))
+def fmt_trade_line(ticker, entry, stop, atr, pos_usd):
+    # Targets per rule: T1 +0.8 ATR, T2 +1.5 ATR; trail after +1R (mention once)
+    t1 = entry + 0.8 * atr if entry is not None and atr is not None else None
+    t2 = entry + 1.5 * atr if entry is not None and atr is not None else None
+
+    def f(x):
+        return f"{x:.4f}" if x is not None else "n/a"
+
+    return (f"{ticker}: entry {f(entry)}, stop {f(stop)}, "
+            f"T1 {f(t1)}, T2 {f(t2)}, size ${pos_usd:,.0f}")
 
 
-def format_usd(x: Optional[float]) -> str:
-    if x is None:
-        return "n/a"
-    return f"${x:,.0f}" if x >= 1000 else f"${x:,.2f}"
+def is_dot_or_eth(ticker: str):
+    if not ticker:
+        return False
+    t = ticker.upper()
+    return "DOT" in t or t == "ETH" or t.endswith("ETH")
 
 
-def build_targets(entry: Optional[float], atr: Optional[float]) -> (str, str):
-    if entry is None or atr is None:
-        return "n/a", "n/a"
-    t1 = entry + 0.8 * atr
-    t2 = entry + 1.5 * atr
-    return f"{t1:.6g}", f"{t2:.6g}"
+# ---------- main logic based on your summary.json spec
 
+def handle_payload(payload: dict):
+    # Persist a copy so Pages always has a file (even on Hold).
+    try:
+        write_json_files(payload)
+    except Exception:
+        pass
 
-def normalize_symbol(sym: Optional[str]) -> Optional[str]:
-    if not sym:
-        return None
-    s = str(sym).upper().strip()
-    # common mappings like "BTCUSDT" -> "BTC"
-    if s.endswith("USDT"):
-        s = s[:-4]
-    if s.endswith("USD"):
-        s = s[:-3]
-    return s
+    regime = payload.get("regime", {})
+    regime_ok = bool(regime.get("ok", False))
 
+    equity = _num(payload.get("equity"), 0.0)
+    cash = _num(payload.get("cash"), equity)  # if not provided, assume fully available
 
-def is_dot(sym: Optional[str]) -> bool:
-    s = normalize_symbol(sym)
-    return s in {"DOT", "DOT2"}  # be forgiving
+    sig = payload.get("signals") or {}
+    stype = (sig.get("type") or "").upper()
 
+    now_str = prague_now_str()
 
-def is_eth(sym: Optional[str]) -> bool:
-    s = normalize_symbol(sym)
-    return s == "ETH"
-
-
-def handle_type_b(root: Dict[str, Any]) -> str:
-    sig = root.get("signals") or {}
-    trade = sig.get("trade") or sig.get("signal") or root.get("trade") or sig
-    # Extract fields with defensive fallbacks
-    sym = normalize_symbol(first_nonempty("ticker", "symbol", "asset", obj=trade))
-    if is_dot(sym):
-        return f"[{now_prague_str()}] Hold and wait. DOT is staked/untouchable."
-    entry = _get_float(first_nonempty("entry", "price", "trigger", obj=trade))
-    atr = _get_float(first_nonempty("atr", "ATR", obj=trade))
-    stop = _get_float(first_nonempty("breakout_bar_low", "breakout_low", "stop", obj=trade))
-    provided_size = _get_float(first_nonempty("position_usd", "size_usd", "usd_size", obj=trade))
-    acc = read_account(root)
-    size_usd = compute_position_usd(entry, stop, acc, provided_size)
-    t1, t2 = build_targets(entry, atr)
-
-    parts: List[str] = []
-    parts.append(f"[{now_prague_str()}] BREAKOUT BUY")
-    sym_show = sym or "UNKNOWN"
-    entry_s = "n/a" if entry is None else f"{entry:.6g}"
-    stop_s = "n/a" if stop is None else f"{stop:.6g}"
-    parts.append(f"{sym_show} | Entry {entry_s} | Stop {stop_s} | T1 {t1} | T2 {t2} | Size {format_usd(size_usd)}")
-    if is_eth(sym):
-        parts.append("Note: ETH not rotated. Trail after +1R.")
-    else:
-        parts.append("Trail after +1R.")
-    return "\n".join(parts)
-
-
-def handle_type_c(root: Dict[str, Any]) -> str:
-    sig = root.get("signals") or {}
-    cands = sig.get("candidates") or sig.get("watchlist") or []
-    if not isinstance(cands, list) or len(cands) == 0:
-        return "Hold and wait."
-    acc = read_account(root)
-
-    lines: List[str] = [f"[{now_prague_str()}] CANDIDATES"]
-    shown = 0
-    for c in cands:
-        sym = normalize_symbol(first_nonempty("ticker", "symbol", "asset", obj=c))
-        if is_dot(sym):
-            # Skip DOT entirely as per constraints
-            continue
-        entry = _get_float(first_nonempty("entry", "price", "trigger", obj=c))
-        atr = _get_float(first_nonempty("atr", "ATR", obj=c))
-        stop = _get_float(first_nonempty("breakout_bar_low", "breakout_low", "stop", obj=c))
-        provided_size = _get_float(first_nonempty("position_usd", "size_usd", "usd_size", obj=c))
-        size_usd = compute_position_usd(entry, stop, acc, provided_size)
-        t1, t2 = build_targets(entry, atr)
-
-        entry_s = "n/a" if entry is None else f"{entry:.6g}"
-        stop_s = "n/a" if stop is None else f"{stop:.6g}"
-        sym_show = sym or "UNKNOWN"
-        lines.append(f"{sym_show} | Entry {entry_s} | Stop {stop_s} | T1 {t1} | T2 {t2} | Size {format_usd(size_usd)}")
-        shown += 1
-        if shown >= 6:  # keep concise
-            break
-
-    if shown == 0:
-        return "Hold and wait."
-    lines.append("Trail after +1R. (ETH/DOT not rotated; DOT excluded.)")
-    return "\n".join(lines)
-
-
-def render(root: Dict[str, Any]) -> str:
-    signals = root.get("signals") or {}
-    stype = str(signals.get("type") or root.get("type") or "").upper()
+    # Type B: single trade instruction
     if stype == "B":
-        return handle_type_b(root)
+        ticker = (sig.get("ticker") or sig.get("symbol") or "").upper()
+
+        # Respect DOT staked + ETH/DOT not rotated
+        if "DOT" in ticker:
+            print(f"[{now_str} Europe/Prague] Hold and wait. DOT is staked/untouchable.")
+            return
+
+        entry = _num(sig.get("entry") or sig.get("price") or sig.get("breakout"))
+        atr = _num(sig.get("atr") or sig.get("ATR"))
+        stop = _num(sig.get("stop") or sig.get("breakout_low") or (entry - atr if (entry and atr) else None))
+
+        # Provided position size takes precedence
+        pos_usd = _num(sig.get("position_usd") or sig.get("size_usd"))
+        if pos_usd is None:
+            pos_usd = compute_position_usd(entry, stop, equity, cash, regime_ok)
+
+        if pos_usd is None or entry is None or stop is None or atr is None:
+            print(f"[{now_str} Europe/Prague] Hold and wait.")
+            return
+
+        line = fmt_trade_line(ticker, entry, stop, atr, pos_usd)
+        print(f"[{now_str} Europe/Prague] TRADE — trail after +1R.\n{line}")
+        return
+
+    # Type C: candidates list
     if stype == "C":
-        return handle_type_c(root)
-    return "Hold and wait."
+        cands = payload.get("candidates") or []
+        out_lines = []
+
+        for c in cands:
+            ticker = (c.get("ticker") or c.get("symbol") or "").upper()
+            if "DOT" in ticker:
+                continue  # untouchable
+            entry = _num(c.get("entry") or c.get("price") or c.get("breakout"))
+            atr = _num(c.get("atr") or c.get("ATR"))
+            stop = _num(c.get("stop") or c.get("breakout_low") or (entry - atr if (entry and atr) else None))
+            pos_usd = _num(c.get("position_usd") or c.get("size_usd"))
+            if pos_usd is None:
+                pos_usd = compute_position_usd(entry, stop, equity, cash, regime_ok)
+            if entry is None or stop is None or atr is None or pos_usd is None:
+                continue
+            out_lines.append(fmt_trade_line(ticker, entry, stop, atr, pos_usd))
+
+        if out_lines:
+            print(f"[{prague_now_str()} Europe/Prague] CANDIDATES — trail after +1R.\n" + "\n".join(out_lines))
+        else:
+            print(f"[{prague_now_str()} Europe/Prague] Hold and wait.")
+        return
+
+    # Anything else
+    print(f"[{now_str} Europe/Prague] Hold and wait.")
 
 
-def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Generate trading instructions from summary.json")
-    ap.add_argument("--url", default=os.getenv("SUMMARY_URL", DEFAULT_URL),
-                    help="Override summary.json URL")
-    # Accept --mode to remain compatible with existing workflow; we don't branch on it for now.
-    ap.add_argument("--mode", default=None,
-                    help="Run mode (deep, light-fast, light-hourly). Accepted but ignored.")
-    args = ap.parse_args(argv)
+def main():
+    parser = argparse.ArgumentParser(description="Analyses runner")
+    parser.add_argument("--mode", choices=["deep", "light-hourly"], default="deep")
+    parser.add_argument("--url", default=SUMMARY_URL, help="summary.json URL")
+    args = parser.parse_args()
 
-    data = fetch_json(args.url, attempts=2, wait_seconds=60)
-    if not data:
-        # Message already printed on failure
-        return 0
+    # Make sure output tree exists so later steps don't fail
+    ensure_dirs()
 
-    out = render(data)
-    print(out, flush=True)
-    return 0
+    # Fetch summary with retry
+    payload = fetch_json_with_retry(args.url, wait_seconds=60, max_attempts=2)
+    if payload is None:
+        print_hold_failed_twice()
+        # still write a minimal file so Pages has something
+        try:
+            write_json_files({"error": "fetch_failed_twice", "at": datetime.utcnow().isoformat()})
+        except Exception:
+            pass
+        sys.exit(0)
+
+    # Process & print
+    try:
+        handle_payload(payload)
+    except Exception as e:
+        # Be resilient: never crash the workflow; just fall back to Hold
+        print(f"[{prague_now_str()} Europe/Prague] Hold and wait.")
+        # best-effort persistence of raw payload for debugging
+        try:
+            write_json_files({"error": f"exception: {type(e).__name__}", "detail": str(e), "raw": payload})
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
