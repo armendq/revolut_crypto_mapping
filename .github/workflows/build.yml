@@ -1,42 +1,42 @@
-# .github/workflows/build.yaml
-name: run
+name: build
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
   schedule:
-    # Deep scans twice per hour (UTC)
-    - cron: "0,30 * * * *"
-    # Light-hourly once per hour (UTC)
-    - cron: "2 * * * *"
+    # Run every 15 minutes; router below decides deep vs light-hourly.
+    - cron: "*/15 * * * *"
 
 permissions:
-  contents: write        # commit public_runs
-  pages: write           # deploy to GH Pages
+  contents: write       # to commit public_runs
+  pages: write          # to deploy to GitHub Pages
   id-token: write
 
 concurrency:
-  group: pages
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
 
     env:
-      PYTHONUNBUFFERED: "1"
-      PAGES_URL: ${{ vars.PAGES_URL }}
+      PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            pip-${{ runner.os }}-
+            ${{ runner.os }}-pip-
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install -U pip
+          python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Ensure output tree
@@ -56,68 +56,63 @@ jobs:
       - name: Generate Revolut ↔ Binance mapping
         run: |
           set -e
-          # Use your existing script. Keep this call exactly as your repo expects.
-          # If your repo uses a different entrypoint, replace the line below.
+          echo "[mapping] generating…"
           python scripts/mapping.py
+          echo "[mapping] generated data/revolut_mapping.csv and data/revolut_mapping.json"
 
-      # ------- ROUTER (light-fast removed) -------
+      # ---- Router: choose deep vs light-hourly (no light-fast) ----
       - name: Decide run mode (deep / light-hourly)
         id: router
         shell: bash
         run: |
           set -euo pipefail
-          # GitHub sets the cron that triggered this run in github.event.schedule (for scheduled runs).
-          # Fall back to current UTC minute for manual dispatch.
-          MINUTE_UTC="$(date -u +%M)"
-          if [ -n "${{ github.event.schedule }}" ]; then
-            # Pull minute from the cron string, if present.
-            CRON="${{ github.event.schedule }}"
-            # Simple detection: if cron contains ' 2 ' we consider it LIGHT-HOURLY, else DEEP.
-            if echo "$CRON" | grep -qE '(^| )2( |$)'; then MODE="light-hourly"; else MODE="deep"; fi
-          else
-            # Manual dispatch route by UTC minute: near :02 -> light-hourly, else deep
-            if [ "$MINUTE_UTC" = "02" ]; then MODE="light-hourly"; else MODE="deep"; fi
-          fi
+          MIN=$(date -u +%M)
+          MODE="light-hourly"
+          # Pick one minute per hour for deep runs; adjust as you like.
+          if [ "$MIN" = "49" ]; then MODE="deep"; fi
+          echo "Selected mode: $MODE (UTC minute=${MIN})"
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-          echo "Selected mode: $MODE (UTC minute=${MINUTE_UTC})"
 
       - name: Run analyses (deep)
         if: steps.router.outputs.mode == 'deep'
         run: |
           echo "[router] Running DEEP analyses"
-          python scripts/analyses.py deep
+          python scripts/analyses.py --mode deep
 
       - name: Run analyses (light-hourly at :02)
         if: steps.router.outputs.mode == 'light-hourly'
         run: |
           echo "[router] Running LIGHT-HOURLY analyses"
-          python scripts/analyses.py light-hourly
+          python scripts/analyses.py --mode light-hourly
 
       - name: Commit public_runs to main
         run: |
           set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public_runs || true
-          if ! git diff --cached --quiet; then
-            git commit -m "Update public_runs ($(date -u +'%Y-%m-%d %H:%M:%S') UTC)"
+          if [ -n "$(git status --porcelain public_runs || true)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public_runs
+            git commit -m "Update public_runs: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
             git push
           else
             echo "No changes to commit."
           fi
 
-      # -------- GitHub Pages publish --------
+      # ---- GitHub Pages ----
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public_runs
+          path: ./
 
       - name: Deploy to gh-pages
+        id: deploy
         uses: actions/deploy-pages@v4
 
       - name: Verify Pages endpoint (non-blocking)
-        continue-on-error: true
+        if: always()
+        env:
+          CHECK_URL: ${{ steps.deploy.outputs.page_url }}
         run: |
-          URL="${PAGES_URL:-https://$GITHUB_REPOSITORY_OWNER.github.io/${GITHUB_REPOSITORY#*/}/}"
-          echo "Checking $URL"
-          curl -sSL -I "$URL" || true
+          URL="${CHECK_URL:-$PAGES_URL}"
+          echo "Checking ${URL}"
+          curl -sSL -o /dev/null -w "HTTP/%{http_version} %{http_code}\n" "${URL}" || true
