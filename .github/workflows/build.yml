@@ -2,7 +2,6 @@ name: run
 
 on:
   schedule:
-    # Trigger every 5 minutes; the router below decides which mode to run.
     - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
@@ -11,7 +10,6 @@ on:
         required: false
         default: "auto"
 
-# needed for commit + Pages deploy
 permissions:
   contents: write
   pages: write
@@ -48,15 +46,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          sudo apt-get update -y
+          sudo apt-get install -y jq
 
-      - name: Ensure output tree
+      - name: Ensure output tree (atomic dirs)
         run: |
+          set -euo pipefail
           mkdir -p public_runs/latest
           mkdir -p mapping
           echo "Tree OK"
 
-      # (optional) mapping generation — keep if your repo uses it
-      - name: Generate Revolut ↔ Binance mapping
+      - name: Generate Revolut ↔ Binance mapping (optional)
         run: |
           set -e
           if [ -f scripts/generate_mapping.py ]; then
@@ -66,23 +66,19 @@ jobs:
             echo "[mapping] no generator found; skipping."
           fi
 
-      # -------- DECIDE MODE with ±1 minute tolerance --------
       - name: Decide run mode (deep / light-fast / light-hourly)
         id: decide
         shell: bash
         run: |
           set -euo pipefail
-
           FORCE="${{ github.event.inputs.force_mode || '' }}"
           if [[ -n "${FORCE}" && "${FORCE}" != "auto" ]]; then
             echo "mode=${FORCE}" >> "$GITHUB_OUTPUT"
             echo "Override -> ${FORCE}"
             exit 0
           fi
-
           M=$(date -u +%M); M=$((10#$M))
           within() { local m=$1 t=$2 tol=${3:-1}; local d=$(( (m - t + 60) % 60 )); [[ $d -le $tol || $((60-d)) -le $tol ]]; }
-
           MODE=""
           for t in 0 15 30 45; do if within "$M" "$t" 1; then MODE="deep"; break; fi; done
           if [[ -z "$MODE" ]] && within "$M" 2 1; then MODE="light-hourly"; fi
@@ -92,7 +88,6 @@ jobs:
             done
           fi
           [[ -z "$MODE" ]] && MODE="skip"
-
           echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
           echo "Selected mode: ${MODE} (UTC minute=${M})"
 
@@ -100,68 +95,55 @@ jobs:
         if: steps.decide.outputs.mode == 'skip'
         run: echo "No matching cadence window now; exiting."
 
-      # -------- ANALYSES --------
+      # ------------------ ANALYSES ------------------
       - name: Run analyses (deep)
         if: steps.decide.outputs.mode == 'deep'
         run: |
+          set -euo pipefail
           echo "[router] Running DEEP analyses"
           python -m scripts.analyses --mode deep
+          echo "[router] DEEP done"
 
       - name: Run analyses (light-fast, ~every 5m)
         if: steps.decide.outputs.mode == 'light-fast'
         run: |
+          set -euo pipefail
           echo "[router] Running LIGHT-FAST analyses"
           python -m scripts.analyses --mode light-fast
+          echo "[router] LIGHT-FAST done"
 
       - name: Run analyses (light-hourly at :02)
         if: steps.decide.outputs.mode == 'light-hourly'
         run: |
+          set -euo pipefail
           echo "[router] Running LIGHT-HOURLY analyses"
           python -m scripts.analyses --mode light-hourly
+          echo "[router] LIGHT-HOURLY done"
 
-      # -------- COMMIT ARTIFACTS TO MAIN --------
-      - name: Commit public_runs to main
+      # ------------------ VALIDATE OUTPUT ------------------
+      - name: Validate summary.json exists and is valid JSON
         if: steps.decide.outputs.mode != 'skip'
-        shell: bash
         run: |
-          set -e
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Add only what we expect; avoid pathspec errors if a dir is missing.
-          ADD_LIST=()
-          [ -d public_runs ] && ADD_LIST+=("public_runs")
-          [ -d mapping ] && ADD_LIST+=("mapping")
-          if [ ${#ADD_LIST[@]} -eq 0 ]; then
-            echo "Nothing to add."
-            exit 0
+          set -euo pipefail
+          FILE="public_runs/latest/summary.json"
+          if [ ! -s "$FILE" ]; then
+            echo "ERROR: $FILE missing or empty."
+            ls -lah public_runs/latest || true
+            exit 1
           fi
-          git add "${ADD_LIST[@]}" || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore(run): update artifacts for $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
-            git push
+          # atomic write guard: ensure not partial JSON
+          if ! jq -e . "$FILE" >/dev/null 2>&1; then
+            echo "ERROR: $FILE is invalid JSON:"
+            cat "$FILE" || true
+            exit 1
           fi
+          echo "summary.json looks good."
 
-      # -------- DEPLOY TO GH-PAGES --------
-      - name: Upload Pages artifact
-        if: steps.decide.outputs.mode != 'skip'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public_runs
-
-      - name: Deploy to gh-pages
-        if: steps.decide.outputs.mode != 'skip'
-        id: deploy
-        uses: actions/deploy-pages@v4
-
-      # -------- VERIFY PAGES ENDPOINT (non-blocking) --------
-      - name: Verify Pages endpoint (non-blocking)
+      - name: CRO presence smoke-check (non-fatal)
         if: always() && steps.decide.outputs.mode != 'skip'
         continue-on-error: true
-        env:
-          PAGES_URL: ${{ steps.deploy.outputs.page_url }}
         run: |
-          URL="${PAGES_URL:-https://armendq.github.io/revolut_crypto_mapping/}"
-          echo "Checking ${URL}"
-          curl -I --max-time 15 --retry 2 --retry-delay 2 "$URL" || true
+          set -euo pipefail
+          # Adjust the grep path to whatever file lists supported tickers on Revolut.
+          if [ -f mapping/revolut_supported.json ]; then
+            if jq -r '.[]' mapping/revolut_supported.json | grep -qi
