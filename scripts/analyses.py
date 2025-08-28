@@ -517,4 +517,62 @@ def main() -> None:
         "ticker": c["ticker"],
         "symbol": c["symbol"],
         "last": round(c["last"], 8),
-        "atr": round(c[
+        "atr": round(c["atr"], 8),
+        "entry": round(c["entry"], 8),
+        "stop": round(c["stop"], 8),
+        "t1": round(c["t1"], 8),
+        "t2": round(c["t2"], 8),
+        "score": round(c["score"], 4),
+        "vol_z": round(c["vol_z"], 2),
+        "prox_atr": round(c["prox_atr"], 3),
+        "rs10": round(c["rs10"], 4),
+        "tf": "1h",
+        "notes": c.get("reasons", []),
+        "rotation_exempt": c["rotation_exempt"],
+    } for c in top_candidates]
+
+    payload = {
+        "generated_at": human_time(started),
+        "timezone": TZ_NAME,
+        "regime": {"ok": regime_ok, "reason": regime_reason},
+        "signals": {"type": signal_type},
+        "orders": orders,
+        "candidates": cand_payload,
+        "universe": {
+            "scanned": scanned,
+            "eligible": len(mapping),
+            "skipped": {
+                "no_data": sorted(no_data),
+                "missing_binance": sorted(missing_binance),
+            },
+        },
+        "meta": {
+            "params": {
+                "ATR_LEN": ATR_LEN, "EMA_FAST": EMA_FAST, "EMA_SLOW": EMA_SLOW,
+                "SWING_LOOKBACK": SWING_LOOKBACK,
+                "PROX_ATR_MIN": PROX_ATR_MIN, "PROX_ATR_MAX": PROX_ATR_MAX,
+                "VOL_Z_MIN_PRE": VOL_Z_MIN_PRE, "VOL_Z_MIN_BREAK": VOL_Z_MIN_BREAK,
+                "BREAK_BUFFER_ATR": BREAK_BUFFER_ATR,
+                "MAX_CANDIDATES": MAX_CANDIDATES
+            },
+            "lower_tf_confirm": True,
+            "rs_reference": "BTCUSDT",
+            "binance_endpoint": BASE_URL,
+        }
+    }
+
+    # Write outputs
+    latest_path = Path("public_runs/latest/summary.json")
+    write_summary(payload, latest_path)
+
+    # Also write a timestamped snapshot for auditing/reruns
+    stamp = datetime.now(timezone.utc).astimezone(TZ).strftime("%Y%m%d_%H%M%S")
+    snapshot_dir = Path("public_runs") / stamp
+    ensure_dirs(snapshot_dir / "summary.json")
+    with (snapshot_dir / "summary.json").open("w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False, sort_keys=False)
+
+    print(f"Summary written: {latest_path} (signal={signal_type}, regime_ok={regime_ok})")
+
+if __name__ == "__main__":
+    main()
