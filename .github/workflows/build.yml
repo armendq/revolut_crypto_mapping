@@ -1,28 +1,29 @@
-name: build
+name: run
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
   schedule:
-    # Run every 15 minutes; router below decides deep vs light-hourly.
-    - cron: "*/15 * * * *"
+    # Trigger every 5 minutes; the router below decides which mode to run.
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_mode:
+        description: "Override mode: deep | light-hourly | light-fast | skip | auto"
+        required: false
+        default: "auto"
 
+# needed for commit + Pages deploy
 permissions:
-  contents: write       # to commit public_runs
-  pages: write          # to deploy to GitHub Pages
+  contents: write
+  pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
 
 jobs:
   run:
     runs-on: ubuntu-latest
-
-    env:
-      PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -30,18 +31,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -51,68 +52,116 @@ jobs:
       - name: Ensure output tree
         run: |
           mkdir -p public_runs/latest
+          mkdir -p mapping
           echo "Tree OK"
 
+      # (optional) mapping generation — keep if your repo uses it
       - name: Generate Revolut ↔ Binance mapping
         run: |
           set -e
-          echo "[mapping] generating…"
-          python scripts/mapping.py
-          echo "[mapping] generated data/revolut_mapping.csv and data/revolut_mapping.json"
+          if [ -f scripts/generate_mapping.py ]; then
+            echo "[mapping] generating…"
+            python scripts/generate_mapping.py
+          else
+            echo "[mapping] no generator found; skipping."
+          fi
 
-      # ---- Router: choose deep vs light-hourly (no light-fast) ----
-      - name: Decide run mode (deep / light-hourly)
-        id: router
+      # -------- DECIDE MODE with ±1 minute tolerance --------
+      - name: Decide run mode (deep / light-fast / light-hourly)
+        id: decide
         shell: bash
         run: |
           set -euo pipefail
-          MIN=$(date -u +%M)
-          MODE="light-hourly"
-          # Pick one minute per hour for deep runs; adjust as you like.
-          if [ "$MIN" = "49" ]; then MODE="deep"; fi
-          echo "Selected mode: $MODE (UTC minute=${MIN})"
-          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
-      - name: Run analyses (deep)
-        if: steps.router.outputs.mode == 'deep'
-        run: |
-          echo "[router] Running DEEP analyses"
-          python scripts/analyses.py --mode deep
-
-      - name: Run analyses (light-hourly at :02)
-        if: steps.router.outputs.mode == 'light-hourly'
-        run: |
-          echo "[router] Running LIGHT-HOURLY analyses"
-          python scripts/analyses.py --mode light-hourly
-
-      - name: Commit public_runs to main
-        run: |
-          set -e
-          if [ -n "$(git status --porcelain public_runs || true)" ]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public_runs
-            git commit -m "Update public_runs: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-            git push
-          else
-            echo "No changes to commit."
+          FORCE="${{ github.event.inputs.force_mode || '' }}"
+          if [[ -n "${FORCE}" && "${FORCE}" != "auto" ]]; then
+            echo "mode=${FORCE}" >> "$GITHUB_OUTPUT"
+            echo "Override -> ${FORCE}"
+            exit 0
           fi
 
-      # ---- GitHub Pages ----
+          M=$(date -u +%M); M=$((10#$M))
+          within() { local m=$1 t=$2 tol=${3:-1}; local d=$(( (m - t + 60) % 60 )); [[ $d -le $tol || $((60-d)) -le $tol ]]; }
+
+          MODE=""
+          for t in 0 15 30 45; do if within "$M" "$t" 1; then MODE="deep"; break; fi; done
+          if [[ -z "$MODE" ]] && within "$M" 2 1; then MODE="light-hourly"; fi
+          if [[ -z "$MODE" ]]; then
+            for t in 0 5 10 15 20 25 30 35 40 45 50 55; do
+              if within "$M" "$t" 1; then MODE="light-fast"; break; fi
+            done
+          fi
+          [[ -z "$MODE" ]] && MODE="skip"
+
+          echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "Selected mode: ${MODE} (UTC minute=${M})"
+
+      - name: Skip if no matching cadence
+        if: steps.decide.outputs.mode == 'skip'
+        run: echo "No matching cadence window now; exiting."
+
+      # -------- ANALYSES --------
+      - name: Run analyses (deep)
+        if: steps.decide.outputs.mode == 'deep'
+        run: |
+          echo "[router] Running DEEP analyses"
+          python -m scripts.analyses --mode deep
+
+      - name: Run analyses (light-fast, ~every 5m)
+        if: steps.decide.outputs.mode == 'light-fast'
+        run: |
+          echo "[router] Running LIGHT-FAST analyses"
+          python -m scripts.analyses --mode light-fast
+
+      - name: Run analyses (light-hourly at :02)
+        if: steps.decide.outputs.mode == 'light-hourly'
+        run: |
+          echo "[router] Running LIGHT-HOURLY analyses"
+          python -m scripts.analyses --mode light-hourly
+
+      # -------- COMMIT ARTIFACTS TO MAIN --------
+      - name: Commit public_runs to main
+        if: steps.decide.outputs.mode != 'skip'
+        shell: bash
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Add only what we expect; avoid pathspec errors if a dir is missing.
+          ADD_LIST=()
+          [ -d public_runs ] && ADD_LIST+=("public_runs")
+          [ -d mapping ] && ADD_LIST+=("mapping")
+          if [ ${#ADD_LIST[@]} -eq 0 ]; then
+            echo "Nothing to add."
+            exit 0
+          fi
+          git add "${ADD_LIST[@]}" || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(run): update artifacts for $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
+            git push
+          fi
+
+      # -------- DEPLOY TO GH-PAGES --------
       - name: Upload Pages artifact
+        if: steps.decide.outputs.mode != 'skip'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./
+          path: public_runs
 
       - name: Deploy to gh-pages
+        if: steps.decide.outputs.mode != 'skip'
         id: deploy
         uses: actions/deploy-pages@v4
 
+      # -------- VERIFY PAGES ENDPOINT (non-blocking) --------
       - name: Verify Pages endpoint (non-blocking)
-        if: always()
+        if: always() && steps.decide.outputs.mode != 'skip'
+        continue-on-error: true
         env:
-          CHECK_URL: ${{ steps.deploy.outputs.page_url }}
+          PAGES_URL: ${{ steps.deploy.outputs.page_url }}
         run: |
-          URL="${CHECK_URL:-$PAGES_URL}"
+          URL="${PAGES_URL:-https://armendq.github.io/revolut_crypto_mapping/}"
           echo "Checking ${URL}"
-          curl -sSL -o /dev/null -w "HTTP/%{http_version} %{http_code}\n" "${URL}" || true
+          curl -I --max-time 15 --retry 2 --retry-delay 2 "$URL" || true
