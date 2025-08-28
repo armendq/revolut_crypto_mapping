@@ -1,32 +1,29 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 analyses.py
+- Fetches latest summary.json (2 attempts, 60s wait between).
+- Accepts --mode (deep / light-fast / light-hourly) to stay compatible with the workflow, but ignores it.
+- Emits concise trading instructions based on signals:
+    * If signals.type == "B": print exact trade plan (ticker, entry, stop, T1, T2, USD size).
+    * If signals.type == "C": list candidates with entry/stop/sizing; else say Hold and wait.
+    * Fallback: "Hold and wait." on fetch/parse problems or no actionable signals.
 
-Reads summary.json from the public_runs/latest folder and prints concise,
-actionable trading instructions based on the user's rules.
+Business rules:
+- Use Europe/Prague time in the output.
+- If position size is provided in JSON, use it. Otherwise compute:
+    size_cap = 0.60 if regime.ok else 0.30
+    RISK_PCT = 0.012 (1.2% of equity)
+    risk_dollars = equity * RISK_PCT
+    unit_risk = abs(entry - stop)
+    position_usd = min(risk_dollars / unit_risk * entry, (equity + cash) * size_cap)
+- Targets: T1 = entry + 0.8 * ATR; T2 = entry + 1.5 * ATR (when ATR provided).
+- Stop = breakout bar low (when provided; otherwise 'stop' if present).
+- ETH and DOT are not rotated; DOT is staked/untouchable: skip DOT trades.
+- Trail after +1R (echoed in text).
 
-Rules implemented
------------------
-- Fetch URL twice at most; on first failure wait 60s then retry.
-  If both fail -> print exactly: 'Hold and wait. Fetch failed twice.'
-- If signals.type == "B":
-    Output exact trade instructions with:
-      ticker, entry, stop (breakout bar low), T1 (+0.8 ATR), T2 (+1.5 ATR),
-      position USD (use provided size if present; else compute).
-    Trail after +1R note is appended.
-- If signals.type == "C" and candidates non-empty:
-    List top candidates with entry/stop/position, same sizing rules.
-- Else: print "Hold and wait."
-- ETH and DOT are not rotated; DOT is staked/untouchable -> never propose trades in DOT.
-- Europe/Prague time is shown in the first line.
-- Output stays concise and human-executable.
-
-Environment / CLI
------------------
-- SUMMARY_URL env var (or --url) can override the default URL.
-- DEBUG=1 env var prints diagnostic info to stderr (never to stdout).
-- RUN_MODE may be set externally (not required by this script, but respected
-  if other tooling passes it).
+Output is intentionally concise/actionable.
 """
 
 from __future__ import annotations
@@ -37,334 +34,230 @@ import math
 import os
 import sys
 import time
-import urllib.request
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 try:
-    # Python 3.9+ only
-    from zoneinfo import ZoneInfo
+    from zoneinfo import ZoneInfo  # py3.9+
 except Exception:  # pragma: no cover
     ZoneInfo = None  # type: ignore
 
+import urllib.request
+import urllib.error
+
 DEFAULT_URL = "https://raw.githubusercontent.com/armendq/revolut_crypto_mapping/main/public_runs/latest/summary.json"
-RISK_PCT_DEFAULT = 0.012  # 1.2% per trade risk
-
-
-# ------------------------- utilities ------------------------- #
-
-def log(msg: str) -> None:
-    """Debug logs (stderr only)."""
-    if os.getenv("DEBUG"):
-        print(msg, file=sys.stderr)
+RISK_PCT = 0.012  # 1.2%
 
 
 def now_prague_str() -> str:
-    """Return current time in Europe/Prague."""
-    try:
-        if ZoneInfo is None:
-            raise RuntimeError("zoneinfo not available")
-        tz = ZoneInfo("Europe/Prague")
-        from datetime import datetime
-        return datetime.now(tz).strftime("%Y-%m-%d %H:%M")
-    except Exception:
-        # Fallback: local time with '(local)' marker if zoneinfo missing
-        from datetime import datetime
-        return datetime.now().strftime("%Y-%m-%d %H:%M (local)")
+    tz = ZoneInfo("Europe/Prague") if ZoneInfo else None
+    dt = datetime.utcnow() if tz is None else datetime.now(tz)
+    if tz is None:
+        # Mark as UTC if zoneinfo is unavailable
+        return dt.strftime("%Y-%m-%d %H:%M UTC")
+    return dt.strftime("%Y-%m-%d %H:%M %Z")
 
 
-def fetch_with_retry(url: str, attempts: int = 2, wait: int = 60) -> Dict[str, Any]:
-    """Fetch JSON from URL with retries and a blocking wait between attempts."""
-    last_err: Optional[Exception] = None
+def fetch_json(url: str, attempts: int = 2, wait_seconds: int = 60) -> Optional[Dict[str, Any]]:
+    last_err: Optional[str] = None
     for i in range(attempts):
         try:
-            log(f"[fetch] attempt {i+1} -> {url}")
-            with urllib.request.urlopen(url, timeout=30) as resp:
-                status = getattr(resp, "status", getattr(resp, "code", None))
-                if status != 200:
-                    raise RuntimeError(f"HTTP {status}")
-                raw = resp.read()
-            data = json.loads(raw)
-            log(f"[fetch] OK 200, {len(raw)} bytes")
-            return data
-        except Exception as e:  # noqa: PERF203
-            last_err = e
-            log(f"[fetch] failed: {e!s}")
-            if i < attempts - 1:
-                log(f"[fetch] waiting {wait}s before retry…")
-                time.sleep(wait)
-
-    raise RuntimeError(f"Fetch failed twice: {last_err}")
-
-
-def first_non_null(*vals, default=None):
-    for v in vals:
-        if v is not None:
-            return v
-    return default
+            req = urllib.request.Request(url, headers={"User-Agent": "analyses-bot/1.0"})
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                if resp.status != 200:
+                    last_err = f"HTTP {resp.status}"
+                    raise urllib.error.HTTPError(url, resp.status, "non-200", resp.headers, None)
+                data = resp.read()
+            return json.loads(data.decode("utf-8"))
+        except Exception as e:
+            last_err = str(e)
+            if i + 1 < attempts:
+                time.sleep(wait_seconds)
+    # Final failure
+    print("Hold and wait. Fetch failed twice.", flush=True)
+    if last_err:
+        print(f"# debug: fetch error -> {last_err}", file=sys.stderr)
+    return None
 
 
-# ------------------------- sizing logic ------------------------- #
+def _get_float(x: Any) -> Optional[float]:
+    try:
+        if x is None:
+            return None
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return None
+        return v
+    except Exception:
+        return None
+
+
+def first_nonempty(*keys: str, obj: Dict[str, Any]) -> Any:
+    for k in keys:
+        if k in obj and obj[k] not in (None, "", []):
+            return obj[k]
+    return None
+
 
 @dataclass
-class AccountContext:
-    equity: Optional[float]
-    cash: Optional[float]
+class Account:
+    equity: float
+    cash: float
     regime_ok: bool
-    risk_pct: float = RISK_PCT_DEFAULT
-    cap_ok: float = 0.60
-    cap_bad: float = 0.30
-
-    @property
-    def cap(self) -> float:
-        return self.cap_ok if self.regime_ok else self.cap_bad
 
 
-@dataclass
-class Instrument:
-    ticker: str
-    entry: float
-    stop: float
-    atr: Optional[float] = None
-    size_usd_hint: Optional[float] = None
-
-    def t1(self) -> Optional[float]:
-        if self.atr is None:
-            return None
-        return self.entry + 0.8 * self.atr
-
-    def t2(self) -> Optional[float]:
-        if self.atr is None:
-            return None
-        return self.entry + 1.5 * self.atr
+def read_account(root: Dict[str, Any]) -> Account:
+    meta = root.get("meta") or root.get("account") or {}
+    equity = _get_float(first_nonempty("equity", "balance", obj=meta)) or 0.0
+    cash = _get_float(meta.get("cash")) or 0.0
+    regime = root.get("regime") or meta.get("regime") or {}
+    regime_ok = bool(regime.get("ok", True))
+    return Account(equity=equity, cash=cash, regime_ok=regime_ok)
 
 
-def clamp_position(ctx: AccountContext, desired_usd: float) -> float:
-    """Clamp position by available cash and exposure cap if provided."""
-    if desired_usd <= 0 or not math.isfinite(desired_usd):
-        return 0.0
-
-    # Exposure cap in USD if equity known.
-    exposure_cap_usd = None
-    if ctx.equity is not None:
-        exposure_cap_usd = ctx.equity * ctx.cap
-
-    # Available cash if known.
-    cash_limit = ctx.cash if ctx.cash is not None else None
-
-    capped = desired_usd
-    if exposure_cap_usd is not None:
-        capped = min(capped, exposure_cap_usd)
-    if cash_limit is not None:
-        capped = min(capped, cash_limit)
-
-    return max(0.0, float(capped))
-
-
-def compute_position_usd(ctx: AccountContext, inst: Instrument) -> float:
-    """Return position size in USD using either given hint or risk model."""
-    # Use hint if present and valid (already computed upstream)
-    if inst.size_usd_hint is not None and inst.size_usd_hint > 0:
-        return clamp_position(ctx, inst.size_usd_hint)
-
-    # Risk model: risk_dollars = equity * RISK_PCT
-    if ctx.equity is None:
-        # If no equity data, fall back to using cash with the cap
-        if ctx.cash is None:
-            return 0.0
-        equity_proxy = ctx.cash / ctx.cap if ctx.cap > 0 else ctx.cash
-        eq = max(0.0, equity_proxy)
-    else:
-        eq = max(0.0, ctx.equity)
-
-    risk_dollars = eq * ctx.risk_pct
-    per_unit_risk = max(1e-12, inst.entry - inst.stop)  # never divide by 0/neg
-
-    units = risk_dollars / per_unit_risk
-    desired_usd = units * inst.entry
-    return clamp_position(ctx, desired_usd)
-
-
-# ------------------------- JSON parsing helpers ------------------------- #
-
-def parse_ctx(j: Dict[str, Any]) -> AccountContext:
-    regime_ok = bool(first_non_null(
-        j.get("regime", {}).get("ok"),
-        j.get("signals", {}).get("regime_ok"),
-        True  # default to OK if not present
-    ))
-    equity = j.get("account", {}).get("equity")
-    cash = j.get("account", {}).get("cash")
-    risk_pct = float(first_non_null(j.get("config", {}).get("risk_pct"), RISK_PCT_DEFAULT))
-
-    return AccountContext(equity=equity, cash=cash, regime_ok=regime_ok, risk_pct=risk_pct)
-
-
-def to_instrument(d: Dict[str, Any]) -> Optional[Instrument]:
-    """Build Instrument from a dict, being liberal with field names."""
-    ticker = first_non_null(d.get("ticker"), d.get("symbol"), d.get("pair"))
-    if not ticker or not isinstance(ticker, str):
+def compute_position_usd(entry: Optional[float], stop: Optional[float], acc: Account,
+                         provided: Optional[float]) -> Optional[float]:
+    if provided is not None:
+        return max(0.0, provided)
+    if entry is None or stop is None or acc.equity <= 0:
         return None
-
-    # Respect DOT rule: never produce trades in DOT
-    sym = ticker.upper().replace("USDT", "").replace("/", "").strip()
-    if sym in {"DOT"}:
+    unit_risk = abs(entry - stop)
+    if unit_risk <= 0:
         return None
-
-    entry = first_non_null(d.get("entry"), d.get("breakout"), d.get("price"))
-    stop = first_non_null(d.get("stop"), d.get("breakout_low"), d.get("sl"))
-    atr = first_non_null(d.get("atr"), d.get("ATR"), d.get("atr14"))
-    size_hint = first_non_null(d.get("position_usd"), d.get("size_usd"), d.get("usd_size"))
-
-    try:
-        entry = float(entry)
-        stop = float(stop)
-    except Exception:
-        return None
-
-    try:
-        atr = float(atr) if atr is not None else None
-    except Exception:
-        atr = None
-
-    try:
-        size_hint = float(size_hint) if size_hint is not None else None
-    except Exception:
-        size_hint = None
-
-    return Instrument(ticker=ticker, entry=entry, stop=stop, atr=atr, size_usd_hint=size_hint)
+    risk_dollars = acc.equity * RISK_PCT
+    raw_units = risk_dollars / unit_risk
+    raw_usd = raw_units * entry
+    cap = 0.60 if acc.regime_ok else 0.30
+    max_usd = (acc.equity + acc.cash) * cap
+    return max(0.0, min(raw_usd, max_usd))
 
 
-# ------------------------- output formatting ------------------------- #
-
-def fmt_price(x: Optional[float]) -> str:
+def format_usd(x: Optional[float]) -> str:
     if x is None:
-        return "-"
-    if x == 0:
-        return "0"
-    # Dynamic precision for crypto quotes
-    mag = abs(x)
-    if mag >= 100:
-        return f"{x:,.2f}"
-    if mag >= 1:
-        return f"{x:,.4f}"
-    if mag >= 0.01:
-        return f"{x:,.6f}"
-    return f"{x:,.8f}"
+        return "n/a"
+    return f"${x:,.0f}" if x >= 1000 else f"${x:,.2f}"
 
 
-def instruction_line(inst: Instrument, pos_usd: float) -> str:
-    t1 = inst.t1()
-    t2 = inst.t2()
-    return (
-        f"{inst.ticker}: entry {fmt_price(inst.entry)}, "
-        f"stop {fmt_price(inst.stop)}, "
-        f"T1 {fmt_price(t1)}, T2 {fmt_price(t2)}, "
-        f"size ${pos_usd:,.0f}"
-    )
+def build_targets(entry: Optional[float], atr: Optional[float]) -> (str, str):
+    if entry is None or atr is None:
+        return "n/a", "n/a"
+    t1 = entry + 0.8 * atr
+    t2 = entry + 1.5 * atr
+    return f"{t1:.6g}", f"{t2:.6g}"
 
 
-def print_header() -> None:
-    print(f"[{now_prague_str()} Europe/Prague]")
+def normalize_symbol(sym: Optional[str]) -> Optional[str]:
+    if not sym:
+        return None
+    s = str(sym).upper().strip()
+    # common mappings like "BTCUSDT" -> "BTC"
+    if s.endswith("USDT"):
+        s = s[:-4]
+    if s.endswith("USD"):
+        s = s[:-3]
+    return s
 
 
-# ------------------------- main decision logic ------------------------- #
+def is_dot(sym: Optional[str]) -> bool:
+    s = normalize_symbol(sym)
+    return s in {"DOT", "DOT2"}  # be forgiving
 
-def handle_type_B(j: Dict[str, Any]) -> None:
-    ctx = parse_ctx(j)
 
-    # possible shapes: signals.trades (list) or signals (single)
-    sig = j.get("signals", {})
-    items: List[Dict[str, Any]] = []
-    if isinstance(sig.get("trades"), list):
-        items = sig["trades"]
+def is_eth(sym: Optional[str]) -> bool:
+    s = normalize_symbol(sym)
+    return s == "ETH"
+
+
+def handle_type_b(root: Dict[str, Any]) -> str:
+    sig = root.get("signals") or {}
+    trade = sig.get("trade") or sig.get("signal") or root.get("trade") or sig
+    # Extract fields with defensive fallbacks
+    sym = normalize_symbol(first_nonempty("ticker", "symbol", "asset", obj=trade))
+    if is_dot(sym):
+        return f"[{now_prague_str()}] Hold and wait. DOT is staked/untouchable."
+    entry = _get_float(first_nonempty("entry", "price", "trigger", obj=trade))
+    atr = _get_float(first_nonempty("atr", "ATR", obj=trade))
+    stop = _get_float(first_nonempty("breakout_bar_low", "breakout_low", "stop", obj=trade))
+    provided_size = _get_float(first_nonempty("position_usd", "size_usd", "usd_size", obj=trade))
+    acc = read_account(root)
+    size_usd = compute_position_usd(entry, stop, acc, provided_size)
+    t1, t2 = build_targets(entry, atr)
+
+    parts: List[str] = []
+    parts.append(f"[{now_prague_str()}] BREAKOUT BUY")
+    sym_show = sym or "UNKNOWN"
+    entry_s = "n/a" if entry is None else f"{entry:.6g}"
+    stop_s = "n/a" if stop is None else f"{stop:.6g}"
+    parts.append(f"{sym_show} | Entry {entry_s} | Stop {stop_s} | T1 {t1} | T2 {t2} | Size {format_usd(size_usd)}")
+    if is_eth(sym):
+        parts.append("Note: ETH not rotated. Trail after +1R.")
     else:
-        # If single signal dict contains a trade-like object
-        items = [sig]
+        parts.append("Trail after +1R.")
+    return "\n".join(parts)
 
-    # filter out ETH/DOT rotation rules:
-    valid_instruments: List[Instrument] = []
-    for d in items:
-        inst = to_instrument(d)
-        if not inst:
+
+def handle_type_c(root: Dict[str, Any]) -> str:
+    sig = root.get("signals") or {}
+    cands = sig.get("candidates") or sig.get("watchlist") or []
+    if not isinstance(cands, list) or len(cands) == 0:
+        return "Hold and wait."
+    acc = read_account(root)
+
+    lines: List[str] = [f"[{now_prague_str()}] CANDIDATES"]
+    shown = 0
+    for c in cands:
+        sym = normalize_symbol(first_nonempty("ticker", "symbol", "asset", obj=c))
+        if is_dot(sym):
+            # Skip DOT entirely as per constraints
             continue
-        sym = inst.ticker.upper()
-        # DOT never, ETH allowed only if it's not a rotation out/instruction
-        if sym.startswith("ETH"):
-            # If JSON explicitly says it's a rotation (best-effort), skip
-            if str(d.get("action", "")).lower() in {"rotate", "rotate_out"}:
-                continue
-        valid_instruments.append(inst)
+        entry = _get_float(first_nonempty("entry", "price", "trigger", obj=c))
+        atr = _get_float(first_nonempty("atr", "ATR", obj=c))
+        stop = _get_float(first_nonempty("breakout_bar_low", "breakout_low", "stop", obj=c))
+        provided_size = _get_float(first_nonempty("position_usd", "size_usd", "usd_size", obj=c))
+        size_usd = compute_position_usd(entry, stop, acc, provided_size)
+        t1, t2 = build_targets(entry, atr)
 
-    if not valid_instruments:
-        print("Hold and wait.")
-        return
+        entry_s = "n/a" if entry is None else f"{entry:.6g}"
+        stop_s = "n/a" if stop is None else f"{stop:.6g}"
+        sym_show = sym or "UNKNOWN"
+        lines.append(f"{sym_show} | Entry {entry_s} | Stop {stop_s} | T1 {t1} | T2 {t2} | Size {format_usd(size_usd)}")
+        shown += 1
+        if shown >= 6:  # keep concise
+            break
 
-    print_header()
-    for inst in valid_instruments:
-        pos = compute_position_usd(ctx, inst)
-        line = instruction_line(inst, pos)
-        print(line)
-    print("Use breakout bar low as stop; trail after +1R.")
+    if shown == 0:
+        return "Hold and wait."
+    lines.append("Trail after +1R. (ETH/DOT not rotated; DOT excluded.)")
+    return "\n".join(lines)
 
 
-def handle_type_C(j: Dict[str, Any]) -> None:
-    ctx = parse_ctx(j)
-    cands = first_non_null(
-        j.get("candidates"),
-        j.get("signals", {}).get("candidates"),
-        []
-    )
-
-    instruments: List[Instrument] = []
-    for d in cands or []:
-        inst = to_instrument(d or {})
-        if not inst:
-            continue
-        sym = inst.ticker.upper()
-        # ETH/DOT not rotated rule
-        if sym.startswith("ETH"):
-            action = str(d.get("action", "")).lower()
-            if action in {"rotate", "rotate_out"}:
-                continue
-        instruments.append(inst)
-
-    if not instruments:
-        print("Hold and wait.")
-        return
-
-    print_header()
-    print("Top candidates:")
-    for inst in instruments:
-        pos = compute_position_usd(ctx, inst)
-        print(" - " + instruction_line(inst, pos))
+def render(root: Dict[str, Any]) -> str:
+    signals = root.get("signals") or {}
+    stype = str(signals.get("type") or root.get("type") or "").upper()
+    if stype == "B":
+        return handle_type_b(root)
+    if stype == "C":
+        return handle_type_c(root)
+    return "Hold and wait."
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Generate trading instructions from summary.json")
     ap.add_argument("--url", default=os.getenv("SUMMARY_URL", DEFAULT_URL),
                     help="Override summary.json URL")
+    # Accept --mode to remain compatible with existing workflow; we don't branch on it for now.
+    ap.add_argument("--mode", default=None,
+                    help="Run mode (deep, light-fast, light-hourly). Accepted but ignored.")
     args = ap.parse_args(argv)
 
-    try:
-        j = fetch_with_retry(args.url, attempts=2, wait=60)
-    except Exception:
-        print("Hold and wait. Fetch failed twice.")
+    data = fetch_json(args.url, attempts=2, wait_seconds=60)
+    if not data:
+        # Message already printed on failure
         return 0
 
-    # Defensive checks
-    signals = j.get("signals") or {}
-    sig_type = str(first_non_null(signals.get("type"), j.get("type"), "")).upper()
-
-    log(f"[json] signals.type={sig_type!r}")
-
-    if sig_type == "B":
-        handle_type_B(j)
-    elif sig_type == "C":
-        handle_type_C(j)
-    else:
-        print("Hold and wait.")
-
+    out = render(data)
+    print(out, flush=True)
     return 0
 
 
