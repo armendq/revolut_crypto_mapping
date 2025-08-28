@@ -49,12 +49,11 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y jq
 
-      - name: Ensure output tree (atomic dirs)
+      - name: Ensure output tree
         run: |
           set -euo pipefail
           mkdir -p public_runs/latest
           mkdir -p mapping
-          echo "Tree OK"
 
       - name: Generate Revolut ↔ Binance mapping (optional)
         run: |
@@ -66,6 +65,7 @@ jobs:
             echo "[mapping] no generator found; skipping."
           fi
 
+      # -------- Decide cadence --------
       - name: Decide run mode (deep / light-fast / light-hourly)
         id: decide
         shell: bash
@@ -95,55 +95,117 @@ jobs:
         if: steps.decide.outputs.mode == 'skip'
         run: echo "No matching cadence window now; exiting."
 
-      # ------------------ ANALYSES ------------------
+      # -------- Analyses --------
       - name: Run analyses (deep)
         if: steps.decide.outputs.mode == 'deep'
         run: |
           set -euo pipefail
           echo "[router] Running DEEP analyses"
           python -m scripts.analyses --mode deep
-          echo "[router] DEEP done"
 
-      - name: Run analyses (light-fast, ~every 5m)
+      - name: Run analyses (light-fast)
         if: steps.decide.outputs.mode == 'light-fast'
         run: |
           set -euo pipefail
           echo "[router] Running LIGHT-FAST analyses"
           python -m scripts.analyses --mode light-fast
-          echo "[router] LIGHT-FAST done"
 
-      - name: Run analyses (light-hourly at :02)
+      - name: Run analyses (light-hourly)
         if: steps.decide.outputs.mode == 'light-hourly'
         run: |
           set -euo pipefail
           echo "[router] Running LIGHT-HOURLY analyses"
           python -m scripts.analyses --mode light-hourly
-          echo "[router] LIGHT-HOURLY done"
 
-      # ------------------ VALIDATE OUTPUT ------------------
-      - name: Validate summary.json exists and is valid JSON
+      # -------- Validate local output BEFORE committing --------
+      - name: Validate summary.json (local)
         if: steps.decide.outputs.mode != 'skip'
         run: |
           set -euo pipefail
           FILE="public_runs/latest/summary.json"
           if [ ! -s "$FILE" ]; then
-            echo "ERROR: $FILE missing or empty."
+            echo "ERROR: $FILE missing or empty"
             ls -lah public_runs/latest || true
             exit 1
           fi
-          # atomic write guard: ensure not partial JSON
           if ! jq -e . "$FILE" >/dev/null 2>&1; then
-            echo "ERROR: $FILE is invalid JSON:"
-            cat "$FILE" || true
+            echo "ERROR: $FILE invalid JSON"
+            sed -n '1,200p' "$FILE" || true
             exit 1
           fi
-          echo "summary.json looks good."
+          echo "✔ Local summary.json present and valid."
 
-      - name: CRO presence smoke-check (non-fatal)
-        if: always() && steps.decide.outputs.mode != 'skip'
-        continue-on-error: true
+      # -------- Commit to main (the raw URL serves from here) --------
+      - name: Commit public_runs to main
+        if: steps.decide.outputs.mode != 'skip'
+        shell: bash
         run: |
           set -euo pipefail
-          # Adjust the grep path to whatever file lists supported tickers on Revolut.
-          if [ -f mapping/revolut_supported.json ]; then
-            if jq -r '.[]' mapping/revolut_supported.json | grep -qi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          ADD_LIST=()
+          [ -d public_runs ] && ADD_LIST+=("public_runs")
+          [ -d mapping ] && ADD_LIST+=("mapping")
+          if [ ${#ADD_LIST[@]} -eq 0 ]; then
+            echo "Nothing to add."
+            exit 0
+          fi
+          git add "${ADD_LIST[@]}" || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(run): artifacts $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
+            git push
+          fi
+
+      # -------- Verify RAW (the URL your consumer hits) --------
+      - name: Verify RAW summary.json (retry)
+        if: steps.decide.outputs.mode != 'skip'
+        env:
+          RAW_URL: https://raw.githubusercontent.com/${{ github.repository }}/main/public_runs/latest/summary.json
+        run: |
+          set -euo pipefail
+          echo "RAW_URL=$RAW_URL"
+          # Retry the raw URL with no-cache and backoff
+          for i in 1 2 3 4 5; do
+            echo "Attempt $i to fetch RAW summary.json"
+            if curl -sSfL -H 'Cache-Control: no-cache' "$RAW_URL" -o /tmp/summary.json; then
+              if jq -e . /tmp/summary.json >/dev/null 2>&1; then
+                echo "✔ RAW summary.json reachable and valid."
+                exit 0
+              else
+                echo "WARN: RAW JSON invalid; will retry."
+              fi
+            else
+              echo "WARN: curl failed; will retry."
+            fi
+            sleep $((i*3))
+          done
+          echo "NOTE: RAW verification failed after retries (may be transient). Proceeding."
+
+      # -------- Deploy to GH Pages (still useful for browsing) --------
+      - name: Upload Pages artifact
+        if: steps.decide.outputs.mode != 'skip'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public_runs
+
+      - name: Deploy to gh-pages
+        if: steps.decide.outputs.mode != 'skip'
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      # -------- Verify Pages (non-blocking) --------
+      - name: Verify Pages endpoint (non-blocking)
+        if: always() && steps.decide.outputs.mode != 'skip'
+        continue-on-error: true
+        env:
+          PAGES_URL: ${{ steps.deploy.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          BASE="${PAGES_URL:-https://armendq.github.io/revolut_crypto_mapping/}"
+          SUM="${BASE%/}/latest/summary.json"
+          echo "Checking base: $BASE"
+          curl -I --max-time 20 --retry 3 --retry-delay 5 "$BASE" || true
+          echo "Checking Pages summary: $SUM"
+          curl --max-time 20 --retry 5 --retry-delay 5 -H 'Cache-Control: no-cache' "$SUM" | jq -e . >/dev/null 2>&1 && echo "Pages JSON ok" || echo "Pages JSON not ready yet"
