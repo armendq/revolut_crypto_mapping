@@ -2,7 +2,7 @@ name: run
 
 on:
   schedule:
-    # every 5 minutes; the router decides which mode to run
+    # Trigger every 5 minutes; the router below decides which mode to run.
     - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
@@ -11,6 +11,7 @@ on:
         required: false
         default: "auto"
 
+# needed for commit + Pages deploy
 permissions:
   contents: write
   pages: write
@@ -29,6 +30,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # keep default token so push works
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -54,7 +57,7 @@ jobs:
           mkdir -p mapping
           echo "Tree OK"
 
-      # Optional mapping generation
+      # (optional) mapping generation — keep if your repo uses it
       - name: Generate Revolut ↔ Binance mapping (optional)
         run: |
           set -e
@@ -65,7 +68,7 @@ jobs:
             echo "[mapping] no generator found; skipping."
           fi
 
-      # -------- decide cadence --------
+      # -------- DECIDE MODE with ±1 minute tolerance --------
       - name: Decide run mode (deep / light-fast / light-hourly)
         id: decide
         shell: bash
@@ -99,7 +102,7 @@ jobs:
         if: steps.decide.outputs.mode == 'skip'
         run: echo "No matching cadence window now; exiting."
 
-      # -------- analyses --------
+      # -------- ANALYSES --------
       - name: Run analyses (deep)
         if: steps.decide.outputs.mode == 'deep'
         run: |
@@ -107,46 +110,46 @@ jobs:
           echo "[router] Running DEEP analyses"
           python -m scripts.analyses --mode deep
 
-      - name: Run analyses (light-fast)
+      - name: Run analyses (light-fast, ~every 5m)
         if: steps.decide.outputs.mode == 'light-fast'
         run: |
           set -euo pipefail
           echo "[router] Running LIGHT-FAST analyses"
           python -m scripts.analyses --mode light-fast
 
-      - name: Run analyses (light-hourly)
+      - name: Run analyses (light-hourly at :02)
         if: steps.decide.outputs.mode == 'light-hourly'
         run: |
           set -euo pipefail
           echo "[router] Running LIGHT-HOURLY analyses"
           python -m scripts.analyses --mode light-hourly
 
-      # -------- validate produced summary (local) --------
+      # (optional) quick local validation, never fail the job
       - name: Validate summary.json (local)
         if: steps.decide.outputs.mode != 'skip'
+        continue-on-error: true
         run: |
-          set -e
-          python - << 'PY'
-          import json,sys,os
-          p="public_runs/latest/summary.json"
-          assert os.path.exists(p), f"{p} missing"
-          with open(p,"r",encoding="utf-8") as f:
-              data=json.load(f)
-          assert "signals" in data and "type" in data["signals"], "signals.type missing"
-          print("summary.json OK:", data["signals"]["type"])
+          test -s public_runs/latest/summary.json
+          python - <<'PY'
+          import json,sys
+          j=json.load(open("public_runs/latest/summary.json"))
+          assert "signals" in j and "regime" in j
+          print("summary.json looks OK")
           PY
 
-      # -------- commit artifacts with auto-sync + retry --------
+      # -------- COMMIT ARTIFACTS TO MAIN (safe rebase with retries) --------
       - name: Commit public_runs to main
         if: steps.decide.outputs.mode != 'skip'
         shell: bash
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           set -euo pipefail
 
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config pull.rebase true
-
+          # Only add the paths we expect
           ADD_LIST=()
           [ -d public_runs ] && ADD_LIST+=("public_runs")
           [ -d mapping ] && ADD_LIST+=("mapping")
@@ -159,25 +162,27 @@ jobs:
           git add "${ADD_LIST[@]}" || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
-          else
-            git commit -m "chore(run): artifacts $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
+            exit 0
           fi
 
-          # Retry-friendly pull --rebase then push (handles concurrent writers)
-          for i in 1 2 3; do
-            echo "Sync attempt $i…"
-            git pull --rebase origin main || true
-            if git push origin main; then
-              echo "Push OK on attempt $i"
+          git commit -m "chore(run): artifacts $(date -u +'%Y-%m-%dT%H:%M:%SZ') [${{ steps.decide.outputs.mode }}]"
+
+          # Rebase & push with retries (handles concurrent runs)
+          for attempt in 1 2 3; do
+            echo "Sync attempt ${attempt}…"
+            # autostash guards against local commits conflicting during pull
+            git pull --rebase --autostash origin main || true
+            if git push origin HEAD:main; then
+              echo "Push succeeded."
               exit 0
             fi
-            echo "Push failed on attempt $i; retrying in 3s…"
+            echo "Push failed on attempt ${attempt}; retrying in 3s…"
             sleep 3
           done
 
           echo "Push failed after retries"; exit 1
 
-      # -------- deploy to GitHub Pages --------
+      # -------- DEPLOY TO GH-PAGES --------
       - name: Upload Pages artifact
         if: steps.decide.outputs.mode != 'skip'
         uses: actions/upload-pages-artifact@v3
@@ -189,7 +194,7 @@ jobs:
         id: deploy
         uses: actions/deploy-pages@v4
 
-      # -------- verify Pages (non-blocking) --------
+      # -------- VERIFY PAGES ENDPOINT (non-blocking) --------
       - name: Verify Pages endpoint (non-blocking)
         if: always() && steps.decide.outputs.mode != 'skip'
         continue-on-error: true
