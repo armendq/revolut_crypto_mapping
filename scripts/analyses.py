@@ -5,12 +5,14 @@
 Analyses pipeline – robust scanner for pre-breakouts and breakouts.
 
 Key features:
-- Uses data-api.binance.vision (works in restricted regions)
+- Primary data: data-api.binance.vision (works in restricted regions)
+- Fallback data for symbols not on Binance (e.g., CRO): CryptoCompare USD (no key needed)
 - Never calls Binance without a symbol (avoids 451/403)
 - Multi-timeframe trend filters (4h + 1h), momentum confirm (15m/5m)
 - Pre-breakout detection: proximity to HH20 with rising ATR + volume thrust
 - Candidate ranking: volume z-score, proximity/ATR, RS vs BTC
 - Always emits a valid summary.json under public_runs/latest/summary.json
+- Atomic writes to avoid readers catching a partial file
 """
 
 from __future__ import annotations
@@ -39,14 +41,17 @@ except Exception:
 TZ_NAME = "Europe/Prague"
 TZ = ZoneInfo(TZ_NAME) if ZoneInfo else timezone.utc
 
-BASE_URL = "https://data-api.binance.vision"
+BINANCE_BASE = "https://data-api.binance.vision"
+CC_BASE = "https://min-api.cryptocompare.com"  # fallback for non-Binance symbols (USD pairs)
+
+USER_AGENT = "analyses-pipeline/1.0 (+github-actions)"
 
 # Intervals & limits
 INTERVALS = {
-    "4h": ("4h", 500),
+    "4h": ("4h", 500),   # if using CryptoCompare, we aggregate 4x 1h locally
     "1h": ("1h", 600),
-    "15m": ("15m", 400),
-    "5m": ("5m", 400),
+    "15m": ("15m", 400), # CC minute data aggregated to 15m
+    "5m": ("5m", 400),   # CC minute data aggregated to 5m
 }
 
 # ATR / EMA parameters
@@ -137,14 +142,25 @@ def human_time(ts: Optional[datetime] = None) -> str:
 def ensure_dirs(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
-def safe_get(url: str, params: Optional[dict] = None, retries: int = 3, timeout: int = 20, sleep_s: float = 0.6) -> Optional[requests.Response]:
+def atomic_write_json(payload: dict, dest: Path) -> None:
+    """Write JSON atomically (avoid partial reads)."""
+    import tempfile
+    ensure_dirs(dest)
+    with tempfile.NamedTemporaryFile("w", delete=False, dir=str(dest.parent), encoding="utf-8") as tmp:
+        json.dump(payload, tmp, indent=2, ensure_ascii=False, sort_keys=False)
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, dest)
+
+def _req(url: str, params: Optional[dict] = None, retries: int = 3, timeout: int = 20, sleep_s: float = 0.6, headers: Optional[dict] = None) -> Optional[requests.Response]:
     """GET with retries/backoff. Returns Response or None."""
+    h = {"User-Agent": USER_AGENT}
+    if headers:
+        h.update(headers)
     for attempt in range(1, retries + 1):
         try:
-            r = requests.get(url, params=params, timeout=timeout)
+            r = requests.get(url, params=params, timeout=timeout, headers=h)
             if r.status_code == 200:
                 return r
-            # transient/rate-limit statuses
             if r.status_code in (418, 429, 451, 403, 504, 500):
                 time.sleep(sleep_s * attempt)
             else:
@@ -153,6 +169,7 @@ def safe_get(url: str, params: Optional[dict] = None, retries: int = 3, timeout:
             time.sleep(sleep_s * attempt)
     return None
 
+# ---- math helpers ----
 def ema(series: List[float], period: int) -> List[float]:
     if not series or period <= 1:
         return series[:]
@@ -211,24 +228,28 @@ def vol_zscore(vols: List[float], window: int = 50) -> float:
         return 0.0
     return (vols[-1] - mu) / sd
 
-def fetch_exchange_usdt_symbols() -> Dict[str, dict]:
+# ---------------------- DATA PROVIDERS --------------------------------
+
+def binance_fetch_exchange_usdt_symbols() -> Dict[str, dict]:
     """Return dict of USDT spot symbols metadata keyed by symbol (e.g., 'LPTUSDT')."""
-    url = f"{BASE_URL}/api/v3/exchangeInfo"
-    r = safe_get(url, retries=3, timeout=25)
+    url = f"{BINANCE_BASE}/api/v3/exchangeInfo"
+    r = _req(url, retries=3, timeout=25)
     if not r:
         return {}
-    data = r.json()
+    try:
+        data = r.json()
+    except Exception:
+        return {}
     out: Dict[str, dict] = {}
     for s in data.get("symbols", []):
         if s.get("status") == "TRADING" and s.get("quoteAsset") == "USDT" and s.get("isSpotTradingAllowed", True):
             out[s["symbol"]] = s
     return out
 
-def fetch_klines(symbol: str, interval: str, limit: int) -> Optional[List[List[Any]]]:
-    """Fetch raw klines array for a given symbol/interval."""
-    url = f"{BASE_URL}/api/v3/klines"
+def binance_fetch_klines(symbol: str, interval: str, limit: int) -> Optional[List[List[Any]]]:
+    url = f"{BINANCE_BASE}/api/v3/klines"
     params = {"symbol": symbol, "interval": interval, "limit": limit}
-    r = safe_get(url, params=params, retries=3, timeout=20)
+    r = _req(url, params=params, retries=3, timeout=20)
     if not r:
         return None
     try:
@@ -250,53 +271,144 @@ def parse_klines(raw: List[List[Any]]) -> Dict[str, List[float]]:
     for row in raw:
         # [ openTime, open, high, low, close, volume, closeTime, ... ]
         ot.append(int(row[0]))
-        o.append(float(row[1]))
-        h.append(float(row[2]))
-        l.append(float(row[3]))
-        c.append(float(row[4]))
-        v.append(float(row[5]))
+        o.append(float(row[1])); h.append(float(row[2])); l.append(float(row[3]))
+        c.append(float(row[4])); v.append(float(row[5]))
     return {"open_time": ot, "open": o, "high": h, "low": l, "close": c, "volume": v}
+
+# ---- CryptoCompare fallback (USD pairs) ----
+def cc_hist(symbol: str, tf: str, limit: int) -> Optional[Dict[str, List[float]]]:
+    """
+    Fetch OHLCV for fsym=SYMBOL, tsym=USD.
+    tf ∈ {"1h","15m","5m"}; for "4h" you should aggregate 1h to 4h after calling this.
+    """
+    fsym = symbol.upper()
+    if tf == "1h":
+        url = f"{CC_BASE}/data/v2/histohour"
+        params = {"fsym": fsym, "tsym": "USD", "limit": limit}
+    else:
+        # use minute granularity then aggregate to 5m/15m
+        url = f"{CC_BASE}/data/v2/histominute"
+        # ensure enough minutes to aggregate to bars count requested
+        mult = 5 if tf == "5m" else 15
+        params = {"fsym": fsym, "tsym": "USD", "limit": limit * mult}
+
+    r = _req(url, params=params, retries=3, timeout=20)
+    if not r:
+        return None
+    try:
+        data = r.json()
+    except Exception:
+        return None
+    if data.get("Response") != "Success" or "Data" not in data:
+        return None
+    rows = data["Data"]["Data"]
+    if not rows:
+        return None
+
+    # Build 1m/1h arrays
+    ot = []; o=[]; h=[]; l=[]; c=[]; v=[]
+    for x in rows:
+        # x: {time, open, high, low, close, volumefrom, volumeto}
+        # Use 'volumefrom' (base units) as proxy for volume
+        ts = int(x.get("time", 0)) * 1000
+        op = float(x.get("open", 0)); hi = float(x.get("high", 0)); lo = float(x.get("low", 0))
+        cl = float(x.get("close", 0)); vol = float(x.get("volumefrom", 0))
+        ot.append(ts); o.append(op); h.append(hi); l.append(lo); c.append(cl); v.append(vol)
+
+    if tf == "1h":
+        return {"open_time": ot, "open": o, "high": h, "low": l, "close": c, "volume": v}
+
+    # aggregate minutes to 5m/15m
+    mult = 5 if tf == "5m" else 15
+    return resample_ohlcv(ot, o, h, l, c, v, minutes=mult)
+
+def resample_ohlcv(ot: List[int], o: List[float], h: List[float], l: List[float], c: List[float], v: List[float], minutes: int) -> Dict[str, List[float]]:
+    """Aggregate minute bars to N-minute OHLCV (aligned)."""
+    assert minutes in (5, 15), "Only 5m/15m supported for minute resample"
+    out_ot=[]; out_o=[]; out_h=[]; out_l=[]; out_c=[]; out_v=[]
+    bucket = minutes * 60 * 1000
+    if not ot:
+        return {"open_time": [], "open": [], "high": [], "low": [], "close": [], "volume": []}
+    # align at epoch multiples
+    base = (ot[0] // bucket) * bucket
+    cur_start = base
+    cur_o=cur_h=cur_l=cur_c=cur_v=None
+    for i, t in enumerate(ot):
+        # advance bucket if needed
+        while t >= cur_start + bucket:
+            if cur_o is not None:
+                out_ot.append(cur_start)
+                out_o.append(cur_o); out_h.append(cur_h); out_l.append(cur_l); out_c.append(cur_c); out_v.append(cur_v)
+            cur_start += bucket
+            cur_o=cur_h=cur_l=cur_c=cur_v=None
+        # update current
+        if cur_o is None:
+            cur_o = o[i]; cur_h = h[i]; cur_l = l[i]; cur_c = c[i]; cur_v = v[i]
+        else:
+            cur_h = max(cur_h, h[i]); cur_l = min(cur_l, l[i]); cur_c = c[i]; cur_v += v[i]
+    # flush last
+    if cur_o is not None:
+        out_ot.append(cur_start)
+        out_o.append(cur_o); out_h.append(cur_h); out_l.append(cur_l); out_c.append(cur_c); out_v.append(cur_v)
+    return {"open_time": out_ot, "open": out_o, "high": out_h, "low": out_l, "close": out_c, "volume": out_v}
+
+def aggregate_4h_from_1h(one: Dict[str, List[float]]) -> Dict[str, List[float]]:
+    """Aggregate hourly to 4-hour bars."""
+    ot=one["open_time"]; o=one["open"]; h=one["high"]; l=one["low"]; c=one["close"]; v=one["volume"]
+    return resample_generic(ot, o, h, l, c, v, step_hours=4)
+
+def resample_generic(ot: List[int], o: List[float], h: List[float], l: List[float], c: List[float], v: List[float], step_hours: int) -> Dict[str, List[float]]:
+    bucket = step_hours * 60 * 60 * 1000
+    out_ot=[]; out_o=[]; out_h=[]; out_l=[]; out_c=[]; out_v=[]
+    if not ot:
+        return {"open_time": [], "open": [], "high": [], "low": [], "close": [], "volume": []}
+    base = (ot[0] // bucket) * bucket
+    cur_start = base
+    cur_o=cur_h=cur_l=cur_c=cur_v=None
+    for i, t in enumerate(ot):
+        while t >= cur_start + bucket:
+            if cur_o is not None:
+                out_ot.append(cur_start)
+                out_o.append(cur_o); out_h.append(cur_h); out_l.append(cur_l); out_c.append(cur_c); out_v.append(cur_v)
+            cur_start += bucket
+            cur_o=cur_h=cur_l=cur_c=cur_v=None
+        if cur_o is None:
+            cur_o = o[i]; cur_h = h[i]; cur_l = l[i]; cur_c = c[i]; cur_v = v[i]
+        else:
+            cur_h = max(cur_h, h[i]); cur_l = min(cur_l, l[i]); cur_c = c[i]; cur_v += v[i]
+    if cur_o is not None:
+        out_ot.append(cur_start)
+        out_o.append(cur_o); out_h.append(cur_h); out_l.append(cur_l); out_c.append(cur_c); out_v.append(cur_v)
+    return {"open_time": out_ot, "open": out_o, "high": out_h, "low": out_l, "close": out_c, "volume": out_v}
 
 # -------------------------- CORE LOGIC --------------------------------
 
-def analyze_symbol(symbol: str, btc_1h_close: List[float]) -> Optional[dict]:
-    """Analyze single symbol; return candidate dict or confirmed breakout dict with 'signal' key."""
-    # Fetch required timeframes
-    req: Dict[str, Dict[str, List[float]]] = {}
-    for tf, (interval, limit) in INTERVALS.items():
-        raw = fetch_klines(symbol, interval, limit)
-        if not raw or len(raw) < max(EMA_SLOW + 5, SWING_LOOKBACK + 5):
+def analyze_symbol(fetcher: Dict[str, Dict[str, List[float]]], btc_1h_close: List[float]) -> Optional[dict]:
+    """Analyze single symbol using prepared timeframe dicts; return candidate/confirmed dict with 'signal'."""
+    # Required timeframes present?
+    for tf in ("1h","4h","15m","5m"):
+        if tf not in fetcher or not fetcher[tf]["close"]:
             return None
-        req[tf] = parse_klines(raw)
 
-    one = req["1h"]
-    four = req["4h"]
-    fifteen = req["15m"]
-    five = req["5m"]
+    one = fetcher["1h"]
+    four = fetcher["4h"]
+    fifteen = fetcher["15m"]
+    five = fetcher["5m"]
 
-    close_1h = one["close"]
-    high_1h = one["high"]
-    low_1h = one["low"]
-    vol_1h = one["volume"]
+    close_1h = one["close"]; high_1h = one["high"]; low_1h = one["low"]; vol_1h = one["volume"]
 
     # Trend filters
     ema20_1h = ema(close_1h, EMA_FAST)
     ema200_1h = ema(close_1h, EMA_SLOW)
     ema20_4h = ema(four["close"], EMA_FAST)
     ema200_4h = ema(four["close"], EMA_SLOW)
-
     if len(ema200_1h) < 5 or len(ema200_4h) < 5:
         return None
 
     ema20_slope_1h = ema20_1h[-1] - ema20_1h[-4]
     ema20_slope_4h = ema20_4h[-1] - ema20_4h[-4]
-
-    trend_ok = (
-        ema20_slope_1h > 0
-        and ema20_slope_4h > 0
-        and close_1h[-1] > ema200_1h[-1]
-        and four["close"][-1] > ema200_4h[-1]
-    )
+    trend_ok = (ema20_slope_1h > 0 and ema20_slope_4h > 0 and
+                close_1h[-1] > ema200_1h[-1] and four["close"][-1] > ema200_4h[-1])
 
     # ATR & swings on 1h
     atr_1h = atr(high_1h, low_1h, close_1h, ATR_LEN)
@@ -336,38 +448,26 @@ def analyze_symbol(symbol: str, btc_1h_close: List[float]) -> Optional[dict]:
     last_atr = atr_1h[-1]
 
     reasons: List[str] = []
-    if trend_ok:
-        reasons.append("TrendOK(1h&4h)")
-    if atr_rising:
-        reasons.append("ATR up")
-    if vz > 0:
-        reasons.append(f"VolZ={vz:.2f}")
-    if lower_tf_ok:
-        reasons.append("LowerTF OK")
+    if trend_ok: reasons.append("TrendOK(1h&4h)")
+    if atr_rising: reasons.append("ATR↑")
+    if vz > 0: reasons.append(f"VolZ={vz:.2f}")
+    if lower_tf_ok: reasons.append("LowerTF OK")
 
     score = 0.0
-    if vz > 0:
-        score += vz
-    if prox > 0:
-        score += 1.0 / (min(max(prox, 0.01), 2.0))
+    if vz > 0: score += vz
+    if prox > 0: score += 1.0 / (min(max(prox, 0.01), 2.0))
     score += max(0.0, 5.0 * rs_strength)
-    if lower_tf_ok:
-        score += 0.5
+    if lower_tf_ok: score += 0.5
 
     breakout_level = hh20[-1]
-    confirmed_breakout = (
-        trend_ok
-        and last_close > (breakout_level + BREAK_BUFFER_ATR * last_atr)
-        and vz >= VOL_Z_MIN_BREAK
-        and lower_tf_ok
-    )
+    confirmed_breakout = (trend_ok and
+                          last_close > (breakout_level + BREAK_BUFFER_ATR * last_atr) and
+                          vz >= VOL_Z_MIN_BREAK and
+                          lower_tf_ok)
 
-    pre_breakout = (
-        trend_ok
-        and atr_rising
-        and PROX_ATR_MIN <= prox <= PROX_ATR_MAX
-        and vz >= VOL_Z_MIN_PRE
-    )
+    pre_breakout = (trend_ok and atr_rising and
+                    PROX_ATR_MIN <= prox <= PROX_ATR_MAX and
+                    vz >= VOL_Z_MIN_PRE)
 
     entry = breakout_level + BREAK_BUFFER_ATR * last_atr
     stop = last_low  # breakout bar low proxy on 1h
@@ -375,7 +475,6 @@ def analyze_symbol(symbol: str, btc_1h_close: List[float]) -> Optional[dict]:
     t2 = entry + 1.5 * last_atr
 
     out: Dict[str, Any] = {
-        "symbol": symbol,
         "last": last_close,
         "atr": last_atr,
         "hh20": breakout_level,
@@ -402,19 +501,16 @@ def analyze_symbol(symbol: str, btc_1h_close: List[float]) -> Optional[dict]:
 
     return out
 
-def write_summary(payload: dict, dest_latest: Path) -> None:
-    ensure_dirs(dest_latest)
-    with dest_latest.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False, sort_keys=False)
-
-# -------------------------- MAIN --------------------------------------
+# -------------------------- UNIVERSE ----------------------------------
 
 def build_universe() -> Tuple[Dict[str, str], List[str]]:
-    exch = fetch_exchange_usdt_symbols()
+    """Return (binance_mapping, missing_binance_tickers)."""
+    exch = binance_fetch_exchange_usdt_symbols()
     mapping: Dict[str, str] = {}
     missing_binance: List[str] = []
     if not exch:
-        return mapping, list(REVOLUT_TICKERS.keys())
+        # No exchange info; caller will still try CC fallback for *all* tickers
+        return mapping, list(k for k in REVOLUT_TICKERS.keys() if k not in STABLES)
 
     binance_symbols_available = set(exch.keys())
     tickers = [t for t in REVOLUT_TICKERS.keys() if t not in STABLES]
@@ -425,6 +521,37 @@ def build_universe() -> Tuple[Dict[str, str], List[str]]:
         else:
             missing_binance.append(t)
     return mapping, missing_binance
+
+# ------------------------ FETCH ORCHESTRATION --------------------------
+
+def fetch_all_tfs_binance(symbol: str) -> Optional[Dict[str, Dict[str, List[float]]]]:
+    """Fetch 1h/4h/15m/5m from Binance."""
+    req: Dict[str, Dict[str, List[float]]] = {}
+    for tf, (interval, limit) in INTERVALS.items():
+        raw = binance_fetch_klines(symbol, interval, limit)
+        if not raw or len(raw) < max(EMA_SLOW + 5, SWING_LOOKBACK + 5):
+            return None
+        req[tf] = parse_klines(raw)
+    return req
+
+def fetch_all_tfs_cc(ticker: str) -> Optional[Dict[str, Dict[str, List[float]]]]:
+    """
+    Fetch from CryptoCompare as USD pairs:
+    - 1h direct
+    - 4h aggregated from 1h
+    - 15m / 5m aggregated from minute
+    """
+    one = cc_hist(ticker, "1h", INTERVALS["1h"][1])
+    if not one or len(one["close"]) < max(EMA_SLOW + 5, SWING_LOOKBACK + 5):
+        return None
+    four = aggregate_4h_from_1h(one)
+    fif = cc_hist(ticker, "15m", INTERVALS["15m"][1])
+    five = cc_hist(ticker, "5m", INTERVALS["5m"][1])
+    if not four or not fif or not five:
+        return None
+    return {"1h": one, "4h": four, "15m": fif, "5m": five}
+
+# ------------------------- REGIME COMPUTE ------------------------------
 
 def compute_regime(btc_1h: Dict[str, List[float]], btc_4h: Dict[str, List[float]]) -> Tuple[bool, str]:
     try:
@@ -442,29 +569,32 @@ def compute_regime(btc_1h: Dict[str, List[float]], btc_4h: Dict[str, List[float]
     except Exception:
         return False, "regime calc error"
 
+# --------------------------- PIPELINE ---------------------------------
+
 def run_pipeline(mode: str) -> dict:
     started = datetime.now(timezone.utc).astimezone(TZ)
 
+    # Build mappings
     mapping, missing_binance = build_universe()
-    if not mapping:
-        payload = {
-            "generated_at": human_time(started),
-            "timezone": TZ_NAME,
-            "regime": {"ok": False, "reason": "exchangeInfo unavailable or no eligible symbols"},
-            "signals": {"type": "HOLD"},
-            "orders": [],
-            "candidates": [],
-            "universe": {"scanned": 0, "eligible": 0, "skipped": {"no_data": [], "missing_binance": sorted(missing_binance)}},
-            "meta": {"binance_endpoint": BASE_URL, "mode": mode},
-        }
-        return payload
+    tickers_all = [t for t in REVOLUT_TICKERS.keys() if t not in STABLES]
+    # In deep mode, we try *all* (Binance first, then CC for the rest).
+    # In light-fast, downsample a bit for speed.
 
-    # RS baseline: BTC
+    # BTC baseline (prefer Binance; fallback CC)
     btc_symbol = "BTCUSDT"
-    btc_raw_1h = fetch_klines(btc_symbol, INTERVALS["1h"][0], INTERVALS["1h"][1])
-    btc_raw_4h = fetch_klines(btc_symbol, INTERVALS["4h"][0], INTERVALS["4h"][1])
+    btc_1h = None; btc_4h = None
+    raw1 = binance_fetch_klines(btc_symbol, INTERVALS["1h"][0], INTERVALS["1h"][1])
+    raw4 = binance_fetch_klines(btc_symbol, INTERVALS["4h"][0], INTERVALS["4h"][1])
+    if raw1 and raw4:
+        btc_1h = parse_klines(raw1); btc_4h = parse_klines(raw4)
+    else:
+        # CC fallback for BTC (USD)
+        cc_btc_1h = cc_hist("BTC", "1h", INTERVALS["1h"][1])
+        if cc_btc_1h:
+            btc_1h = cc_btc_1h
+            btc_4h = aggregate_4h_from_1h(cc_btc_1h)
 
-    if not btc_raw_1h or not btc_raw_4h:
+    if not btc_1h or not btc_4h:
         payload = {
             "generated_at": human_time(started),
             "timezone": TZ_NAME,
@@ -473,12 +603,10 @@ def run_pipeline(mode: str) -> dict:
             "orders": [],
             "candidates": [],
             "universe": {"scanned": 0, "eligible": len(mapping), "skipped": {"no_data": [], "missing_binance": sorted(missing_binance)}},
-            "meta": {"binance_endpoint": BASE_URL, "mode": mode},
+            "meta": {"binance_endpoint": BINANCE_BASE, "mode": mode, "fallback": "CryptoCompare"},
         }
         return payload
 
-    btc_1h = parse_klines(btc_raw_1h)
-    btc_4h = parse_klines(btc_raw_4h)
     regime_ok, regime_reason = compute_regime(btc_1h, btc_4h)
     btc_close_1h = btc_1h["close"]
 
@@ -487,29 +615,52 @@ def run_pipeline(mode: str) -> dict:
     no_data: List[str] = []
     scanned = 0
 
-    # Optionally thin the mapping in light-fast mode for speed (scan subset)
-    items = list(mapping.items())
+    # Build ordered list: Binance-first, then CC-only tickers
+    binance_items = list(mapping.items())
+    cc_items = [(t, t) for t in tickers_all if t not in mapping]
+
+    # Optionally thin the lists in light-fast mode
     if mode == "light-fast":
-        # simple downsample: every 2nd symbol
-        items = items[::2]
+        binance_items = binance_items[::2]
+        cc_items = cc_items[::3]  # more aggressive on fallback to keep runtime short
 
-    for t, sym in items:
+    # Scan Binance-backed
+    for t, sym in binance_items:
         scanned += 1
-        info = analyze_symbol(sym, btc_close_1h)
-        time.sleep(0.03)  # light pacing
+        packs = fetch_all_tfs_binance(sym)
+        time.sleep(0.03)
+        if not packs:
+            no_data.append(t); continue
+        info = analyze_symbol(packs, btc_close_1h)
         if not info:
-            no_data.append(t)
-            continue
+            no_data.append(t); continue
         info["ticker"] = t
+        info["symbol"] = sym
         info["rotation_exempt"] = (t in ROTATION_EXEMPT)
-        if info["signal"] == "B":
-            confirmed.append(info)
-        elif info["signal"] == "C":
-            candidates.append(info)
+        if info["signal"] == "B": confirmed.append(info)
+        elif info["signal"] == "C": candidates.append(info)
 
+    # Scan CC-backed (e.g., CRO)
+    for t, _ in cc_items:
+        scanned += 1
+        packs = fetch_all_tfs_cc(t)
+        time.sleep(0.03)
+        if not packs:
+            no_data.append(t); continue
+        info = analyze_symbol(packs, btc_close_1h)
+        if not info:
+            no_data.append(t); continue
+        info["ticker"] = t
+        info["symbol"] = f"{t}USD"  # denote USD pair for clarity
+        info["rotation_exempt"] = (t in ROTATION_EXEMPT)
+        if info["signal"] == "B": confirmed.append(info)
+        elif info["signal"] == "C": candidates.append(info)
+
+    # Rank candidates
     candidates.sort(key=lambda x: x.get("score", 0.0), reverse=True)
     top_candidates = candidates[:MAX_CANDIDATES]
 
+    # Signals
     signal_type = "HOLD"
     orders: List[dict] = []
     if confirmed:
@@ -557,10 +708,10 @@ def run_pipeline(mode: str) -> dict:
         "candidates": cand_payload,
         "universe": {
             "scanned": scanned,
-            "eligible": len(mapping),
+            "eligible": len(tickers_all),
             "skipped": {
-                "no_data": sorted(no_data),
-                "missing_binance": sorted(missing_binance),
+                "no_data": sorted(set(no_data)),
+                "missing_binance": sorted(set(missing_binance)),
             },
         },
         "meta": {
@@ -573,13 +724,16 @@ def run_pipeline(mode: str) -> dict:
                 "MAX_CANDIDATES": MAX_CANDIDATES
             },
             "lower_tf_confirm": True,
-            "rs_reference": "BTCUSDT",
-            "binance_endpoint": BASE_URL,
+            "rs_reference": "BTC (Binance or CC USD)",
+            "binance_endpoint": BINANCE_BASE,
+            "fallback": "CryptoCompare USD",
             "mode": mode,
         }
     }
 
     return payload
+
+# ------------------------------ MAIN ----------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Analyses pipeline")
@@ -599,17 +753,16 @@ def main() -> None:
             "orders": [],
             "candidates": [],
             "universe": {"scanned": 0, "eligible": 0, "skipped": {"no_data": [], "missing_binance": []}},
-            "meta": {"binance_endpoint": BASE_URL, "mode": args.mode},
+            "meta": {"binance_endpoint": BINANCE_BASE, "mode": args.mode, "fallback": "CryptoCompare USD"},
         }
 
     latest_path = Path("public_runs/latest/summary.json")
-    write_summary(payload, latest_path)
+    atomic_write_json(payload, latest_path)
 
     stamp = datetime.now(timezone.utc).astimezone(TZ).strftime("%Y%m%d_%H%M%S")
     snapshot_dir = Path("public_runs") / stamp
     ensure_dirs(snapshot_dir / "summary.json")
-    with (snapshot_dir / "summary.json").open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False, sort_keys=False)
+    atomic_write_json(payload, snapshot_dir / "summary.json")
 
     log(f"Summary written to {latest_path} (signal={payload.get('signals',{}).get('type')}, regime_ok={payload.get('regime',{}).get('ok')})")
 
